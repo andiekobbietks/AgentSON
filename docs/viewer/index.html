@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentSON Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --border: #30363d;
-            --text: #c9d1d9;
-            --text-muted: #8b949e;
-            --accent: #58a6ff;
-            --success: #3fb950;
-            --warning: #d29922;
-            --error: #f85149;
+            --bg: #0a0a08;
+            --surface: #141410;
+            --border: #2a2a1e;
+            --text: #e8e0c8;
+            --text-muted: #9a9070;
+            --accent: #ffb000;
+            --success: #a0d060;
+            --warning: #ffb000;
+            --error: #e05040;
         }
 
         * {
@@ -24,7 +27,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -125,13 +128,13 @@
             font-weight: 500;
         }
 
-        .type-user-query { background: var(--accent); color: #000; }
-        .type-thought { background: var(--warning); color: #000; }
-        .type-action { background: var(--success); color: #000; }
-        .type-answer { background: var(--text-muted); color: #000; }
+        .type-user-query { background: var(--accent); color: #0a0a08; }
+        .type-thought { background: var(--warning); color: #0a0a08; }
+        .type-action { background: var(--success); color: #0a0a08; }
+        .type-answer { background: var(--text-muted); color: #0a0a08; }
         .type-side-effect { background: var(--error); color: #fff; }
-        .type-context { background: #8957e5; color: #fff; }
-        .type-tool { background: #3fb950; color: #000; }
+        .type-context { background: #8a6020; color: #fff; }
+        .type-tool { background: #a0d060; color: #0a0a08; }
 
         .entry-content {
             font-size: 14px;
