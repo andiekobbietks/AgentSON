@@ -1,0 +1,367 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentson.dev/schema/v1.1.json",
+  "title": "AgentSON v1.1",
+  "description": "Agent Session Object Notation — a vendor-neutral format for capturing AI agent session data, with first-class trajectory semantics (task, outcome, observation entries).",
+  "type": "object",
+  "required": ["id", "tool", "entries"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique session identifier",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "tool": {
+      "type": "object",
+      "description": "Information about the source tool",
+      "required": ["name", "session_id"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tool name (e.g., opencode, minimax, antigravity, chrome-devtools)",
+          "enum": ["opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "claude-code", "copilot", "other"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Tool version"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Original session ID from the source tool"
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "description": "Information about the AI agent used",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Model name (e.g., mimo-v2.5-free, gpt-4, claude-3)"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Model provider (e.g., opencode, openai, anthropic)"
+        },
+        "variant": {
+          "type": "string",
+          "description": "Model variant (e.g., high, low, thinking)"
+        }
+      }
+    },
+    "task": {
+      "type": "string",
+      "description": "The user goal that initiated this trajectory. For single-trajectory sessions this equals the first user-query text. For multi-trajectory sessions it is the broader goal that the trajectories collectively advance.",
+      "examples": [
+        "Refactor the legacy auth module to use JWT",
+        "Investigate WHEA_UNCORRECTABLE_ERROR BSOD",
+        "Set up Nightscout server for glucose monitoring"
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "description": "Result of the trajectory from the user's perspective. 'success' = agent delivered what the user asked for; 'partial' = some answers delivered but the task is incomplete; 'aborted' = user cancelled or session ended without resolution; 'error' = agent failed (tool error, model error, etc).",
+      "enum": ["success", "partial", "aborted", "error"],
+      "default": "partial"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session start timestamp (ISO 8601)"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session end timestamp (ISO 8601)"
+    },
+    "context": {
+      "type": "object",
+      "description": "Session context information",
+      "properties": {
+        "working_directory": {
+          "type": "string",
+          "description": "Working directory when session was recorded"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Platform (e.g., win32, linux, darwin)"
+        },
+        "shell": {
+          "type": "string",
+          "description": "Shell used (e.g., powershell, bash, zsh)"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL if session was web-based"
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Browser viewport dimensions",
+          "properties": {
+            "width": {"type": "integer"},
+            "height": {"type": "integer"}
+          }
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "description": "Chronological list of session entries. When viewed as a trajectory, the canonical loop is: user-query -> (thought -> action -> observation -> thought -> action -> observation -> ...) -> answer.",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "user-query",
+              "context",
+              "querying",
+              "title",
+              "thought",
+              "action",
+              "observation",
+              "answer",
+              "side-effect"
+            ]
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "Unix timestamp in milliseconds"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text content (for user-query, thought, observation, answer)"
+          },
+          "query": {
+            "type": "string",
+            "description": "User query text (alias for text on user-query entries)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Section or step title"
+          },
+          "code": {
+            "type": "string",
+            "description": "Code executed by the agent"
+          },
+          "output": {
+            "type": "string",
+            "description": "Output from code execution (inlined observation). Use the dedicated 'observation' entry type for richer or async observations."
+          },
+          "tool": {
+            "type": "string",
+            "description": "Tool used (e.g., bash, grep, edit, write, browser.evaluate, sensor.read)"
+          },
+          "tool_call_id": {
+            "type": "string",
+            "description": "Unique identifier for this tool invocation. Observations emitted in response to this action should set 'correlation_id' to this value so consumers can pair them."
+          },
+          "correlation_id": {
+            "type": "string",
+            "description": "For 'observation' entries: the tool_call_id of the action that produced this observation. Enables async/tool-result correlation."
+          },
+          "source": {
+            "type": "string",
+            "description": "For 'observation' entries: who/what produced the observation. 'agent' = the agent observed; 'user' = user provided mid-loop feedback; 'system' = runtime/OS; 'tool' = tool result; 'sensor' = external sensor (e.g. CGM).",
+            "enum": ["agent", "user", "system", "tool", "sensor", "other"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "error", "partial", "pending"],
+            "description": "Per-entry status. Extends to all entry types in v1.1 (was action-only in v1.0)."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "description": "Wall-clock duration of this entry in milliseconds. Useful for action execution time, observation latency, etc."
+          },
+          "error": {
+            "type": "object",
+            "description": "For 'action' entries with status='error': structured error details.",
+            "properties": {
+              "type": {"type": "string", "description": "Error class (e.g., TimeoutError, ParseError)" },
+              "message": {"type": "string", "description": "Human-readable error message" },
+              "stack": {type": "string", "description": "Optional stack trace"}
+            }
+          },
+          "path": {
+            "type": "string",
+            "description": "File path (for file operations)"
+          },
+          "diff": {
+            "type": "string",
+            "description": "Diff output (for side-effects)"
+          },
+          "attachments": {
+            "type": "array",
+            "description": "For 'observation' entries: attached media (image, file, audio).",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {"type": "string", "enum": ["image", "file", "audio", "video"]},
+                "ref":  {"type": "string", "description": "Path or URI to the attachment"},
+                "note": {"type": "string", "description": "Optional human-readable note"}
+              }
+            }
+          },
+          "details": {
+            "type": "array",
+            "description": "Additional context details",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {"type": "string"},
+                "text": {"type": "string"}
+              }
+            }
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for this entry"
+          },
+          "tokens": {
+            "type": "object",
+            "description": "Token usage for this entry",
+            "properties": {
+              "input": {"type": "integer"},
+              "output": {"type": "integer"},
+              "reasoning": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Session metadata",
+      "properties": {
+        "total_tokens": {
+          "type": "integer",
+          "description": "Total tokens used in session"
+        },
+        "cost": {
+          "type": "number",
+          "description": "Total cost in USD"
+        },
+        "messages": {
+          "type": "integer",
+          "description": "Total message count"
+        },
+        "parts": {
+          "type": "integer",
+          "description": "Total part count"
+        },
+        "exported_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this file was exported"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "trajectoryView": {
+      "description": "The trajectory view of an AgentSON document. A document qualifies as a trajectory when it has at least one user-query followed by a (thought -> action -> observation -> ...)* loop and at least one answer. The canonical form is enumerated below; this is a documentation reference, not a separate JSON Schema constraint.",
+      "type": "object",
+      "properties": {
+        "task": {"type": "string"},
+        "outcome": {"type": "string", "enum": ["success", "partial", "aborted", "error"]},
+        "turns": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {"$ref": "#/$defs/userQuery"},
+              {"$ref": "#/$defs/observation"}
+            ]
+          }
+        },
+        "loops": {
+          "type": "array",
+          "description": "Each loop is one observe-think-act cycle: [thought, action, observation?, thought, action, observation?, ...] terminating at the next user-query or answer.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "thoughts":  {"type": "array", "items": {"$ref": "#/$defs/agentThought"}},
+              "actions":   {"type": "array", "items": {"$ref": "#/$defs/agentAction"}},
+              "observations": {"type": "array", "items": {"$ref": "#/$defs/observation"}}
+            }
+          }
+        },
+        "final_answer": {"$ref": "#/$defs/agentAnswer"}
+      }
+    },
+    "userQuery": {
+      "type": "object",
+      "required": ["type", "text"],
+      "properties": {
+        "type": {"const": "user-query"},
+        "text": {"type": "string"}
+      }
+    },
+    "agentThought": {
+      "type": "object",
+      "required": ["type", "text"],
+      "properties": {
+        "type": {"const": "thought"},
+        "text": {"type": "string"},
+        "timestamp": {"type": "integer"}
+      }
+    },
+    "agentAction": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"const": "action"},
+        "tool": {"type": "string"},
+        "code": {"type": "string"},
+        "output": {"type": "string"},
+        "tool_call_id": {"type": "string"},
+        "status": {"type": "string"}
+      }
+    },
+    "observation": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"const": "observation"},
+        "text": {"type": "string"},
+        "source": {"type": "string"},
+        "correlation_id": {"type": "string"},
+        "attachments": {"type": "array"}
+      }
+    },
+    "agentAnswer": {
+      "type": "object",
+      "required": ["type", "text"],
+      "properties": {
+        "type": {"const": "answer"},
+        "text": {"type": "string"}
+      }
+    }
+  },
+  "examples": [
+    {
+      "$schema": "https://agentson.dev/schema/v1.1.json",
+      "id": "demo-trajectory-2026-07-05",
+      "tool": {"name": "opencode", "session_id": "ses_demo"},
+      "agent": {"name": "mimo-v2.5-free", "provider": "opencode", "variant": "high"},
+      "task": "Refactor the auth module to use JWT",
+      "outcome": "success",
+      "started_at": "2026-07-05T10:00:00Z",
+      "ended_at": "2026-07-05T10:15:00Z",
+      "entries": [
+        {"type": "user-query", "text": "Refactor the auth module to use JWT instead of session cookies.", "timestamp": 1783215000000},
+        {"type": "thought", "text": "I need to find the auth module first.", "timestamp": 1783215001000},
+        {"type": "action", "tool": "bash", "code": "find . -name 'auth*' -type f", "output": "./auth.py", "tool_call_id": "tc_1", "status": "success", "duration_ms": 12, "timestamp": 1783215002000},
+        {"type": "observation", "text": "Found 1 file: ./auth.py", "source": "tool", "correlation_id": "tc_1", "timestamp": 1783215002500},
+        {"type": "action", "tool": "read", "code": "cat auth.py", "output": "...legacy session code...", "tool_call_id": "tc_2", "status": "success", "timestamp": 1783215004000},
+        {"type": "answer", "text": "Found it. Here's the refactor: ...", "timestamp": 1783215010000}
+      ]
+    }
+  ]
+}
