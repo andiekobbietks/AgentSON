@@ -64,8 +64,9 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-005](adrs/adr-005-nightscout.md) | Why Nightscout over proprietary CGM systems |
 | [ADR-006](adrs/adr-006-github-pages.md) | Why GitHub Pages over Vercel/Netlify |
 | [ADR-007](adrs/adr-007-coderabbit.md) | Why CodeRabbit for reviews (and why not required) |
-| [ADR-008](adrs/adr-008-trace-data-interchange.md) | AgentSON as the open interchange layer for AI workflow traces ($60B insight) |
+| [ADR-008](adrs/adr-008-trace-data-interchange.md) | AgentSON as the open interchange layer for AI workflow traces |
 | [ADR-009](adrs/adr-009-osi-open-interchange.md) | AgentSON as Open Interchange Format for OSI Open Source AI definition |
+| [ADR-010](adrs/adr-010-gdpr-data-liberation.md) | AgentSON as GDPR/EU AI Act data liberation tool (the Unsloth analogy) |
 
 → [Read ADRs](adrs/)
 

@@ -142,9 +142,21 @@ xychart-beta
 
 ## Why AgentSON Matters
 
-### The Data is Valuable
+### You Have the Legal Right
 
-AI companies spend billions acquiring tools that generate session traces. DeepSeek, Moonshot, and MiniMax ran distillation campaigns extracting exactly this data at scale (16M+ exchanges combined). The data IS the product.
+GDPR Article 20 gives you the right to export your data in a machine-readable format. The EU AI Act requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+
+> **You have the legal right to your data. AgentSON is how you exercise it.**
+
+### The Unsloth Analogy
+
+Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
+
+| Before | After |
+|--------|-------|
+| GPU cluster + PhD needed | Single GPU, hours |
+| No export API, vendor lock-in | One CLI command, portable JSON |
+| Big labs only | Everyone |
 
 ### But It's Locked In
 
@@ -162,6 +174,7 @@ AI companies spend billions acquiring tools that generate session traces. DeepSe
 3. **Search** — Full-text search across all your sessions
 4. **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
 5. **Interoperability** — One format, all tools
+6. **Legal compliance** — GDPR Art. 20 + EU AI Act Art. 52
 
 ---
 
