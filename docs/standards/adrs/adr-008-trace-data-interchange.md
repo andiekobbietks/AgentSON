@@ -8,19 +8,19 @@
 
 ## Context
 
-Cursor was acquired for $60B. The IDE market was worth $2.5B. The 25x multiple exists because Cursor's real asset isn't the editor — it's the proprietary dataset of developer workflow traces: prompts, edits, debugging sessions, code changes, model responses.
+Cursor was acquired for $60B. The IDE market was worth $2.5B. The reporting is clear about what drives the price: $4B in annualized revenue at a ~15x multiple, 70% of the Fortune 1000 as paying customers, the fastest B2B software company to reach that ARR scale, a proprietary Composer model, and strategic fit with SpaceX/xAI's compute and chip supply chain.
 
-As Eric Paulsen noted: *"Cursor's proprietary dataset of developer workflow traces, i.e. prompts, edits debugging sessions, etc. which as you know is quite valuable for training reinforcement learning models."*
+Workflow-trace data is a legitimate, documented part of why AI-coding companies are valued highly. Eric Paulsen's comment that trace data is "quite valuable for training reinforcement learning models" is a genuine and reasonable claim about one input among many. But it is not the same as "that's the whole valuation." The $60B reflects revenue, customers, model, infrastructure, team, and strategic positioning — not just the dataset.
 
-James Stephenson confirmed: *"That's the whole valuation, basically."*
-
-Every AI coding tool is accumulating this data: OpenAI (Codex), Anthropic (Claude Code), Google (Gemini Code Assist), MiniMax, Antigravity IDE, Chrome DevTools AI. Each stores it in their own proprietary format. None of them export it. None of it is portable.
+Every AI coding tool is accumulating session traces: OpenAI (Codex), Anthropic (Claude Code), Google (Gemini Code Assist), MiniMax, Antigravity IDE, Chrome DevTools AI. Each stores it in their own proprietary format. None of them export it. None of it is portable.
 
 The data exists. The format doesn't — until now.
 
 ## Decision
 
-AgentSON is the open interchange layer for AI agent workflow traces. Every `.AgentSON` file captures the same type of data that Cursor charges $60B to own: the full trace of what happened during an AI-assisted session.
+AgentSON is the open interchange layer for AI agent workflow traces. Every `.AgentSON` file captures the full trace of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes.
+
+AgentSON does not compete with Cursor's valuation. It solves the adjacent, real problem of vendor lock-in for individual users' own session data.
 
 ## Consequences
 
@@ -30,15 +30,15 @@ AgentSON is the open interchange layer for AI agent workflow traces. Every `.Age
 
 2. **Every reader is a data pipeline.** The opencode reader, the MiniMax reader, the Chrome DevTools reader — each one is a pipeline that converts proprietary trace data into an open format.
 
-3. **Every exporter is a training pipeline.** The `finetune.py` exporter converts AgentSON traces into Unsloth/Olive training format. The data that Cursor locks in, AgentSON makes trainable.
+3. **Every exporter is a training pipeline.** The `finetune.py` exporter converts AgentSON traces into Unsloth/Olive training format. The data that tools keep captive, AgentSON makes trainable.
 
 4. **Portability breaks lock-in.** If you capture your sessions in AgentSON, you can switch tools without losing context. If you train on AgentSON data, you're not dependent on one vendor's dataset.
 
 ### The Market Reality
 
-| Who | Has the data | Exports it | Lets you train on it |
+| Who | Has trace data | Exports it | Lets you train on it |
 |---|---|---|---|
-| Cursor | Yes (60B worth) | No | No |
+| Cursor | Yes (70% Fortune 1000) | No | No |
 | OpenAI | Yes | Partial (API only) | No |
 | Anthropic | Yes | No | No |
 | Chrome DevTools | Yes | MD export (unstructured) | No |
@@ -57,10 +57,8 @@ The risk is that a major player (OpenAI, Google, Microsoft) creates their own "o
 
 ## The Thesis
 
-AI coding assistants are the new IDE market. The data they generate is the new oil. Whoever controls the format controls the pipeline.
+AI coding assistants keep session data captive. Every tool stores traces in proprietary databases with no export API. Users lose their context when they switch tools. Researchers can't train on cross-tool data.
 
-AgentSON makes that format open, portable, and user-owned.
+AgentSON provides a portable, user-owned alternative to proprietary session-trace lock-in. Not because AgentSON competes with or replaces the value Cursor's acquisition reflects — but because the problem of data portability is real, unsolved, and worth building for its own sake.
 
-The $60B question isn't whether this data is valuable. It's who gets to use it.
-
-AgentSON's answer: everyone.
+The value isn't "giving away a $60B thing for free." The value is solving a real problem that nobody else has solved: making your AI session data yours.
