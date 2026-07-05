@@ -172,14 +172,14 @@ def test_session_entries(claude_dir):
 
 
 def test_export_session(claude_dir, tmp_path):
-    """Test exporting a session to .AgentSON file."""
+    """Test exporting a session to .agentson file."""
     reader = ClaudeCodeReader(config_dir=str(claude_dir))
     output_dir = str(tmp_path / "output")
     result = reader.export_session("test-session-001", output_dir)
 
     assert result is not None
     assert os.path.exists(result)
-    assert result.endswith(".AgentSON")
+    assert result.endswith(".agentson")
 
     with open(result) as f:
         data = json.load(f)
