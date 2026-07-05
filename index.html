@@ -5,30 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentSON — Your AI history. Your hardware. Your choice.</title>
     <meta name="description" content="A vendor-neutral format for AI agent sessions. Capture, replay, and fine-tune on your own data — across any tool, any hardware, forever.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0a0f;
-            --surface: #12121a;
-            --surface-2: #1a1a26;
-            --border: #2a2a3a;
-            --text: #e0e0e8;
-            --text-muted: #8888a0;
-            --accent: #00d4ff;
-            --accent-dim: rgba(0, 212, 255, 0.12);
-            --accent-glow: rgba(0, 212, 255, 0.25);
-            --success: #00ff88;
-            --warning: #ffaa00;
-            --error: #ff4444;
-            --amber: #ffb000;
+            --bg: #0a0a08;
+            --surface: #141410;
+            --surface-2: #1c1c16;
+            --border: #2a2a1e;
+            --text: #e8e0c8;
+            --text-muted: #9a9070;
+            --accent: #ffb000;
+            --accent-dim: rgba(255, 176, 0, 0.12);
+            --accent-glow: rgba(255, 176, 0, 0.25);
+            --success: #a0d060;
+            --warning: #ffb000;
+            --error: #e05040;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+        }
+
+        code, pre, .mono {
+            font-family: 'Space Mono', 'Consolas', 'Monaco', monospace;
         }
 
         /* ── Nav ── */
@@ -36,7 +42,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10, 10, 15, 0.85);
+            background: rgba(10, 10, 8, 0.9);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             padding: 0.75rem 2rem;
@@ -46,6 +52,7 @@
         }
 
         .nav-brand {
+            font-family: 'Space Mono', monospace;
             font-weight: 700;
             font-size: 1.1rem;
             color: var(--accent);
@@ -77,11 +84,12 @@
 
         .nav-links .star-btn {
             background: var(--accent);
-            color: #000;
+            color: #0a0a08;
             border: none;
             padding: 0.35rem 0.8rem;
             border-radius: 6px;
-            font-weight: 600;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
             text-decoration: none;
@@ -101,13 +109,15 @@
             background: var(--accent-dim);
             border: 1px solid var(--accent);
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
             color: var(--accent);
             margin-bottom: 1.5rem;
             letter-spacing: 0.05em;
         }
 
         .hero h1 {
+            font-family: 'Space Mono', monospace;
             font-size: clamp(2rem, 5vw, 3.2rem);
             font-weight: 700;
             line-height: 1.2;
@@ -129,15 +139,16 @@
             display: inline-block;
             padding: 0.7rem 1.5rem;
             border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
         }
 
-        .btn-primary { background: var(--accent); color: #000; }
-        .btn-primary:hover { background: #33ddff; }
+        .btn-primary { background: var(--accent); color: #0a0a08; }
+        .btn-primary:hover { background: #ffc030; }
 
         .btn-outline { border: 1px solid var(--border); color: var(--text); }
         .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
@@ -152,20 +163,22 @@
         section + section { border-top: 1px solid var(--border); }
 
         .section-label {
-            font-size: 0.75rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.15em;
             color: var(--accent);
             margin-bottom: 0.5rem;
         }
 
         h2 {
-            font-size: 2rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 1rem;
         }
 
-        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; }
+        h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
 
         .muted { color: var(--text-muted); }
 
@@ -215,6 +228,7 @@
             border-radius: 50%;
             background: var(--accent-dim);
             color: var(--accent);
+            font-family: 'Space Mono', monospace;
             font-weight: 700;
             font-size: 0.85rem;
             margin-bottom: 0.75rem;
@@ -228,6 +242,7 @@
             padding: 0.15rem 0.5rem;
             background: var(--accent-dim);
             border-radius: 4px;
+            font-family: 'Space Mono', monospace;
             font-size: 0.7rem;
             color: var(--accent);
             margin-top: 0.5rem;
@@ -250,7 +265,8 @@
         }
 
         .bench-card .bench-value {
-            font-size: 1.8rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.6rem;
             font-weight: 700;
             color: var(--accent);
             line-height: 1;
@@ -263,7 +279,8 @@
         }
 
         .bench-card .bench-detail {
-            font-size: 0.8rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
             color: var(--text-muted);
             margin-top: 0.5rem;
             border-top: 1px solid var(--border);
@@ -288,6 +305,7 @@
         .hw-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
 
         .hw-card .hw-price {
+            font-family: 'Space Mono', monospace;
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--accent);
@@ -304,7 +322,8 @@
             padding: 0.2rem 0.6rem;
             background: var(--accent-dim);
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
             color: var(--accent);
             margin-top: 0.75rem;
         }
@@ -363,7 +382,8 @@
         }
 
         .footer-grid h4 {
-            font-size: 0.85rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
             margin-bottom: 0.75rem;
             color: var(--text);
         }
@@ -423,17 +443,17 @@
             <p class="muted">Every AI coding agent stores session data in its own proprietary SQLite database. 21 tables here, 20 there. No standard. No portability. Your data belongs to whoever built the tool.</p>
         </div>
         <div class="problem-card">
-            <div class="icon">Format churn</div>
+            <div class="icon">⚠</div>
             <h3>Formats change without warning</h3>
             <p class="muted">Chrome removed the export button in version 149. Sessions are still in your profile — but locked in a JSON blob no other tool can read. Your AI history now belongs to a vendor who can change the format at any commit.</p>
         </div>
         <div class="problem-card">
-            <div class="icon">Can't train</div>
+            <div class="icon">✕</div>
             <h3>No path from transcript to adapter</h3>
             <p class="muted">You have hundreds of useful sessions. But there's no way to turn them into training data. No standard export. No fine-tuning pipeline. Your best work dies with the tool.</p>
         </div>
         <div class="problem-card">
-            <div class="icon">Hardware trap</div>
+            <div class="icon">$</div>
             <h3>Vendor marketing picks your machine</h3>
             <p class="muted">They sell you "AI capability" based on what they can ship, not what you need. You end up paying for cloud GPUs when a £95 Raspberry Pi could run the same adapter.</p>
         </div>
@@ -580,7 +600,7 @@
         <div>
             <h4>Learn</h4>
             <a href="https://github.com/andiekobbietks/AgentSON#quick-start" target="_blank" rel="noopener">Quickstart</a>
-            <a href="#">Methodology</a>
+            <a href="dev/">Dev docs</a>
             <a href="https://github.com/andiekobbietks/AgentSON/discussions" target="_blank" rel="noopener">Discussions</a>
             <a href="#">Affiliate policy</a>
         </div>
