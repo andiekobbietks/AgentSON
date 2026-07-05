@@ -1,0 +1,12 @@
+include spec/v1.json
+include supabase/schema.sql
+include examples/*.AgentSON
+include pwa/manifest.json
+include pwa/sw.js
+include pwa/*.html
+recursive-include pwa *.png *.ico
+include CLAUDE.md
+include CONVENTIONS.md
+include PRD.md
+include PERSONAS-AND-USER-STORIES.md
+include CHROME-DEVTOOLS-AI-MECHANISM.md

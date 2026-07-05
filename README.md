@@ -55,24 +55,38 @@ This makes them:
 ## Quick Start
 
 ```bash
+# Install
+pip install -e .
+
+# Or from GitHub
+pip install git+https://github.com/andiekobbietks/AgentSON.git
+
 # List opencode sessions
-python cli/main.py list --tool opencode
+agentsong list --tool opencode
 
 # Export a session
-python cli/main.py export --tool opencode --session ses_xxx --output ./sessions/
+agentsong export --tool opencode --session ses_xxx --output ./sessions/
 
 # Export all sessions
-python cli/main.py export --tool opencode --all --output ./sessions/
+agentsong export --tool opencode --all --output ./sessions/
 
 # Render as Markdown
-python cli/main.py render session.AgentSON --format md
+agentsong render session.AgentSON --format md
+
+# Export training data (Unsloth/ShareGPT format)
+agentsong finetune *.AgentSON --format unsloth --output train.jsonl
+
+# Export training data (Olive format)
+agentsong finetune *.AgentSON --format olive --output train.jsonl
 
 # Push to Supabase (optional)
-python cli/main.py push session.AgentSON
+agentsong push session.AgentSON
 
 # Pull from Supabase
-python cli/main.py pull --search "nightscout"
+agentsong pull --search "nightscout"
 ```
+
+> **Note:** On Windows, if `agentsong` command isn't found after install, use `python -m cli.main` instead.
 
 ## Schema
 
@@ -138,6 +152,41 @@ Chrome DevTools AI stores session data in an unknown location. The `ai_assistanc
 - Real session traces for fine-tuning
 - Tool-use analysis across agents
 
+## Fine-Tuning Export
+
+Export AgentSON sessions to training formats:
+
+```bash
+# Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
+agentsong finetune *.AgentSON --format unsloth --output train.jsonl
+
+# Olive format (Microsoft Olive pipeline)
+agentsong finetune *.AgentSON --format olive --output train.jsonl
+```
+
+Example output (Unsloth format):
+```json
+{
+  "conversations": [
+    {"from": "human", "value": "How do I fix the auth bug?"},
+    {"from": "gpt", "value": "I'll look at the auth module..."}
+  ],
+  "source": "opencode",
+  "session_id": "ses_xxx"
+}
+```
+
+## PWA Viewer
+
+The `pwa/` directory contains a standalone Progressive Web App for viewing `.AgentSON` files:
+
+1. Open `pwa/index.html` in a browser
+2. Drag-and-drop an `.AgentSON` file
+3. Browse entries with keyboard navigation
+4. Works offline — no server required
+
+To host on GitHub Pages, enable Pages for the `pwa/` directory.
+
 ## Architecture
 
 ### Two-Layer Design
@@ -186,6 +235,8 @@ agentsong/
 ├── README.md              # This file
 ├── PRD.md                 # Full product requirements
 ├── PERSONAS-AND-USER-STORIES.md  # User personas and stories
+├── pyproject.toml         # Python packaging (pip install -e .)
+├── setup.py               # Backward-compat shim
 ├── spec/
 │   └── v1.json            # JSON Schema
 ├── readers/               # Tool-specific readers
@@ -193,6 +244,10 @@ agentsong/
 │   ├── minimax.py         # ✅ Working
 │   ├── antigravity.py     # ✅ Working
 │   └── libre.py           # ✅ Working (FreeStyle Libre 2)
+├── importers/             # External format importers
+│   └── chatgpt.py         # ✅ ChatGPT conversations.json
+├── exporters/             # Training data exporters
+│   └── finetune.py        # ✅ Unsloth + Olive formats
 ├── normalizer/            # Schema conversion (planned)
 ├── renderers/             # Output formats (planned)
 ├── cli/                   # Command-line interface
@@ -207,8 +262,14 @@ agentsong/
 │   ├── opencode_example.AgentSON
 │   ├── minimax_example.AgentSON
 │   └── antigravity_example.AgentSON
+├── pwa/                   # Progressive Web App viewer
+│   ├── index.html         # ✅ Drag-and-drop viewer
+│   ├── manifest.json      # ✅ PWA manifest
+│   └── sw.js              # ✅ Service worker
 ├── viewers/
 │   └── web/index.html     # ✅ Working (drag-and-drop viewer)
+├── training/
+│   └── opencode_example_unsloth.jsonl  # Example training data
 └── docs/
     └── sops/              # 14 Standard Operating Procedures
 ```
@@ -218,6 +279,15 @@ agentsong/
 AgentSON evolved from `.ailog` — a format originally designed for Chrome DevTools AI session export. The schema was discovered in Chrome's Preferences JSON and generalized to cover all AI coding agents.
 
 The name "AgentSON" is a play on JSON — **Agent + JSON** — "Yet Another JSON" but metadata-rich and built for the agentic era.
+
+### What Changed from .ailog
+
+| Aspect | .ailog | AgentSON |
+|--------|--------|----------|
+| Scope | Chrome DevTools only | All AI coding agents |
+| Schema | Undocumented | JSON Schema v1 |
+| File extension | `.ailog` | `.AgentSON` |
+| Name meaning | AI Log | Agent + JSON |
 
 See [PRD.md](PRD.md) for the full product requirements document.
 
