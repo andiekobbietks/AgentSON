@@ -307,6 +307,56 @@ When you click "Copy to coding agent":
 
 ---
 
+## Why Preferences JSON?
+
+### Why Not SQLite?
+
+| SQLite | Preferences JSON |
+|--------|------------------|
+| Requires separate file | Already exists |
+| Needs permissions | Already has permissions |
+| Separate backup | Backed up with Chrome |
+| Extra dependency | Zero dependencies |
+
+### Why Not IndexedDB?
+
+| IndexedDB | Preferences JSON |
+|-----------|------------------|
+| Async API | Sync API |
+| Complex queries | Simple key-value |
+| Browser-only | File accessible |
+| Can't export | Easy to export |
+
+### Why Not localStorage?
+
+| localStorage | Preferences JSON |
+|--------------|------------------|
+| 5MB limit | No practical limit |
+| Domain-bound | Global |
+| No structure | Structured JSON |
+| Can't sync | Synced across devices |
+
+### The Real Reason
+
+Chrome DevTools AI chose Preferences JSON because:
+
+1. **It's already there** — Chrome syncs Preferences across devices
+2. **Zero extra work** — No new file, no new permissions
+3. **Instant access** — Synchronous API, no async needed
+4. **Portable** — Can be read by external tools (like AgentSON)
+5. **Backup included** — Backed up with Chrome profile
+
+### The Tradeoff
+
+| Advantage | Disadvantage |
+|-----------|--------------|
+| Simple | Not optimized for queries |
+| Portable | Large file size |
+| Synced | Mixed with other settings |
+| No dependencies | Harder to parse |
+
+---
+
 ## How AgentSON Captures This
 
 ### The Chrome DevTools AI Reader
@@ -421,6 +471,81 @@ Full trace of debugging session for:
 - Documentation
 - Learning
 ```
+
+---
+
+## Why This Matters
+
+### 1. Portability
+
+```
+Chrome DevTools AI → AgentSON → Any coding agent
+```
+
+### 2. Searchability
+
+```bash
+# Search across all Chrome DevTools AI sessions
+grep -r "performance" *.AgentSON
+```
+
+### 3. Hydration
+
+```
+Debug in Chrome → Export to AgentSON → Continue in Cursor
+```
+
+### 4. Evidence
+
+```
+Full trace of debugging session for:
+- Code reviews
+- Bug reports
+- Documentation
+- Learning
+```
+
+---
+
+## The Developer Tools Ecosystem
+
+### Why This Storage Choice Matters
+
+| Tool | Storage | Why |
+|------|---------|-----|
+| **Chrome DevTools AI** | Preferences JSON | Already synced, zero deps |
+| **opencode** | SQLite | Fast queries, local |
+| **MiniMax** | SQLite | Fast queries, local |
+| **Antigravity IDE** | SQLite | Fast queries, local |
+| **AgentSON** | `.AgentSON` files | Portable, searchable |
+
+### The Pattern
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Storage Evolution                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Phase 1: Local storage (Preferences, SQLite)               │
+│     ↓                                                       │
+│  Phase 2: Export format (AgentSON)                          │
+│     ↓                                                       │
+│  Phase 3: Cloud sync (Supabase)                             │
+│     ↓                                                       │
+│  Phase 4: Cross-tool hydration                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### The "Ard Tools" Connection
+
+"ARD tools" = Developer tools that:
+1. Store data locally (fast, private)
+2. Export to standard format (AgentSON)
+3. Sync to cloud (optional)
+4. Hydrate across tools (portability)
+
+Chrome DevTools AI pioneered this pattern with Preferences JSON. AgentSON extends it to all tools.
 
 ---
 
