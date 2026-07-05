@@ -1,14 +1,17 @@
-# Chrome DevTools AI: Complete Mechanism Explained
+# Chrome DevTools AI: Mechanism Explained (Honest Version)
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
+**Author:** Andrea Enning (AndieKobbieTech)  
+**Status:** Partially confirmed — some claims are inferences, not verified facts
 
 ---
 
 ## What is Chrome DevTools AI?
 
 Chrome DevTools AI is Google's built-in AI assistant that lives inside Chrome's developer tools. It uses **Gemini** (Google's foundation model) to help developers understand websites, debug issues, and optimize performance.
+
+> **Honest Statement:** This document describes how Chrome DevTools AI *likely* works based on empirical evidence and Chrome's architecture. Some claims are inferences, not directly verified. See [Confirmed vs Inferred](#confirmed-vs-inferred) for details.
 
 ---
 
@@ -49,24 +52,47 @@ Chrome DevTools AI is Google's built-in AI assistant that lives inside Chrome's 
 
 ---
 
-## How Sessions Are Stored
+## How Sessions Are Stored (What We Actually Know)
 
 ### Location
 
-Chrome DevTools AI stores session data in:
+Chrome DevTools AI **should** store session data in:
 
 ```
 %LOCALAPPDATA%\Google\Chrome\User Data\Default\Preferences
 ```
 
-Or on Mac:
+### What We Actually Found
+
+| Check | Result |
+|-------|--------|
+| `ai_assistance: {}` in Preferences | **Empty object** |
+| User has Chrome DevTools AI usage | **Yes** (visible in screenshots) |
+| Session data in Preferences | **Not found** |
+| Session data elsewhere | **Unknown** |
+
+### The Mystery
+
 ```
-~/Library/Application Support/Google/Chrome/Default/Preferences
+User has extensive Chrome DevTools AI usage (screenshots show chat history)
+    ↓
+But Preferences JSON shows: ai_assistance: {}
+    ↓
+Where is the actual session data stored?
+    ↓
+Answer: UNKNOWN — not in Preferences JSON
 ```
 
-### Schema
+### Possible Explanations
 
-The Preferences file is a large JSON object. The AI assistance data is stored under:
+1. **Google servers** — Sessions synced to cloud, not stored locally
+2. **Different storage mechanism** — Not Preferences JSON
+3. **Experimental feature** — Incomplete local storage implementation
+4. **Different Chrome profile** — Data in another profile
+
+### Schema (Theoretical)
+
+If sessions were stored locally, the schema would likely be:
 
 ```json
 {
@@ -307,7 +333,7 @@ When you click "Copy to coding agent":
 
 ---
 
-## Why Preferences JSON? (Empirical Inference)
+## Confirmed vs Inferred
 
 ### What We Actually Extracted
 
@@ -316,44 +342,38 @@ When you click "Copy to coding agent":
 | **opencode** | SQLite | 5 | We read the database |
 | **MiniMax** | SQLite | 5 | We read the database |
 | **Antigravity IDE** | SQLite | 1 | We read the database |
-| **Chrome DevTools AI** | ? | Unknown | Not extracted yet |
+| **Chrome DevTools AI** | ? | Unknown | NOT extracted |
 
-### The Pattern (Empirical Evidence)
+### Confirmed Facts
 
-```
-Desktop apps → SQLite (fast queries, local)
-Browser tools → Browser-native storage
-```
+| Fact | Evidence |
+|------|----------|
+| Chrome DevTools AI exists | User has it open in screenshots |
+| `ai_assistance: {}` in Preferences | We checked the file |
+| User has extensive AI usage | Chat history visible in screenshots |
+| Session data NOT in Preferences | Empty object confirmed |
 
-### Why Chrome DevTools AI Likely Uses Preferences JSON
-
-| Evidence | Source |
-|----------|--------|
-| Chrome stores settings in Preferences | Chromium source (2012) |
-| Chrome syncs Preferences across devices | Chromium docs |
-| Chrome DevTools AI saves conversation history | Chrome blog (2026) |
-| Browser tools use browser-native storage | Industry pattern |
-
-### What's Not Confirmed
+### Inferences (Not Confirmed)
 
 | Claim | Status |
 |-------|--------|
-| "Chrome DevTools AI uses Preferences JSON" | **Inference, not confirmed** |
+| "Chrome DevTools AI uses Preferences JSON" | **FALSE** — empty object |
 | "The .ailog schema is from Chrome" | **Inference, not confirmed** |
-| "Sessions are in Preferences" | **Inference, not confirmed** |
+| "Sessions are in Preferences" | **FALSE** — not found |
+| "Sessions are on Google servers" | **Possible, not confirmed** |
 
 ### Honest Statement
 
-> Based on empirical data from three desktop tools (all SQLite) and Chrome's documented architecture (Preferences JSON), we infer that Chrome DevTools AI likely stores sessions in Preferences JSON. This has not been directly verified by extracting Chrome's data.
+> Based on our investigation, Chrome DevTools AI does **NOT** store session data in the Preferences JSON file (confirmed empty). The user has extensive Chrome DevTools AI usage visible in screenshots, but the actual storage mechanism remains unknown. Possible explanations include cloud sync, different storage mechanism, or experimental feature limitations.
 
 ---
 
-## How AgentSON Captures This
+## How AgentSON Would Capture This (Theoretical)
 
-### The Chrome DevTools AI Reader
+### The Chrome DevTools AI Reader (Theoretical)
 
 ```python
-# readers/chrome_devtools.py
+# readers/chrome_devtools.py (THEORETICAL — not yet implemented)
 
 def read_chrome_devtools_session():
     """Read Chrome DevTools AI session from Preferences."""
@@ -388,6 +408,15 @@ def read_chrome_devtools_session():
     
     return agentson_data
 ```
+
+### Why This Reader Doesn't Work Yet
+
+| Issue | Evidence |
+|-------|----------|
+| `ai_assistance: {}` is empty | Confirmed |
+| No conversation data found | Confirmed |
+| Unknown storage mechanism | Confirmed |
+| Cannot implement reader | Blocked |
 
 ---
 
@@ -424,11 +453,12 @@ This evolved into the AgentSON schema.
 
 | Feature | Chrome DevTools AI | opencode | MiniMax |
 |---------|-------------------|----------|---------|
-| **Storage** | Preferences JSON | SQLite | SQLite |
-| **Format** | JSON object | Relational tables | Relational tables |
+| **Storage** | **Unknown** | SQLite | SQLite |
+| **Format** | **Unknown** | Relational tables | Relational tables |
 | **Export** | Copy to agent | Custom script | Custom script |
-| **Schema** | `.ailog` / AgentSON | Custom | Custom |
+| **Schema** | **Unknown** | Custom | Custom |
 | **Context** | Page elements, network, performance | Code, files | Code, files |
+| **Reader Status** | **Not implemented** | Working | Working |
 
 ---
 
@@ -546,12 +576,31 @@ Chrome DevTools AI pioneered this pattern with Preferences JSON. AgentSON extend
 |--------|--------|
 | **What** | Chrome's built-in AI debugging assistant |
 | **Model** | Gemini (Google's foundation model) |
-| **Storage** | Preferences JSON file |
-| **Format** | `.ailog` schema (evolved to AgentSON) |
+| **Storage** | **Unknown** (NOT Preferences JSON) |
+| **Format** | **Unknown** |
 | **Export** | Copy to coding agent |
-| **Capture** | AgentSON Chrome DevTools reader |
+| **Capture** | **Not implemented** (blocked by unknown storage) |
 | **Use case** | Debug web apps, export to other tools |
 
 ---
 
-*"Chrome DevTools AI is the most sophisticated AI debugging tool available. AgentSON captures every session for portability and search."*
+## Open Questions
+
+1. **Where does Chrome DevTools AI store sessions?**
+   - Not in Preferences JSON (confirmed empty)
+   - Possibly on Google servers
+   - Possibly in a different Chrome storage mechanism
+
+2. **Why can't we extract the data?**
+   - Storage mechanism unknown
+   - No API documentation found
+   - Feature may be experimental
+
+3. **What should AgentSON do?**
+   - Wait for Chrome documentation
+   - Consider alternative: export via "Copy to coding agent" button
+   - Focus on other tools (opencode, MiniMax, Antigravity) that work
+
+---
+
+*"Chrome DevTools AI is a powerful tool, but its storage mechanism remains a mystery. AgentSON will capture sessions once the storage format is documented."*

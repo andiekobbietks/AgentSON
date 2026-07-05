@@ -112,9 +112,13 @@ python cli/main.py pull --search "nightscout"
 | opencode | ✅ Working | `readers/opencode.py` |
 | MiniMax | ✅ Working | `readers/minimax.py` |
 | Antigravity IDE | ✅ Working | `readers/antigravity.py` |
-| Chrome DevTools AI | ✅ Working | JS snippet |
+| Chrome DevTools AI | ⚠️ Unknown storage | JS snippet (experimental) |
 | Cursor | 🔜 Planned | — |
 | Claude Code | 🔜 Planned | — |
+
+### Chrome DevTools AI Status
+
+Chrome DevTools AI stores session data in an unknown location. The `ai_assistance: {}` field in Preferences JSON is empty, despite extensive usage visible in screenshots. The actual storage mechanism remains unclear — possibly cloud sync or different local storage.
 
 ## Use Cases
 
@@ -181,18 +185,32 @@ AgentSON (file-based) → AgentSON Cloud (Supabase)
 agentsong/
 ├── README.md              # This file
 ├── PRD.md                 # Full product requirements
+├── PERSONAS-AND-USER-STORIES.md  # User personas and stories
 ├── spec/
 │   └── v1.json            # JSON Schema
 ├── readers/               # Tool-specific readers
-│   ├── opencode.py
-│   ├── minimax.py
-│   └── antigravity.py
-├── normalizer/            # Schema conversion
-├── renderers/             # Output formats (md, html)
+│   ├── opencode.py        # ✅ Working
+│   ├── minimax.py         # ✅ Working
+│   ├── antigravity.py     # ✅ Working
+│   └── libre.py           # ✅ Working (FreeStyle Libre 2)
+├── normalizer/            # Schema conversion (planned)
+├── renderers/             # Output formats (planned)
 ├── cli/                   # Command-line interface
+│   ├── main.py            # ✅ Working
+│   └── supabase_client.py # ✅ Working
 ├── supabase/              # Managed instance schema
 ├── tests/                 # Test suite
-└── examples/              # Example .agentsong files
+│   ├── test_opencode.py   # ✅ Passing
+│   ├── test_minimax.py    # ✅ Passing
+│   └── test_antigravity.py # ✅ Passing
+├── examples/              # Example .agentsong files
+│   ├── opencode_example.AgentSON
+│   ├── minimax_example.AgentSON
+│   └── antigravity_example.AgentSON
+├── viewers/
+│   └── web/index.html     # ✅ Working (drag-and-drop viewer)
+└── docs/
+    └── sops/              # 14 Standard Operating Procedures
 ```
 
 ## Origin
