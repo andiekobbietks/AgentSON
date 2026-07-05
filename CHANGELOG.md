@@ -12,13 +12,14 @@ Initial public release. Apache 2.0 license.
 - **JSON Schema v1.1** (`spec/v1.1.json`) — Trajectory semantics: `task`, `outcome`, `observation` entry type, `tool_call_id`, `correlation_id`, `status` on all entries, `duration_ms`, `error` on actions
 - Backward compatible: all v1.0 files validate against v1.1
 
-### Readers (5)
+### Readers (6)
 
 - `readers/opencode.py` — opencode SQLite sessions
 - `readers/minimax.py` — MiniMax SQLite sessions
 - `readers/antigravity.py` — Antigravity IDE protobuf sessions
 - `readers/libre.py` — FreeStyle Libre 2 CSV glucose data
 - `readers/chrome_devtools.py` — Chrome DevTools AI session traces (9 tests)
+- `readers/claude_code.py` — Claude Code JSONL session transcripts
 
 ### Importers (1)
 

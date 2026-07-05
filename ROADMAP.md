@@ -24,7 +24,7 @@ AgentSON is the universal interchange format for AI agent session traces. This r
 | # | Tool | Company | Reach | Impact | Confidence | Effort | RICE | Status |
 |---|------|---------|-------|--------|------------|--------|------|--------|
 | 1 | **Cursor** | Anysphere/SpaceX | 2000 | 3 | 0.9 | 2.0 | **2700** | 🔜 Planned |
-| 2 | **Claude Code** | Anthropic | 1500 | 3 | 0.8 | 1.5 | **2400** | 🔜 Planned |
+| 2 | **Claude Code** | Anthropic | 1500 | 3 | 0.8 | 0.0 | **∞** | ✅ Working |
 | 3 | **Kiro** | AWS/Amazon | 800 | 3 | 0.7 | 1.5 | **1120** | 🔜 Planned |
 | 4 | **Codex CLI** | OpenAI | 1200 | 3 | 0.8 | 1.5 | **1920** | 🔜 Planned |
 | 5 | **Gemini CLI** | Google | 1000 | 2 | 0.7 | 1.0 | **1400** | 🔜 Planned |
@@ -124,6 +124,7 @@ AgentSON is the universal interchange format for AI agent session traces. This r
 | Antigravity IDE | ✅ Working | `readers/antigravity.py` | ✅ Passing |
 | FreeStyle Libre 2 | ✅ Working | `readers/libre.py` | ✅ Passing |
 | Chrome DevTools AI | ✅ Working | `readers/chrome_devtools.py` | ✅ 9 tests |
+| Claude Code | ✅ Working | `readers/claude_code.py` | ✅ Passing |
 | ChatGPT | ✅ Working | `importers/chatgpt.py` | ✅ Passing |
 
 ---
@@ -132,8 +133,8 @@ AgentSON is the universal interchange format for AI agent session traces. This r
 
 | Version | Target Date | Criteria | Readers |
 |---------|-------------|----------|---------|
-| **v0.1.0** | 2026-07-05 | Initial release | 5 + importer |
-| **v0.2.0** | 2026-08 | Beta: 5+ working readers, real-world data | 10+ |
+| **v0.1.0** | 2026-07-05 | Initial release | 6 + importer |
+| **v0.2.0** | 2026-08 | Beta: 10+ working readers, real-world data | 12+ |
 | **v0.3.0** | 2026-09 | Corpus: 10+ readers, sample data from each | 15+ |
 | **v1.0.0** | 2026-10 | Stable: all Tier 1 readers, CI/CD, docs | 20+ |
 
