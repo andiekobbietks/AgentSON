@@ -2,39 +2,68 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
-## [1.1.0] - 2026-07-05
+## [0.1.0] - 2026-07-05
 
-### Added
+Initial public release. Apache 2.0 license.
 
-- **Top-level `task` field.** String. The user goal that initiated the trajectory. Optional. Maps cleanly to Fara-7B's expected `task` field.
-- **Top-level `outcome` field.** Enum: `success | partial | aborted | error`. Optional (default `partial`). Lets consumers filter trajectories by outcome without walking `entries`.
-- **New entry type: `observation`.** First-class observation entries with `text`, `source` (`agent | user | system | tool | sensor | other`), `correlation_id` (links to the `tool_call_id` of the causing action), `attachments` (image/file/audio/video), `status`, `timestamp`, `duration_ms`. Replaces the pattern of inlining observations into `action.output` when they're async, multi-modal, or from a separate source.
-- **`tool_call_id` on `action` entries.** Unique per invocation. Observations set `correlation_id` to this value to pair them.
-- **`status` extended to all entry types.** Was `action`-only in v1.0. Now valid on `thought`, `observation`, `answer`, etc.
-- **`duration_ms` per entry.** Wall-clock duration for the entry (action execution time, observation latency, etc).
-- **`error` field on `action` entries.** Structured error details: `{type, message, stack}` for failed actions.
-- **Trajectory view docs** at `docs/spec/trajectory-view.md`. Documents the canonical `user-query → (thought → action → observation)* → answer` loop and when to use inline `action.output` vs. dedicated `observation` entries.
-- **`$defs.trajectoryView`** in the schema. A documentation reference describing the trajectory shape (not a separate constraint).
+### Specification
 
-### Changed
+- **JSON Schema v1** (`spec/v1.json`) — 8 entry types: `user-query`, `context`, `querying`, `title`, `thought`, `action`, `answer`, `side-effect`
+- **JSON Schema v1.1** (`spec/v1.1.json`) — Trajectory semantics: `task`, `outcome`, `observation` entry type, `tool_call_id`, `correlation_id`, `status` on all entries, `duration_ms`, `error` on actions
+- Backward compatible: all v1.0 files validate against v1.1
 
-- `entries[].items.properties.type.enum` extended from 8 to 9 values (added `observation`).
-- Schema `$id` updated to `v1.1.json`.
+### Readers (5)
 
-### Backward compatibility
+- `readers/opencode.py` — opencode SQLite sessions
+- `readers/minimax.py` — MiniMax SQLite sessions
+- `readers/antigravity.py` — Antigravity IDE protobuf sessions
+- `readers/libre.py` — FreeStyle Libre 2 CSV glucose data
+- `readers/chrome_devtools.py` — Chrome DevTools AI session traces (9 tests)
 
-- All v1.0 files validate unchanged against v1.1.
-- New top-level fields (`task`, `outcome`) are optional.
-- New entry type `observation` is supported, along with optional `tool_call_id`, `correlation_id`, `duration_ms`, `error`, and `attachments` where applicable.
-- Existing tools that read `action.output` continue to work.
+### Importers (1)
 
-## [1.0.0] - 2026-07-04
+- `importers/chatgpt.py` — ChatGPT `conversations.json` → AgentSON
 
-- Initial release: JSON Schema with 8 entry types (`user-query`, `context`, `querying`, `title`, `thought`, `action`, `answer`, `side-effect`).
-- 3 readers: `opencode.py`, `minimax.py`, `antigravity.py` (+ `libre.py` for Freestyle Libre 2 glucose data).
-- 1 importer: `chatgpt.py`.
-- 1 exporter: `finetune.py` (Unsloth + Olive).
-- 14 SOPs (SOP-001 to SOP-014) covering Libre→AgentSON, Nightscout, WhatsApp bot, TV dashboard, MedGemma fine-tuning, Juggluco, NHS FHIR, West Africa voice alerts.
-- 3 example files: `antigravity_example.AgentSON`, `minimax_example.AgentSON`, `opencode_example.AgentSON`.
-- Live docs at `https://andiekobbietks.github.io/AgentSON/`.
-- Author: Andrea Enning (AndieKobbieTech). PRD v1.0 04 July 2026.
+### Exporters (1)
+
+- `exporters/finetune.py` — Unsloth (ShareGPT) + Olive (chat-messages) training formats
+
+### CLI
+
+- `agentson export` — Export sessions from any supported tool
+- `agentson import` — Import ChatGPT conversations
+- `agentson list` — List sessions with metadata
+- `agentson search` — Full-text search across sessions
+- `agentson finetune` — Export to training formats
+- `agentson render` — Render sessions as Markdown
+- `agentson push` — Push to Supabase (optional)
+- `agentson pull` — Pull from Supabase (optional)
+
+### Web Viewer
+
+- `docs/viewer/index.html` — Full-featured: file extension + schema validation, download as .AgentSON, search/filter, sort toggle, copy per entry, side-by-side layout, role-based colors, collapsible JSON metadata preview
+- `pwa/` — Standalone PWA with offline support
+
+### Documentation
+
+- 14 SOPs (SOP-001 to SOP-014) covering glucose monitoring, AI session export, Nightscout, WhatsApp bot, TV dashboard, MedGemma, NHS FHIR, West Africa voice alerts
+- Operating manual: mental models, coding standards, workflow rules, 9 ADRs
+- Live docs at `https://andiekobbietks.github.io/AgentSON/`
+
+### Examples
+
+- `examples/opencode_example.AgentSON`
+- `examples/minimax_example.AgentSON`
+- `examples/antigravity_example.AgentSON`
+- `examples/chrome_devtools_example.AgentSON`
+
+### Infrastructure
+
+- PyPI package: `pip install agentson`
+- GitHub Actions CI: Pyrefly type checking, pytest
+- Branch protection: `andierules` ruleset (PR required, linear history)
+- CodeRabbit for AI code review (optional, not required)
+
+### License
+
+- Changed from MIT to Apache 2.0 (patent grant + attribution)

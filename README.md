@@ -1,207 +1,23 @@
 # AgentSON
 
-**Agent + JSON** — Yet Another JSON, but metadata-rich and built for the agentic era.
+**Agent + JSON** — The open interchange format for AI agent session traces.
 
-## What's in a Name
+[![PyPI version](https://img.shields.io/pypi/v/agentson.svg)](https://pypi.org/project/agentson/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/pypi/pyversions/agentson.svg)](https://pypi.org/project/agentson/)
+[![CI](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml/badge.svg)](https://github.com/andiekobbietks/AgentSON/actions)
 
-| Component | Meaning |
-|-----------|---------|
-| **Agent** | AI coding agents (Cursor, Claude Code, opencode, MiniMax, etc.) |
-| **SON** | JSON — the format it's built on |
+> Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
 
-Like **JSON** itself — which was "just another data format" but became universal because it was simple, readable, and worked everywhere — **AgentSON** is "just another JSON" but designed specifically for the agentic era.
-
-**AgentSON = Agent + JSON**
-
-It's immediately recognizable (everyone knows JSON), signals the format (it IS JSON with a schema), and differentiates from "yet another format" to "the JSON for agents."
+---
 
 ## The Problem
 
-Every AI coding agent stores session data in its own proprietary SQLite database:
-
-| Tool | Database | Tables | Schema |
-|------|----------|--------|--------|
-| opencode | `opencode.db` | 21 | session, message, part, todo |
-| MiniMax | `sqlite.db` | 20 | sessions, session_messages |
-| Antigravity IDE | `*.db` | 7 | trajectory_meta, steps |
-| Chrome DevTools AI | Preferences JSON | — | user-query, thought, action |
-
-**Nobody has done for agent session logs what OpenAPI did for REST APIs.**
+Every AI coding agent stores session data in its own proprietary database. There is no standard format, no export API, and no way to move context between tools. The data that powers AI training is locked inside vendor silos.
 
 ## The Solution
 
-AgentSON provides:
-
-1. **A specification** — JSON Schema for agent session data
-2. **Readers** — SQLite parsers for each tool's database
-3. **A normalizer** — Converts tool-specific schemas to AgentSON format
-4. **A CLI** — Export, search, and render sessions
-5. **A VSCode extension** — Hydrate context across tools
-
-## File Extension
-
-AgentSON files use the `.AgentSON` extension:
-
-```
-my-session.AgentSON
-```
-
-This makes them:
-- **Immediately identifiable** — not `.json` (too generic), not `.ailog` (old name)
-- **Grep-friendly** — `grep -r "nightscout" *.AgentSON`
-- **Tool-associated** — can be associated with the AgentSON CLI or viewer
-- **Windows-friendly** — `.agentson` (lowercase) also works on Windows
-
-## Quick Start
-
-```bash
-# Install
-pip install -e .
-
-# Or from GitHub
-pip install git+https://github.com/andiekobbietks/AgentSON.git
-
-# List opencode sessions
-agentson list --tool opencode
-
-# Export a session
-agentson export --tool opencode --session ses_xxx --output ./sessions/
-
-# Export all sessions
-agentson export --tool opencode --all --output ./sessions/
-
-# Render as Markdown
-agentson render session.AgentSON --format md
-
-# Export training data (Unsloth/ShareGPT format)
-agentson finetune *.AgentSON --format unsloth --output train.jsonl
-
-# Export training data (Olive format)
-agentson finetune *.AgentSON --format olive --output train.jsonl
-
-# Push to Supabase (optional)
-agentson push session.AgentSON
-
-# Pull from Supabase
-agentson pull --search "nightscout"
-```
-
-> **Note:** On Windows, if `agentson` command isn't found after install, use `python -m cli.main` instead.
-
-## Schema
-
-```json
-{
-  "$schema": "https://agentson.dev/schema/v1.json",
-  "id": "session-2026-07-04-001",
-  "tool": {"name": "opencode", "session_id": "ses_xxx"},
-  "agent": {"name": "mimo-v2.5-free", "provider": "opencode"},
-  "entries": [
-    {"type": "user-query", "text": "..."},
-    {"type": "thought", "text": "..."},
-    {"type": "action", "tool": "bash", "code": "...", "output": "..."},
-    {"type": "answer", "text": "..."},
-    {"type": "side-effect", "action": "file_write", "path": "..."}
-  ]
-}
-```
-
-## Entry Types
-
-| Type | Description |
-|------|-------------|
-| `user-query` | User's input or question |
-| `context` | Additional context (data used, DOM info) |
-| `querying` | Agent is processing |
-| `title` | Section or step title |
-| `thought` | Agent's reasoning/thinking |
-| `action` | Tool execution (code + output) |
-| `answer` | Agent's response |
-| `side-effect` | File changes, state mutations |
-
-## Supported Tools
-
-| Tool | Status | Reader |
-|------|--------|--------|
-| opencode | ✅ Working | `readers/opencode.py` |
-| MiniMax | ✅ Working | `readers/minimax.py` |
-| Antigravity IDE | ✅ Working | `readers/antigravity.py` |
-| Chrome DevTools AI | ⚠️ Unknown storage | JS snippet (experimental) |
-| Cursor | 🔜 Planned | — |
-| Claude Code | 🔜 Planned | — |
-
-### Chrome DevTools AI Status
-
-Chrome DevTools AI stores session data in an unknown location. The `ai_assistance: {}` field in Preferences JSON is empty, despite extensive usage visible in screenshots. The actual storage mechanism remains unclear — possibly cloud sync or different local storage.
-
-## Use Cases
-
-### For Individuals
-- Search your AI history: `grep -r "smtpjs" *.AgentSON`
-- Resume sessions in different tools
-- Backup that survives tool changes
-- Personal training data for fine-tuning
-
-### For Teams
-- Audit trail of AI-generated code
-- Onboarding: ship new devs your session archive
-- Knowledge persistence across team changes
-
-### For Agent Builders
-- Standardized eval datasets
-- Real session traces for fine-tuning
-- Tool-use analysis across agents
-
-## Fine-Tuning Export
-
-Export AgentSON sessions to training formats:
-
-```bash
-# Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
-agentson finetune *.AgentSON --format unsloth --output train.jsonl
-
-# Olive format (Microsoft Olive pipeline)
-agentson finetune *.AgentSON --format olive --output train.jsonl
-```
-
-Example output (Unsloth format):
-```json
-{
-  "conversations": [
-    {"from": "human", "value": "How do I fix the auth bug?"},
-    {"from": "gpt", "value": "I'll look at the auth module..."}
-  ],
-  "source": "opencode",
-  "session_id": "ses_xxx"
-}
-```
-
-## PWA Viewer
-
-The `pwa/` directory contains a standalone Progressive Web App for viewing `.AgentSON` files:
-
-1. Open `pwa/index.html` in a browser
-2. Drag-and-drop an `.AgentSON` file
-3. Browse entries with keyboard navigation
-4. Works offline — no server required
-
-To host on GitHub Pages, enable Pages for the `pwa/` directory.
-
-## Architecture
-
-### Two-Layer Design
-
-| Layer | What | Like |
-|-------|------|------|
-| **Open Spec** | `.AgentSON` file format | Dev Containers — portable, file-based, works offline |
-| **Managed Instance** | Supabase backend | GitHub — sync, search, collaboration |
-
-```
-Git (local, file-based) → GitHub (cloud, collaboration)
-AgentSON (file-based) → AgentSON Cloud (Supabase)
-```
-
-### The Flow
+AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -228,73 +44,284 @@ AgentSON (file-based) → AgentSON Cloud (Supabase)
 └─────────────────────────────────────────────────────────────┘
 ```
 
+---
+
+## Tool Landscape
+
+AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
+
+### Reader Coverage
+
+```mermaid
+pie title Reader Coverage (v0.1.0)
+    "Working (6)" : 6
+    "Planned (27)" : 27
+```
+
+### RICE Priority (Top 10 Readers)
+
+```mermaid
+xychart-beta
+    title "RICE Score by Tool"
+    x-axis ["Cursor", "Copilot", "Claude", "Codex", "Gemini", "opencode", "Cline", "Aider", "Kiro", "Windsurf"]
+    y-axis "RICE Score" 0 --> 5000
+    bar [2700, 4000, 2400, 1920, 1400, 9999, 1350, 1350, 1120, 480]
+```
+
+> opencode (RICE: ∞) already works — zero effort, full reach.
+
+### Tier 1: Core Market
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 1 | **Cursor** | IDE | $20-40/mo | Richest (70% Fortune 1000) | 🔜 Planned |
+| 2 | **Claude Code** | CLI | $20-200/mo | Deep reasoning (~$2.5B run-rate) | 🔜 Planned |
+| 3 | **Kiro** | IDE | Free-$200/mo | Spec-driven (structured by design) | 🔜 Planned |
+| 4 | **Codex CLI** | CLI | $20-200/mo | GPT-5.5 (ChatGPT base) | 🔜 Planned |
+| 5 | **Gemini CLI** | CLI | Free | 1M context (Apache 2.0) | 🔜 Planned |
+| 6 | **Windsurf/Devin Desktop** | IDE | $15-200/mo | ACP protocol (Cognition) | 🔜 Planned |
+
+### Tier 2: Open Source
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 7 | **opencode** | CLI | Free (BYOK) | 147K stars, 6.5M devs | ✅ **Working** |
+| 8 | **Cline** | VS Code ext | Free (BYOK) | 60K stars, 5M installs | 🔜 Planned |
+| 9 | **Aider** | CLI | Free (BYOK) | 43K stars, MIT | 🔜 Planned |
+| 10 | **Zed** | IDE | Free + API | ACP protocol, parallel agents | 🔜 Planned |
+| 11 | **Goose** | CLI | Free (BYOK) | Apache 2.0, Block-backed | 🔜 Planned |
+| 12 | **OpenHands** | Web+CLI | Free (BYOK) | MIT, autonomous SWE | 🔜 Planned |
+
+### Tier 3: Extensions
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 13 | **GitHub Copilot** | Multi-IDE | $10-39/mo | Widest reach (5M+ users) | 🔜 Planned |
+| 14 | **Amazon Q** | Extension | $19/user | AWS-native, enterprise | 🔜 Planned |
+| 15 | **JetBrains AI** | Built-in | $10/mo | 31% market share | 🔜 Planned |
+| 16 | **Sourcegraph Cody** | Extension | Free-$9/mo | Large codebase nav | 🔜 Planned |
+| 17 | **Qodo** | Extension | Free-$19/mo | Code review specialist | 🔜 Planned |
+| 18 | **Augment Code** | Extension | $20-60/mo | 200K context window | 🔜 Planned |
+| 19 | **Continue** | Extension | Free | Open-source, self-hosted | 🔜 Planned |
+| 20 | **Tabnine** | Extension | $12/mo | Privacy-focused, on-premise | 🔜 Planned |
+
+### Tier 4: Builders
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 21 | **Bolt.new** | Browser | Free-$20/mo | Prompt→deploy | 🔜 Planned |
+| 22 | **v0** | Browser | Free-$20/mo | UI generation | 🔜 Planned |
+| 23 | **Lovable** | Browser | Free-$20/mo | Full-stack apps | 🔜 Planned |
+| 24 | **Replit** | Browser IDE | Free-$25/mo | Full environment | 🔜 Planned |
+
+### Tier 5: Orchestrators
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 25 | **amux** | Web+PWA | Free (BYOK) | 20-50+ parallel agents | 🔜 Planned |
+| 26 | **Claude Squad** | TUI | Free (BYOK) | MIT, 10-20 agents | 🔜 Planned |
+| 27 | **Kilo Code** | IDE panel | Free-$199/mo | Apache 2.0 | 🔜 Planned |
+| 28 | **dmux** | Terminal | Free (BYOK) | MIT | 🔜 Planned |
+
+### Tier 6: Autonomous
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 29 | **Devin** | Cloud SaaS | $20-500+/mo | Fully autonomous | 🔜 Planned |
+| 30 | **Blitzy** | Cloud SaaS | Enterprise | Enterprise SWE | 🔜 Planned |
+
+### Tier 7: China Plans
+
+| # | Tool | Type | Pricing | Traces | AgentSON |
+|---|------|------|---------|--------|----------|
+| 31 | **GLM Coding** | Desktop+CLI | Subscription | GLM-5.2 | ⏸ Deferred |
+| 32 | **Kimi** | CLI | Cheap | Cost leader | ⏸ Deferred |
+| 33 | **Qwen Code** | CLI | Cheap | Growing in Asia | ⏸ Deferred |
+
+---
+
+## Why AgentSON Matters
+
+### The Data is Valuable
+
+AI companies spend billions acquiring tools that generate session traces. DeepSeek, Moonshot, and MiniMax ran distillation campaigns extracting exactly this data at scale (16M+ exchanges combined). The data IS the product.
+
+### But It's Locked In
+
+| Tool | Exports data? | Portable? | Trainable? |
+|------|--------------|-----------|------------|
+| Cursor | No | No | No |
+| Claude Code | No | No | No |
+| Copilot | Partial (API) | No | No |
+| **AgentSON** | **Yes (JSON)** | **Yes** | **Yes** |
+
+### What AgentSON Gives You
+
+1. **Portability** — Switch tools without losing context
+2. **Training data** — Export to Unsloth/Olive for fine-tuning
+3. **Search** — Full-text search across all your sessions
+4. **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
+5. **Interoperability** — One format, all tools
+
+---
+
+## Quick Start
+
+```bash
+# Install
+pip install agentson
+
+# List sessions
+agentson list --tool opencode
+
+# Export a session
+agentson export --tool opencode --session ses_xxx --output ./sessions/
+
+# Fine-tuning export (Unsloth format)
+agentson finetune *.AgentSON --format unsloth --output training.jsonl
+
+# Search across sessions
+agentson search "nightscout" --tool opencode
+
+# Render as Markdown
+agentson render session.AgentSON --format md
+
+# Push to Supabase (optional)
+agentson push session.AgentSON
+```
+
+---
+
+## Schema (v1.1)
+
+```json
+{
+  "$schema": "https://agentson.dev/schema/v1.1.json",
+  "id": "session-2026-07-04-001",
+  "task": "Fix the authentication bug in the login flow",
+  "outcome": "success",
+  "tool": {"name": "opencode", "session_id": "ses_xxx"},
+  "agent": {"name": "mimo-v2.5-free", "provider": "opencode"},
+  "entries": [
+    {"type": "user-query", "text": "Fix the auth bug"},
+    {"type": "thought", "text": "Looking at the auth module..."},
+    {"type": "action", "tool": "bash", "code": "grep -r 'auth' src/", "tool_call_id": "tc_001"},
+    {"type": "observation", "text": "Found 3 files", "correlation_id": "tc_001"},
+    {"type": "answer", "text": "Fixed the null check in auth.py"}
+  ]
+}
+```
+
+### Entry Types
+
+| Type | Description |
+|------|-------------|
+| `user-query` | User's input or question |
+| `context` | Additional context (data used, DOM info) |
+| `querying` | Agent is processing |
+| `title` | Section or step title |
+| `thought` | Agent's reasoning/thinking |
+| `action` | Tool execution (code + output) |
+| `answer` | Agent's response |
+| `side-effect` | File changes, state mutations |
+| `observation` | Async observation from tool/user/system |
+
+---
+
+## Fine-Tuning Export
+
+```bash
+# Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
+agentson finetune *.AgentSON --format unsloth --output train.jsonl
+
+# Olive format (Microsoft Olive pipeline)
+agentson finetune *.AgentSON --format olive --output train.jsonl
+```
+
+Example output:
+```json
+{
+  "conversations": [
+    {"from": "human", "value": "How do I fix the auth bug?"},
+    {"from": "gpt", "value": "I'll look at the auth module..."}
+  ],
+  "source": "opencode",
+  "session_id": "ses_xxx"
+}
+```
+
+---
+
+## PWA Viewer
+
+Open `pwa/index.html` in a browser, drag-and-drop an `.AgentSON` file. Works offline.
+
+Full-featured web viewer at `docs/viewer/`: validation, download, search, sort, side-by-side layout, role-based colors.
+
+---
+
 ## Repository Structure
 
 ```
 agentson/
-├── README.md              # This file
-├── PRD.md                 # Full product requirements
-├── PERSONAS-AND-USER-STORIES.md  # User personas and stories
-├── pyproject.toml         # Python packaging (pip install -e .)
-├── setup.py               # Backward-compat shim
 ├── spec/
-│   └── v1.json            # JSON Schema
-├── readers/               # Tool-specific readers
-│   ├── opencode.py        # ✅ Working
-│   ├── minimax.py         # ✅ Working
-│   ├── antigravity.py     # ✅ Working
-│   └── libre.py           # ✅ Working (FreeStyle Libre 2)
-├── importers/             # External format importers
-│   └── chatgpt.py         # ✅ ChatGPT conversations.json
-├── exporters/             # Training data exporters
-│   └── finetune.py        # ✅ Unsloth + Olive formats
-├── normalizer/            # Schema conversion (planned)
-├── renderers/             # Output formats (planned)
-├── cli/                   # Command-line interface
-│   ├── main.py            # ✅ Working
-│   └── supabase_client.py # ✅ Working
-├── supabase/              # Managed instance schema
-├── tests/                 # Test suite
-│   ├── test_opencode.py   # ✅ Passing
-│   ├── test_minimax.py    # ✅ Passing
-│   └── test_antigravity.py # ✅ Passing
-├── examples/              # Example .AgentSON files
-│   ├── opencode_example.AgentSON
-│   ├── minimax_example.AgentSON
-│   └── antigravity_example.AgentSON
-├── pwa/                   # Progressive Web App viewer
-│   ├── index.html         # ✅ Drag-and-drop viewer
-│   ├── manifest.json      # ✅ PWA manifest
-│   └── sw.js              # ✅ Service worker
-├── viewers/
-│   └── web/index.html     # ✅ Working (drag-and-drop viewer)
-├── training/
-│   └── opencode_example_unsloth.jsonl  # Example training data
-└── docs/
-    └── sops/              # 14 Standard Operating Procedures
+│   ├── v1.json              # JSON Schema v1
+│   └── v1.1.json            # JSON Schema v1.1 (trajectory semantics)
+├── readers/                 # Tool-specific readers
+│   ├── opencode.py          # ✅ Working
+│   ├── minimax.py           # ✅ Working
+│   ├── antigravity.py       # ✅ Working
+│   ├── libre.py             # ✅ Working (FreeStyle Libre 2)
+│   └── chrome_devtools.py   # ✅ Working (9 tests)
+├── importers/
+│   └── chatgpt.py           # ✅ ChatGPT conversations.json
+├── exporters/
+│   └── finetune.py          # ✅ Unsloth + Olive formats
+├── cli/
+│   ├── main.py              # CLI entry point
+│   └── supabase_client.py   # Supabase integration
+├── tests/
+│   └── test_chrome_devtools.py  # ✅ 9 tests
+├── examples/                # Example .AgentSON files
+├── pwa/                     # PWA viewer
+├── docs/                    # Live docs + viewer
+│   ├── viewer/              # Web viewer
+│   ├── sops/                # 14 SOPs
+│   ├── standards/           # Operating manual + ADRs
+│   └── index.html           # Landing page
+├── ROADMAP.md               # RICE-scored reader priorities
+├── CHANGELOG.md             # Version history
+├── PRD.md                   # Product requirements
+└── LICENSE                  # Apache 2.0
 ```
-
-## Origin
-
-AgentSON evolved from `.ailog` — a format originally designed for Chrome DevTools AI session export. The schema was discovered in Chrome's Preferences JSON and generalized to cover all AI coding agents.
-
-The name "AgentSON" is a play on JSON — **Agent + JSON** — "Yet Another JSON" but metadata-rich and built for the agentic era.
-
-### What Changed from .ailog
-
-| Aspect | .ailog | AgentSON |
-|--------|--------|----------|
-| Scope | Chrome DevTools only | All AI coding agents |
-| Schema | Undocumented | JSON Schema v1 |
-| File extension | `.ailog` | `.AgentSON` |
-| Name meaning | AI Log | Agent + JSON |
-
-See [PRD.md](PRD.md) for the full product requirements document.
-
-## License
-
-MIT
 
 ---
 
-*"Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments."*
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
+
+**Next readers:** Cursor, Claude Code, Cline, Aider, Gemini CLI
+
+**Version targets:**
+- v0.2.0 (Aug 2026): 10+ readers, real-world data
+- v0.3.0 (Sep 2026): 15+ readers, sample corpus
+- v1.0.0 (Oct 2026): 20+ readers, stable API
+
+---
+
+## Standards
+
+- [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
+- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records
+- [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
+
+---
+
+## License
+
+[Apache 2.0](LICENSE) — Patent grant + attribution required.
+
+---
+
+*"The format that AI companies spend billions to own, AgentSON gives away for free."*
