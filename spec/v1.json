@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentson.dev/schema/v1.json",
+  "title": "AgentSON v1",
+  "description": "Agent Session Object Notation — a vendor-neutral format for capturing AI agent session data",
+  "type": "object",
+  "required": ["id", "tool", "entries"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique session identifier",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "tool": {
+      "type": "object",
+      "description": "Information about the source tool",
+      "required": ["name", "session_id"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tool name (e.g., opencode, minimax, antigravity, chrome-devtools)",
+          "enum": ["opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "claude-code", "copilot", "other"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Tool version"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Original session ID from the source tool"
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "description": "Information about the AI agent used",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Model name (e.g., mimo-v2.5-free, gpt-4, claude-3)"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Model provider (e.g., opencode, openai, anthropic)"
+        },
+        "variant": {
+          "type": "string",
+          "description": "Model variant (e.g., high, low, thinking)"
+        }
+      }
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session start timestamp (ISO 8601)"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session end timestamp (ISO 8601)"
+    },
+    "context": {
+      "type": "object",
+      "description": "Session context information",
+      "properties": {
+        "working_directory": {
+          "type": "string",
+          "description": "Working directory when session was recorded"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Platform (e.g., win32, linux, darwin)"
+        },
+        "shell": {
+          "type": "string",
+          "description": "Shell used (e.g., powershell, bash, zsh)"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL if session was web-based"
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Browser viewport dimensions",
+          "properties": {
+            "width": {"type": "integer"},
+            "height": {"type": "integer"}
+          }
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "description": "Chronological list of session entries",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "user-query",
+              "context",
+              "querying",
+              "title",
+              "thought",
+              "action",
+              "answer",
+              "side-effect"
+            ]
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "Unix timestamp in milliseconds"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text content (for user-query, thought, answer)"
+          },
+          "query": {
+            "type": "string",
+            "description": "User query text"
+          },
+          "title": {
+            "type": "string",
+            "description": "Section or step title"
+          },
+          "code": {
+            "type": "string",
+            "description": "Code executed by the agent"
+          },
+          "output": {
+            "type": "string",
+            "description": "Output from code execution"
+          },
+          "tool": {
+            "type": "string",
+            "description": "Tool used (e.g., bash, grep, edit, write)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "error", "partial"],
+            "description": "Action status"
+          },
+          "path": {
+            "type": "string",
+            "description": "File path (for file operations)"
+          },
+          "diff": {
+            "type": "string",
+            "description": "Diff output (for side-effects)"
+          },
+          "details": {
+            "type": "array",
+            "description": "Additional context details",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {"type": "string"},
+                "text": {"type": "string"}
+              }
+            }
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for this entry"
+          },
+          "tokens": {
+            "type": "object",
+            "description": "Token usage for this entry",
+            "properties": {
+              "input": {"type": "integer"},
+              "output": {"type": "integer"},
+              "reasoning": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Session metadata",
+      "properties": {
+        "total_tokens": {
+          "type": "integer",
+          "description": "Total tokens used in session"
+        },
+        "cost": {
+          "type": "number",
+          "description": "Total cost in USD"
+        },
+        "messages": {
+          "type": "integer",
+          "description": "Total message count"
+        },
+        "parts": {
+          "type": "integer",
+          "description": "Total part count"
+        },
+        "exported_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this file was exported"
+        }
+      }
+    }
+  }
+}
