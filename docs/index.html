@@ -236,26 +236,36 @@
 
     <section>
         <h2>The Solution</h2>
-        <p>AgentSON provides a vendor-neutral format for agent session capture.</p>
+        <p>AgentSON provides a vendor-neutral format for agent session capture — with full trajectory semantics for fine-tuning.</p>
         <div class="grid">
             <div class="card">
-                <h3>Specification</h3>
-                <p>JSON Schema for agent session data</p>
+                <h3>Specification v1.1</h3>
+                <p>JSON Schema with trajectory semantics: task, outcome, observations, tool calls, correlations</p>
                 <span class="status status-done">Done</span>
             </div>
             <div class="card">
                 <h3>Readers</h3>
-                <p>SQLite parsers for opencode, MiniMax, Antigravity</p>
+                <p>SQLite parsers for opencode, MiniMax, Antigravity, Chrome DevTools</p>
+                <span class="status status-done">Done</span>
+            </div>
+            <div class="card">
+                <h3>Importers</h3>
+                <p>ChatGPT conversation format → AgentSON</p>
                 <span class="status status-done">Done</span>
             </div>
             <div class="card">
                 <h3>CLI</h3>
-                <p>Export, search, render, push/pull</p>
+                <p>Export, import, search, render, push/pull</p>
+                <span class="status status-done">Done</span>
+            </div>
+            <div class="card">
+                <h3>Fine-tuning Exporters</h3>
+                <p>AgentSON → Unsloth (ShareGPT) + Olive (chat-messages)</p>
                 <span class="status status-done">Done</span>
             </div>
             <div class="card">
                 <h3>Web Viewer</h3>
-                <p>Drag & drop visualization</p>
+                <p>Drag & drop with validation, search, side-by-side layout</p>
                 <span class="status status-done">Done</span>
             </div>
             <div class="card">
@@ -266,6 +276,11 @@
             <div class="card">
                 <h3>SOPs</h3>
                 <p>14 Standard Operating Procedures</p>
+                <span class="status status-done">Done</span>
+            </div>
+            <div class="card">
+                <h3>Operating Manual</h3>
+                <p>Mental models, coding standards, ADRs, workflow rules</p>
                 <span class="status status-done">Done</span>
             </div>
         </div>
@@ -281,6 +296,9 @@ python cli/main.py export --tool opencode --session ses_xxx
 
 # Export glucose data
 python cli/main.py export --tool libre --input libre_data.csv
+
+# Fine-tuning export (Unsloth format)
+python cli/main.py finetune session.AgentSON --format unsloth --output training.jsonl
 
 # Push to Supabase
 python cli/main.py push session.AgentSON
@@ -309,6 +327,16 @@ python cli/main.py pull --search "nightscout"</code></pre>
             </div>
             <div class="card">
                 <h3>FreeStyle Libre 2</h3>
+                <p>Working</p>
+                <span class="status status-done">Done</span>
+            </div>
+            <div class="card">
+                <h3>Chrome DevTools AI</h3>
+                <p>Working</p>
+                <span class="status status-done">Done</span>
+            </div>
+            <div class="card">
+                <h3>ChatGPT</h3>
                 <p>Working</p>
                 <span class="status status-done">Done</span>
             </div>
@@ -429,6 +457,7 @@ DEVELOPER TOOLS:
             <a href="https://github.com/andiekobbietks/AgentSON" class="btn">View on GitHub</a>
             <a href="viewer/" class="btn btn-outline">Launch Web Viewer</a>
             <a href="sops/" class="btn btn-outline">Read SOPs</a>
+            <a href="standards/" class="btn btn-outline">Operating Manual</a>
         </div>
     </section>
 
