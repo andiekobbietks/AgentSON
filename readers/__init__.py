@@ -10,3 +10,7 @@ from .chrome_devtools import (
     list_exports as list_chrome_devtools,
     parse_markdown as parse_chrome_devtools_markdown,
 )
+from .claude_code import ClaudeCodeReader
+
+# Legacy aliases
+ClaudeCode = ClaudeCodeReader
