@@ -2,6 +2,26 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **`test_claude_code.py::test_read_session` failure** (flagged as a known
+  issue in v0.1.1): not a reader bug. `readers/claude_code.py`'s own
+  docstring documents a `{"type": "summary", ...}` JSONL entry as part of
+  the real Claude Code transcript format, and `_to_agentson` correctly
+  sets `outcome = "success"` only when it encounters one. The synthetic
+  test fixture never included a summary entry, so `outcome` stayed at its
+  `"partial"` default — the fixture didn't match the format it claimed to
+  model. Added the missing `type: "summary"` entry to the fixture,
+  matching the documented schema; no reader code changed.
+
+### Known issues (flagged, not yet fixed)
+
+- `readers/claude_code.py` uses the deprecated `datetime.datetime.utcnow()`
+  (surfaced as a `DeprecationWarning` during test runs). Low priority,
+  not user-facing, left open as a separate cleanup item.
+
 ## [0.1.1] - 2026-07-05
 
 Patch release. Fixes bugs present in v0.1.0 that were claimed working but weren't.
