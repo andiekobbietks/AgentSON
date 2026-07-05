@@ -7,6 +7,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import List
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -370,6 +371,124 @@ def render_html(data: dict) -> str:
 </html>"""
 
 
+def cmd_import(args):
+    """Import sessions from external formats."""
+    if args.format == "chatgpt":
+        from importers.chatgpt import import_chatgpt
+        
+        output_dir = Path(args.output)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        result = import_chatgpt(
+            args.input,
+            output_path=str(output_dir / f"chatgpt_{Path(args.input).stem}.AgentSON"),
+            all_branches=args.all_branches
+        )
+        print(f"Imported: {result.get('id', 'unknown')}")
+        print(f"  Tool: {result.get('tool', {}).get('name', 'unknown')}")
+        print(f"  Entries: {len(result.get('entries', []))}")
+    else:
+        print(f"Error: Unknown import format '{args.format}'", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_finetune(args):
+    """Export AgentSON session to fine-tuning format."""
+    from exporters.finetune import export_training_data
+    
+    with open(args.input, "r", encoding="utf-8") as f:
+        session = json.load(f)
+    
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    stem = Path(args.input).stem
+    output_path = str(output_dir / f"{stem}_{args.format}.jsonl")
+    
+    examples = export_training_data(
+        session,
+        format=args.format,
+        output_path=output_path,
+        include_thoughts=args.include_thoughts
+    )
+    
+    print(f"Exported {len(examples)} training examples to {output_path}")
+    print(f"Format: {args.format}")
+    if args.format == "unsloth":
+        print("Compatible with: Unsloth, LLaMA-Factory, axolotl")
+    elif args.format == "olive":
+        print("Compatible with: Microsoft Olive, ONNX Runtime")
+
+
+def cmd_search(args):
+    """Search AgentSON files for a term."""
+    import glob as globmod
+    
+    search_dir = Path(args.dir)
+    pattern = str(search_dir / "**" / "*.AgentSON")
+    files = globmod.glob(pattern, recursive=True)
+    
+    if not files:
+        print(f"No .AgentSON files found in {search_dir}")
+        return
+    
+    term = args.term.lower()
+    results = []
+    
+    for filepath in files:
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            
+            matches = _search_session(data, term)
+            if matches:
+                results.append({
+                    "file": str(filepath),
+                    "session_id": data.get("id", "unknown"),
+                    "tool": data.get("tool", {}).get("name", "unknown"),
+                    "matches": matches
+                })
+        except Exception as e:
+            print(f"Warning: Could not read {filepath}: {e}", file=sys.stderr)
+    
+    if not results:
+        print(f"No matches for '{args.term}'")
+        return
+    
+    print(f"\nFound {len(results)} file(s) matching '{args.term}':\n")
+    
+    for result in results:
+        print(f"File: {result['file']}")
+        print(f"  Session: {result['session_id']}")
+        print(f"  Tool: {result['tool']}")
+        print(f"  Matches: {len(result['matches'])}")
+        for match in result['matches'][:3]:  # Show first 3
+            print(f"    - [{match['type']}] {match['text'][:80]}...")
+        if len(result['matches']) > 3:
+            print(f"    ... and {len(result['matches']) - 3} more")
+        print()
+
+
+def _search_session(data: dict, term: str) -> List[dict]:
+    """Search a session for a term."""
+    matches = []
+    
+    for entry in data.get("entries", []):
+        text = entry.get("text", "") or entry.get("query", "") or entry.get("code", "") or ""
+        if term in text.lower():
+            matches.append({
+                "type": entry.get("type", "unknown"),
+                "text": text[:200]
+            })
+    
+    # Also search title
+    title = data.get("title", "")
+    if term in title.lower():
+        matches.insert(0, {"type": "title", "text": title})
+    
+    return matches
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="agentsong",
@@ -385,15 +504,30 @@ def main():
     export_parser.add_argument("--output", default=".", help="Output directory")
     export_parser.add_argument("--input", help="Input file (required for libre tool)")
     
+    # import command
+    import_parser = subparsers.add_parser("import", help="Import from external formats")
+    import_parser.add_argument("format", choices=["chatgpt"], help="Import format")
+    import_parser.add_argument("input", help="Input file path")
+    import_parser.add_argument("--output", default=".", help="Output directory")
+    import_parser.add_argument("--all-branches", action="store_true", help="Include all conversation branches")
+    
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
     list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
     
     # search command
-    search_parser = subparsers.add_parser("search", help="Search sessions")
-    search_parser.add_argument("--term", required=True, help="Search term")
-    search_parser.add_argument("--tool", help="Filter by tool")
+    search_parser = subparsers.add_parser("search", help="Search AgentSON files")
+    search_parser.add_argument("term", help="Search term")
+    search_parser.add_argument("--dir", default=".", help="Directory to search")
+    
+    # finetune command
+    finetune_parser = subparsers.add_parser("finetune", help="Export to fine-tuning format")
+    finetune_parser.add_argument("input", help="Input AgentSON file")
+    finetune_parser.add_argument("--format", choices=["unsloth", "olive"], default="unsloth", help="Training format")
+    finetune_parser.add_argument("--output", default=".", help="Output directory")
+    finetune_parser.add_argument("--include-thoughts", action="store_true", default=True, help="Include thought entries")
+    finetune_parser.add_argument("--no-thoughts", dest="include_thoughts", action="store_false", help="Exclude thought entries")
     
     # render command
     render_parser = subparsers.add_parser("render", help="Render AgentSON file")
@@ -416,10 +550,14 @@ def main():
     
     if args.command == "export":
         cmd_export(args)
+    elif args.command == "import":
+        cmd_import(args)
     elif args.command == "list":
         cmd_list(args)
     elif args.command == "search":
         cmd_search(args)
+    elif args.command == "finetune":
+        cmd_finetune(args)
     elif args.command == "render":
         cmd_render(args)
     elif args.command == "push":

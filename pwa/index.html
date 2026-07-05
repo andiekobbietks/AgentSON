@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentSON Viewer</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="View and search AgentSON session files">
+    <style>
+        :root {
+            --bg: #0f0f23;
+            --surface: #1a1a2e;
+            --border: #2d2d44;
+            --text: #e0e0e0;
+            --text-muted: #8888aa;
+            --accent: #00d4ff;
+            --accent-dim: #00d4ff33;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            color: var(--accent);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+        
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+        
+        .drop-zone h2 {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .session-info {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .session-info h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-item label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-item span {
+            font-weight: 500;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .entries {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .entry {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .entry:last-child {
+            border-bottom: none;
+        }
+        
+        .entry-type {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .entry-type.user-query { background: #4a9eff33; color: #4a9eff; }
+        .entry-type.answer { background: #00ff8833; color: #00ff88; }
+        .entry-type.thought { background: #ffaa0033; color: #ffaa00; }
+        .entry-type.action { background: #ff44ff33; color: #ff44ff; }
+        .entry-type.side-effect { background: #ff444433; color: #ff4444; }
+        
+        .entry-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .entry-code {
+            background: var(--bg);
+            padding: 0.75rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .hidden { display: none; }
+        
+        .install-btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .install-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .install-btn:disabled {
+            background: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .highlight {
+            background: var(--accent-dim);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AgentSON Viewer</h1>
+        <div>
+            <span class="badge">v1.0</span>
+            <button class="install-btn" id="installBtn" disabled>Install App</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="drop-zone" id="dropZone">
+            <h2>Drop .AgentSON file here</h2>
+            <p>or click to browse</p>
+            <input type="file" id="fileInput" accept=".AgentSON,.agentson,.json">
+        </div>
+        
+        <div class="session-info hidden" id="sessionInfo">
+            <h3>Session Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Session ID</label>
+                    <span id="sessionId">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Tool</label>
+                    <span id="sessionTool">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Agent</label>
+                    <span id="sessionAgent">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Entries</label>
+                    <span id="sessionEntries">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Started</label>
+                    <span id="sessionStarted">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Ended</label>
+                    <span id="sessionEnded">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-box hidden" id="searchBox">
+            <input type="text" id="searchInput" placeholder="Search entries...">
+        </div>
+        
+        <div class="entries hidden" id="entriesList"></div>
+    </div>
+    
+    <footer>
+        AgentSON — Agent Session Object Notation
+    </footer>
+
+    <script>
+        let currentSession = null;
+        let deferredPrompt = null;
+        
+        // PWA Install
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').disabled = false;
+        });
+        
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User ${outcome} the install prompt`);
+                deferredPrompt = null;
+                document.getElementById('installBtn').disabled = true;
+            }
+        });
+        
+        // File handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) loadFile(file);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadFile(file);
+        });
+        
+        function loadFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    currentSession = data;
+                    renderSession(data);
+                } catch (err) {
+                    alert('Invalid AgentSON file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function renderSession(data) {
+            document.getElementById('dropZone').classList.add('hidden');
+            document.getElementById('sessionInfo').classList.remove('hidden');
+            document.getElementById('searchBox').classList.remove('hidden');
+            document.getElementById('entriesList').classList.remove('hidden');
+            
+            document.getElementById('sessionId').textContent = data.id || '-';
+            document.getElementById('sessionTool').textContent = data.tool?.name || '-';
+            document.getElementById('sessionAgent').textContent = data.agent?.name || '-';
+            document.getElementById('sessionEntries').textContent = data.entries?.length || 0;
+            document.getElementById('sessionStarted').textContent = data.started_at || '-';
+            document.getElementById('sessionEnded').textContent = data.ended_at || '-';
+            
+            renderEntries(data.entries || []);
+        }
+        
+        function renderEntries(entries) {
+            const container = document.getElementById('entriesList');
+            container.innerHTML = entries.map(entry => {
+                const typeClass = entry.type?.replace(/[^a-z]/g, '-') || 'unknown';
+                let content = '';
+                
+                if (entry.text || entry.query) {
+                    content += `<div class="entry-text">${escapeHtml(entry.text || entry.query)}</div>`;
+                }
+                
+                if (entry.code) {
+                    content += `<div class="entry-code"><pre>${escapeHtml(entry.code)}</pre></div>`;
+                }
+                
+                if (entry.output) {
+                    content += `<div class="entry-code"><pre>Output: ${escapeHtml(entry.output)}</pre></div>`;
+                }
+                
+                return `
+                    <div class="entry" data-type="${entry.type}">
+                        <span class="entry-type ${typeClass}">${entry.type}</span>
+                        ${content}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const entries = document.querySelectorAll('.entry');
+            
+            entries.forEach(entry => {
+                const text = entry.textContent.toLowerCase();
+                entry.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+        
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW failed:', err));
+        }
+    </script>
+</body>
+</html>
