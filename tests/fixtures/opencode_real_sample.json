@@ -1,0 +1,44 @@
+{
+  "message": {
+    "parentID": "msg_f32e2343300188Nt8WeHI22h2L",
+    "role": "assistant",
+    "mode": "build",
+    "agent": "build",
+    "variant": "high",
+    "path": {"cwd": "C:\\Users\\LLM-Test\\Documents", "root": "/"},
+    "cost": 0,
+    "tokens": {"total": 113854, "input": 1079, "output": 65, "reasoning": 6, "cache": {"write": 0, "read": 112704}},
+    "modelID": "mimo-v2.5-free",
+    "providerID": "opencode",
+    "time": {"created": 1783265246980, "completed": 1783265253150},
+    "finish": "tool-calls",
+    "id": "msg_f32e43f04001czwz3FwGFS6gE1",
+    "sessionID": "ses_1069f6208ffeXozEyNyMW6RXOO"
+  },
+  "parts": [
+    {
+      "type": "reasoning",
+      "text": "Now run the test script.",
+      "time": {"start": 1783265251821, "end": 1783265251921},
+      "id": "prt_f32e451ed001JB0f49mhi1vsB0",
+      "sessionID": "ses_1069f6208ffeXozEyNyMW6RXOO",
+      "messageID": "msg_f32e43f04001czwz3FwGFS6gE1"
+    },
+    {
+      "type": "tool",
+      "tool": "bash",
+      "callID": "call_4df10994d7274b9e956072ca",
+      "state": {
+        "status": "completed",
+        "input": {"command": "python tests/test_claude_code_run.py", "description": "Run Claude Code reader test", "workdir": "C:\\Users\\LLM-Test\\Documents\\agentsong"},
+        "output": "Sessions found: 1\r\nSession ID: claude-code-test-001\r\nTool: claude-code\r\nAgent: claude-sonnet-4-20250514\r\nTask: Fix the auth bug\r\nEntries: 5\r\nEntry types: ['user-query', 'thought', 'action', 'observation', 'thought']\r\nExported to: C:\\Users\\LLM-Test\\AppData\\Local\\Temp\\tmpc6wyx_r1\\output\\claude-code-test-001.AgentSON\r\n\r\nALL TESTS PASSED\r\n",
+        "metadata": {"exit": 0, "description": "Run Claude Code reader test", "truncated": false},
+        "title": "Run Claude Code reader test",
+        "time": {"start": 1783265253099, "end": 1783265253144}
+      },
+      "id": "prt_f32e45254001mocmKha06I0H3R",
+      "sessionID": "ses_1069f6208ffeXozEyNyMW6RXOO",
+      "messageID": "msg_f32e43f04001czwz3FwGFS6gE1"
+    }
+  ]
+}
