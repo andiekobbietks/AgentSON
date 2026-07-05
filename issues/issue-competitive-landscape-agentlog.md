@@ -1,66 +1,64 @@
 # Issue: Competitive landscape — AgentLog (braintied/agentlog)
 
-## Summary
+## Status
 
-AgentLog is the closest competitor to AgentSON. Both are Apache 2.0, JSON-based formats for AI agent session interchange. This issue documents the competitive landscape and AgentSON's advantages.
+**Pre-standard phase.** Multiple groups independently converge on portable agent execution representation. No standard formation, no lock-in effects, no dominant distribution channel yet.
 
-## Head-to-head comparison
+## What exists (verified facts only)
 
 | | AgentSON | AgentLog |
 |---|---|---|
-| **Created by** | Andrea Enning (solo) | Braintied (company) |
-| **License** | Apache 2.0 | Apache 2.0 |
-| **Language** | Python | TypeScript |
-| **Working readers** | 9 | 2 |
+| **GitHub stars** | — | 0 |
+| **Commits** | — | 9 |
+| **Working readers** | 9 | 2 (Claude Code, Watchtower) |
 | **Fine-tuning export** | Yes (Unsloth/Olive) | No |
 | **Healthcare data** | Yes (FreeStyle Libre) | No |
-| **Observability** | No | OTel GenAI mapping |
-| **Multi-agent** | No | Yes |
-| **Backed by** | Solo developer | Company with product |
+| **License** | Apache 2.0 | Apache 2.0 |
+| **Language** | Python | TypeScript |
+| **Paid product** | No | Ora Cloud (claimed, unverified) |
 
-## AgentLog's ecosystem
+## What we don't know
 
-- **AgentLog** — the session format spec (9 commits, 0 stars)
-- **Watchtower** — auto-captures Claude Code sessions, AI-analyzes them (3 commits, 0 stars)
-- **Ora Cloud** — paid enterprise version (multi-project, team mgmt, Sentry integration)
-- **Cortex** — editorial publication (thought leadership blog)
+- Team size at Braintied
+- Funding status
+- Actual adoption (both repos have 0 stars)
+- Whether Ora Cloud has paying customers
 
-## Their target audience
+## The useful distinction
 
-Enterprise SaaS teams, CTOs, engineering managers who want to track AI usage across teams.
+| Axis | Enterprise-first | Developer-first |
+|------|-----------------|----------------|
+| Sales motion | consulting / contracts | OSS adoption |
+| Adoption path | CTO → org rollout | dev → grassroots |
+| Constraints | compliance, SOC2, audit | usability, flexibility |
 
-## Our target audience
+These are different go-to-market paths, not a competition yet.
 
-Individual developers who want to own their data, export sessions, and fine-tune on them.
+## AgentSON's factual advantages
 
-## AgentSON's advantages
-
-1. **Fine-tuning export** — Nobody else has Unsloth/Olive integration
-2. **FreeStyle Libre 2** — No one else covers health data
-3. **9 readers vs 2** — We cover Cursor, Cline, Aider (they don't)
+1. **9 readers vs 2** — covers Cursor, Cline, Aider (they don't)
+2. **Fine-tuning export** — nobody else has Unsloth/Olive integration
+3. **FreeStyle Libre 2** — no one else covers health data
 4. **SOP library** — 14 operational procedures
-5. **Python ecosystem** — Most AI tooling is Python
 
-## AgentLog's advantages
+## AgentLog's factual advantages
 
-1. **Company backing** — They have funding/team
-2. **OTel mapping** — Observability integration
-3. **Content marketing** — "Cortex" blog builds mindshare
-4. **Enterprise play** — Ora Cloud targets CTOs
+1. **TypeScript ecosystem** — where Cursor/Cline/Aider users live
+2. **OTel GenAI mapping** — observability integration
+3. **"Cortex" blog** — content marketing exists
 
-## Risk assessment
+## What actually matters
 
-| Risk | Level | Mitigation |
-|------|-------|------------|
-| They ship Cursor/Cline/Aider first | Low (we shipped first) | Keep shipping readers |
-| They get enterprise adoption | Medium (different market) | Don't compete for enterprise |
-| OTel becomes standard | Medium | Consider adding OTel mapping later |
-| TypeScript ecosystem wins | Low | Python is where AI tooling lives |
+Not "who has more readers" but "what abstraction becomes the default mental model for agent execution representation."
 
-## Action items
+That depends on:
+- simplicity of the schema
+- integration with existing tools (LangChain, MCP, etc.)
+- clean separation of execution, memory, observability, training data
+- incremental adoptability
 
-- [x] Ship Cursor, Cline, Aider readers (done)
-- [ ] Get 100+ GitHub stars
-- [ ] Get 500+ PyPI downloads
-- [ ] Get written up in newsletters
-- [ ] Consider OTel mapping for observability integration
+## Sources
+
+- AgentLog repo: https://github.com/braintied/agentlog
+- Watchtower repo: https://github.com/braintied/watchtower
+- Both have 0 stars as of July 2026
