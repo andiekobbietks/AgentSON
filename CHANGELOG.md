@@ -48,7 +48,7 @@ Initial public release. Apache 2.0 license.
 ### Documentation
 
 - 14 SOPs (SOP-001 to SOP-014) covering glucose monitoring, AI session export, Nightscout, WhatsApp bot, TV dashboard, MedGemma, NHS FHIR, West Africa voice alerts
-- Operating manual: mental models, coding standards, workflow rules, 9 ADRs
+- Operating manual: mental models, coding standards, workflow rules, 10 ADRs
 - Live docs at `https://andiekobbietks.github.io/AgentSON/`
 
 ### Examples
