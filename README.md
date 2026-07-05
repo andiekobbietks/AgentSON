@@ -54,8 +54,8 @@ AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
 
 ```mermaid
 pie title Reader Coverage (v0.1.0)
-    "Working (6)" : 6
-    "Planned (27)" : 27
+    "Working (7)" : 7
+    "Planned (26)" : 26
 ```
 
 ### RICE Priority (Top 10 Readers)
@@ -75,7 +75,7 @@ xychart-beta
 | # | Tool | Type | Pricing | Traces | AgentSON |
 |---|------|------|---------|--------|----------|
 | 1 | **Cursor** | IDE | $20-40/mo | Richest (70% Fortune 1000) | 🔜 Planned |
-| 2 | **Claude Code** | CLI | $20-200/mo | Deep reasoning (~$2.5B run-rate) | 🔜 Planned |
+| 2 | **Claude Code** | CLI | $20-200/mo | Deep reasoning (~$2.5B run-rate) | ✅ **Working** |
 | 3 | **Kiro** | IDE | Free-$200/mo | Spec-driven (structured by design) | 🔜 Planned |
 | 4 | **Codex CLI** | CLI | $20-200/mo | GPT-5.5 (ChatGPT base) | 🔜 Planned |
 | 5 | **Gemini CLI** | CLI | Free | 1M context (Apache 2.0) | 🔜 Planned |
@@ -272,7 +272,8 @@ agentson/
 │   ├── minimax.py           # ✅ Working
 │   ├── antigravity.py       # ✅ Working
 │   ├── libre.py             # ✅ Working (FreeStyle Libre 2)
-│   └── chrome_devtools.py   # ✅ Working (9 tests)
+│   ├── chrome_devtools.py   # ✅ Working (9 tests)
+│   └── claude_code.py       # ✅ Working
 ├── importers/
 │   └── chatgpt.py           # ✅ ChatGPT conversations.json
 ├── exporters/
@@ -301,7 +302,7 @@ agentson/
 
 See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
 
-**Next readers:** Cursor, Claude Code, Cline, Aider, Gemini CLI
+**Next readers:** Cursor, Cline, Aider, Gemini CLI, Copilot
 
 **Version targets:**
 - v0.2.0 (Aug 2026): 10+ readers, real-world data
