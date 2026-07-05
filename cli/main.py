@@ -43,7 +43,7 @@ def cmd_export(args):
             for session in sessions:
                 print(f"Exporting: {session['title']} ({session['id']})")
                 data = read_opencode(str(db_path), session["id"])
-                output_path = Path(args.output) / f"opencode_{session['id']}.AgentSON"
+                output_path = Path(args.output) / f"opencode_{session['id']}.agentson"
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported {len(sessions)} sessions")
@@ -52,7 +52,7 @@ def cmd_export(args):
                 print("Error: --session required when not using --all", file=sys.stderr)
                 sys.exit(1)
             data = read_opencode(str(db_path), args.session)
-            output_path = Path(args.output) / f"opencode_{args.session}.AgentSON"
+            output_path = Path(args.output) / f"opencode_{args.session}.agentson"
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported to {output_path}")
@@ -68,7 +68,7 @@ def cmd_export(args):
             for session in sessions:
                 print(f"Exporting: {session['title']} ({session['id']})")
                 data = read_minimax(str(db_path), session["id"])
-                output_path = Path(args.output) / f"minimax_{session['id']}.AgentSON"
+                output_path = Path(args.output) / f"minimax_{session['id']}.agentson"
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported {len(sessions)} sessions")
@@ -77,7 +77,7 @@ def cmd_export(args):
                 print("Error: --session required when not using --all", file=sys.stderr)
                 sys.exit(1)
             data = read_minimax(str(db_path), args.session)
-            output_path = Path(args.output) / f"minimax_{args.session}.AgentSON"
+            output_path = Path(args.output) / f"minimax_{args.session}.agentson"
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported to {output_path}")
@@ -98,7 +98,7 @@ def cmd_export(args):
             for session in sessions:
                 print(f"Exporting: {session['session_id']}")
                 data = read_antigravity_session(session)
-                output_path = Path(args.output) / f"antigravity_{session['session_id']}.AgentSON"
+                output_path = Path(args.output) / f"antigravity_{session['session_id']}.agentson"
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported {len(sessions)} sessions")
@@ -109,7 +109,7 @@ def cmd_export(args):
                     session = sessions[0]
                     print(f"Exporting: {session['session_id']}")
                     data = read_antigravity_session(session)
-                    output_path = Path(args.output) / f"antigravity_{session['session_id']}.AgentSON"
+                    output_path = Path(args.output) / f"antigravity_{session['session_id']}.agentson"
                     with open(output_path, "w", encoding="utf-8") as f:
                         json.dump(data, f, indent=2, ensure_ascii=False, default=str)
                     print(f"Exported to {output_path}")
@@ -124,7 +124,7 @@ def cmd_export(args):
                     sys.exit(1)
                 session = found[0]
                 data = read_antigravity_session(session)
-                output_path = Path(args.output) / f"antigravity_{args.session}.AgentSON"
+                output_path = Path(args.output) / f"antigravity_{args.session}.agentson"
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
                 print(f"Exported to {output_path}")
@@ -139,7 +139,7 @@ def cmd_export(args):
             sys.exit(1)
             
         data = read_libre_csv(csv_path)
-        output_path = Path(args.output) / f"libre_{Path(csv_path).stem}.AgentSON"
+        output_path = Path(args.output) / f"libre_{Path(csv_path).stem}.agentson"
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"Exported to {output_path}")
@@ -250,7 +250,7 @@ def cmd_pull(args):
         print()
 
         if args.output:
-            output_path = Path(args.output) / f"{tool}_{session_id}.AgentSON"
+            output_path = Path(args.output) / f"{tool}_{session_id}.agentson"
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(session, f, indent=2, ensure_ascii=False, default=str)
             print(f"Saved to {output_path}")
@@ -381,7 +381,7 @@ def cmd_import(args):
         
         result = import_chatgpt(
             args.input,
-            output_path=str(output_dir / f"chatgpt_{Path(args.input).stem}.AgentSON"),
+            output_path=str(output_dir / f"chatgpt_{Path(args.input).stem}.agentson"),
             all_branches=args.all_branches
         )
         print(f"Imported: {result.get('id', 'unknown')}")
@@ -425,11 +425,11 @@ def cmd_search(args):
     import glob as globmod
     
     search_dir = Path(args.dir)
-    pattern = str(search_dir / "**" / "*.AgentSON")
+    pattern = str(search_dir / "**" / "*.agentson")
     files = globmod.glob(pattern, recursive=True)
     
     if not files:
-        print(f"No .AgentSON files found in {search_dir}")
+        print(f"No .agentson files found in {search_dir}")
         return
     
     term = args.term.lower()
