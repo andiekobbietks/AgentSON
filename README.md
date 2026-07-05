@@ -11,6 +11,28 @@
 
 ---
 
+## Why This Exists
+
+This project started with a FreeStyle Libre 2 continuous glucose monitor.
+
+Managing a chronic condition means your most personal data — blood glucose readings every 5 minutes, 24/7 — lives inside a vendor's app. Abbott's FreeStyle Libre app stores your data. It doesn't export to JSON. It doesn't integrate with your AI tools. It doesn't connect to your doctor's system without jumping through NHS FHIR hoops.
+
+The same lock-in problem exists everywhere:
+
+| Domain | Vendor | Data trapped |
+|--------|--------|--------------|
+| Health | Abbott (FreeStyle Libre 2) | Glucose readings, trends, reports |
+| AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
+| Development | Cursor, Copilot, Claude Code | Code context, edit history |
+
+**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+
+The FreeStyle Libre reader (`readers/libre.py`) was the first reader built — not because glucose data is the most important, but because it's the most personal. If the format can handle medical time-series data, it can handle anything.
+
+> **Your health data. Your code sessions. Your data. One format.**
+
+---
+
 ## The Problem
 
 Every AI coding agent stores session data in its own proprietary database. There is no standard format, no export API, and no way to move context between tools. The data that powers AI training is locked inside vendor silos.
@@ -54,8 +76,8 @@ AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
 
 ```mermaid
 pie title Reader Coverage (v0.1.0)
-    "Working (7)" : 7
-    "Planned (26)" : 26
+    "Working (6)" : 6
+    "Planned (27)" : 27
 ```
 
 ### RICE Priority (Top 10 Readers)
@@ -141,12 +163,6 @@ xychart-beta
 ---
 
 ## Why AgentSON Matters
-
-### You Have the Legal Right
-
-GDPR Article 20 gives you the right to export your data in a machine-readable format. The EU AI Act requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
-
-> **You have the legal right to your data. AgentSON is how you exercise it.**
 
 ### The Unsloth Analogy
 
@@ -327,7 +343,7 @@ See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tool
 ## Standards
 
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
-- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records
+- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
 - [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
 
 ---
