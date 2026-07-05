@@ -2,7 +2,9 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.1] - 2026-07-05
+
+Patch release. Fixes bugs present in v0.1.0 that were claimed working but weren't.
 
 ### Fixed
 
