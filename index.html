@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentSON — Your AI history. Your hardware. Your choice.</title>
+    <meta name="description" content="A vendor-neutral format for AI agent sessions. Capture, replay, and fine-tune on your own data — across any tool, any hardware, forever.">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-2: #1a1a26;
+            --border: #2a2a3a;
+            --text: #e0e0e8;
+            --text-muted: #8888a0;
+            --accent: #00d4ff;
+            --accent-dim: rgba(0, 212, 255, 0.12);
+            --accent-glow: rgba(0, 212, 255, 0.25);
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+            --amber: #ffb000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--accent); }
+
+        .nav-links .gh-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .nav-links .gh-link:hover { border-color: var(--accent); }
+
+        .nav-links .star-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.35rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            text-align: center;
+            padding: 5rem 2rem 4rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.3rem 0.9rem;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 .accent { color: var(--accent); }
+
+        .hero .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-block;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-primary { background: var(--accent); color: #000; }
+        .btn-primary:hover { background: #33ddff; }
+
+        .btn-outline { border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Section ── */
+        section {
+            padding: 4rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        section + section { border-top: 1px solid var(--border); }
+
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+        .muted { color: var(--text-muted); }
+
+        /* ── Problem section ── */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .problem-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .problem-card h3 { font-size: 1rem; }
+
+        .problem-card .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* ── Three Layers ── */
+        .layers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .layer-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .layer-card .layer-num {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            line-height: 2rem;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .layer-card h3 { font-size: 1.1rem; }
+        .layer-card .layer-desc { color: var(--text-muted); font-size: 0.9rem; }
+
+        .layer-card .version-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+        }
+
+        /* ── Benchmarks ── */
+        .bench-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .bench-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .bench-card .bench-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .bench-card .bench-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .bench-card .bench-detail {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--border);
+            padding-top: 0.5rem;
+        }
+
+        /* ── Hardware ── */
+        .hw-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .hw-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .hw-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+
+        .hw-card .hw-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .hw-card .hw-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .hw-card .hw-score {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-top: 0.75rem;
+        }
+
+        .hw-card .btn { margin-top: 1rem; width: 100%; text-align: center; }
+
+        /* ── Why ── */
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .why-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .why-card .icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+        .why-card h3 { font-size: 1rem; }
+        .why-card p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* ── CTA ── */
+        .cta {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+        }
+
+        .cta h2 { margin-bottom: 0.5rem; }
+        .cta .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            text-align: left;
+        }
+
+        .footer-grid h4 {
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .footer-grid a {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .layers-grid, .hw-grid, .why-grid, .footer-grid { grid-template-columns: 1fr; }
+            .bench-grid { grid-template-columns: repeat(2, 1fr); }
+            .problem-grid { grid-template-columns: 1fr; }
+            nav { padding: 0.75rem 1rem; }
+            .nav-links { gap: 0.75rem; }
+            section { padding: 3rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+    <a href="#" class="nav-brand">.agentsong</a>
+    <div class="nav-links">
+        <a href="#benchmarks">Benchmarks</a>
+        <a href="#hardware">Buy hardware</a>
+        <a href="https://github.com/andiekobbietks/AgentSON" class="gh-link" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://github.com/andiekobbietks/AgentSON#quick-start" class="star-btn" target="_blank" rel="noopener">Install</a>
+        <a href="https://github.com/andiekobbietks/AgentSON" class="star-btn" target="_blank" rel="noopener">Star ★</a>
+    </div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero">
+    <span class="hero-badge">v0.1 · MIT licensed · Built solo from Cardiff</span>
+    <h1>Your AI history.<br>Your hardware.<br>Your <span class="accent">choice</span>.</h1>
+    <p class="subtitle">A vendor-neutral format for AI agent sessions. Capture, replay, and fine-tune on your own data — across any tool, any hardware, forever.</p>
+    <div class="hero-actions">
+        <a href="https://github.com/andiekobbietks/AgentSON#quick-start" class="btn btn-primary" target="_blank" rel="noopener">See benchmarks →</a>
+        <a href="#hardware" class="btn btn-outline">Buy the right hardware</a>
+        <a href="https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.json" class="btn btn-outline" target="_blank" rel="noopener">Read the spec</a>
+    </div>
+</div>
+
+<!-- ── The Problem ── -->
+<section id="problem">
+    <div class="section-label">The problem</div>
+    <h2>Your AI sessions are trapped.</h2>
+    <div class="problem-grid">
+        <div class="problem-card">
+            <div class="icon">🔒</div>
+            <h3>Vendor lock-in</h3>
+            <p class="muted">Every AI coding agent stores session data in its own proprietary SQLite database. 21 tables here, 20 there. No standard. No portability. Your data belongs to whoever built the tool.</p>
+        </div>
+        <div class="problem-card">
+            <div class="icon">Format churn</div>
+            <h3>Formats change without warning</h3>
+            <p class="muted">Chrome removed the export button in version 149. Sessions are still in your profile — but locked in a JSON blob no other tool can read. Your AI history now belongs to a vendor who can change the format at any commit.</p>
+        </div>
+        <div class="problem-card">
+            <div class="icon">Can't train</div>
+            <h3>No path from transcript to adapter</h3>
+            <p class="muted">You have hundreds of useful sessions. But there's no way to turn them into training data. No standard export. No fine-tuning pipeline. Your best work dies with the tool.</p>
+        </div>
+        <div class="problem-card">
+            <div class="icon">Hardware trap</div>
+            <h3>Vendor marketing picks your machine</h3>
+            <p class="muted">They sell you "AI capability" based on what they can ship, not what you need. You end up paying for cloud GPUs when a £95 Raspberry Pi could run the same adapter.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── Three Layers ── -->
+<section id="layers">
+    <div class="section-label">One format, three layers</div>
+    <h2>Same data, any hardware.</h2>
+    <p class="muted" style="max-width: 600px; margin-bottom: 1rem;">Same corpus, any hardware. One format that travels from your laptop to a Pi to an RTX 4090 — no conversion, no cloud, no account.</p>
+    <div class="layers-grid">
+        <div class="layer-card">
+            <div class="layer-num">1</div>
+            <h3>Format</h3>
+            <p class="layer-desc">Portable transcript — typed JSON schema capturing user-query, thought, action, answer, side-effect, context. Works across Cursor, Claude, DevTools, AI Studio. Vendor-neutral. MIT.</p>
+            <span class="version-badge">v0.1</span>
+        </div>
+        <div class="layer-card">
+            <div class="layer-num">2</div>
+            <h3>Train</h3>
+            <p class="layer-desc">Edge fine-tuning — same corpus fine-tunes on Unsloth (GPU), Olive + ONNX (NPU/CPU), or Google Colab (no GPU). Adapters are 50–200 MB. Sync between devices. Federate without sharing data.</p>
+        </div>
+        <div class="layer-card">
+            <div class="layer-num">3</div>
+            <h3>Deploy</h3>
+            <p class="layer-desc">Run anywhere — adapter + ONNX INT4 → runs on RTX 4090, M3 Max, Snapdragon X Elite, Raspberry Pi 5, or your browser. Live community-submitted numbers for each. No subscription. No cloud.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── Benchmarks ── -->
+<section id="benchmarks">
+    <div class="section-label">Benchmarks</div>
+    <h2>Real numbers from real machines</h2>
+    <p class="muted" style="margin-bottom: 0.5rem;">All numbers community-submitted. <a href="https://github.com/andiekobbietks/AgentSON" style="color: var(--accent);">Submit yours →</a></p>
+    <div class="bench-grid">
+        <div class="bench-card">
+            <div class="bench-value">18 min</div>
+            <div class="bench-label">Fastest training</div>
+            <div class="bench-detail">RTX 4090 · Llama-3.2 3B QLoRA</div>
+        </div>
+        <div class="bench-card">
+            <div class="bench-value">195 tok/s</div>
+            <div class="bench-label">Fastest inference</div>
+            <div class="bench-detail">RTX 4090 · Llama-3.2 3B INT4</div>
+        </div>
+        <div class="bench-card">
+            <div class="bench-value">6.2 tok/s</div>
+            <div class="bench-label">Works on legacy</div>
+            <div class="bench-detail">GTX 1050 · 2017 laptop</div>
+        </div>
+        <div class="bench-card">
+            <div class="bench-value">2.3 tok/s</div>
+            <div class="bench-label">Edge champion</div>
+            <div class="bench-detail">Pi 5 · £95 · 7W</div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Hardware ── -->
+<section id="hardware">
+    <div class="section-label">Hardware advisor</div>
+    <h2>Buy the right machine</h2>
+    <p class="muted" style="max-width: 650px; margin-bottom: 0.5rem;">We benchmark, score repairability, calculate 5-year TCO, and recommend honestly. Affiliate commissions fund the project — never buy placement.</p>
+    <div class="hw-grid">
+        <div class="hw-card">
+            <h3>Framework Laptop 13</h3>
+            <p class="hw-meta">AMD Ryzen AI 9 · 10/10 repairability</p>
+            <div class="hw-price">£1,399</div>
+            <div class="hw-meta">AI workload: Phi-4-mini NPU</div>
+            <div class="hw-meta">5-yr TCO: £1,679</div>
+            <span class="hw-score">10/10</span>
+            <a href="https://frame.work" class="btn btn-outline" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 1rem;">View</a>
+        </div>
+        <div class="hw-card">
+            <h3>Refurb RTX 3090 desktop</h3>
+            <p class="hw-meta">CeX/eBay · modular PSU</p>
+            <div class="hw-price">£800</div>
+            <div class="hw-meta">AI workload: Best $/perf</div>
+            <div class="hw-meta">5-yr TCO: £3,406</div>
+            <span class="hw-score">10/10</span>
+            <a href="https://www.ebay.co.uk" class="btn btn-outline" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 1rem;">View</a>
+        </div>
+        <div class="hw-card">
+            <h3>Raspberry Pi 5 + AI HAT+</h3>
+            <p class="hw-meta">£95 · 7W · edge</p>
+            <div class="hw-price">£95</div>
+            <div class="hw-meta">AI workload: Phi-3-mini</div>
+            <div class="hw-meta">5-yr TCO: £155</div>
+            <span class="hw-score">10/10</span>
+            <a href="https://www.raspberrypi.com" class="btn btn-outline" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 1rem;">View</a>
+        </div>
+    </div>
+</section>
+
+<!-- ── Why ── -->
+<section id="why">
+    <div class="section-label">Why this exists</div>
+    <h2>The portability layer the AI coding ecosystem needs</h2>
+    <div class="why-grid">
+        <div class="why-card">
+            <div class="icon">Solo developers</div>
+            <h3>Don't lose your sessions</h3>
+            <p>Don't lose your AI sessions when a tool updates. Search across years of help. Train a personal adapter. Run on the laptop you already have — even the old one.</p>
+        </div>
+        <div class="why-card">
+            <div class="icon">Teams</div>
+            <h3>Onboarding that actually works</h3>
+            <p>Onboard new devs with "here's how we actually work." Audit AI-generated code. Share successful workflows. Compliance trail for SOC2/HIPAA/GDPR.</p>
+        </div>
+        <div class="why-card">
+            <div class="icon">Industry</div>
+            <h3>Open alternative to vendor lock-in</h3>
+            <p>An open alternative to vendor lock-in. The portability layer the AI coding ecosystem needs. No VC, no telemetry, MIT licensed, vendor-neutral.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA ── -->
+<div class="cta">
+    <h2>Ready to take your AI history with you?</h2>
+    <p class="muted">Three commands. No cloud. No account. Your data, your hardware, forever.</p>
+    <div class="hero-actions" style="margin-top: 1.5rem;">
+        <a href="https://github.com/andiekobbietks/AgentSON#quick-start" class="btn btn-primary" target="_blank" rel="noopener">Install AgentSON</a>
+        <a href="#benchmarks" class="btn btn-outline">See benchmarks</a>
+    </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>.agentsong</h4>
+            <p class="muted" style="font-size: 0.8rem;">Portable format for AI agent transcripts. Built by Andie Kobbie in Cardiff, Wales.</p>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <a href="#benchmarks">Benchmarks</a>
+            <a href="#hardware">Hardware advisor</a>
+            <a href="https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.json" target="_blank" rel="noopener">Spec (v1)</a>
+            <a href="https://github.com/andiekobbietks/AgentSON" target="_blank" rel="noopener">GitHub</a>
+        </div>
+        <div>
+            <h4>Learn</h4>
+            <a href="https://github.com/andiekobbietks/AgentSON#quick-start" target="_blank" rel="noopener">Quickstart</a>
+            <a href="#">Methodology</a>
+            <a href="https://github.com/andiekobbietks/AgentSON/discussions" target="_blank" rel="noopener">Discussions</a>
+            <a href="#">Affiliate policy</a>
+        </div>
+    </div>
+    <p style="margin-top: 1rem;">Affiliate disclosure: Links to retailers may earn a small commission at no cost to you. Funds the open-source `.agentsong` project. We never promote anything that doesn't benchmark well on our matrix. Repairability scores sourced from iFixit. MIT license · v0.1 · 2026</p>
+</footer>
+
+</body>
+</html>
