@@ -24,7 +24,8 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 ### Backward compatibility
 
 - All v1.0 files validate unchanged against v1.1.
-- New fields (`task`, `outcome`, `observation`, `tool_call_id`, `correlation_id`, `duration_ms`, `error`, `attachments`) are all optional.
+- New top-level fields (`task`, `outcome`) are optional.
+- New entry type `observation` is supported, along with optional `tool_call_id`, `correlation_id`, `duration_ms`, `error`, and `attachments` where applicable.
 - Existing tools that read `action.output` continue to work.
 
 ## [1.0.0] - 2026-07-04
