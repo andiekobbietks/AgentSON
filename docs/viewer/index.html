@@ -16,198 +16,170 @@
             --text-muted: #9a9070;
             --accent: #ffb000;
             --success: #a0d060;
-            --warning: #ffb000;
+            --warning: #d4a030;
             --error: #e05040;
+            --purple: #a070d0;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
         }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
+        h1 { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; }
+        h1 span { color: var(--accent); }
 
-        header {
-            border-bottom: 1px solid var(--border);
-            padding: 20px 0;
-            margin-bottom: 20px;
+        .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+        .btn {
+            padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: 600;
+            font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
+            border: 1px solid var(--border); transition: all 0.2s;
         }
+        .btn-primary { background: var(--accent); color: #0a0a08; border-color: var(--accent); }
+        .btn-primary:hover { opacity: 0.85; }
+        .btn-danger { background: var(--error); color: #fff; border-color: var(--error); }
+        .btn-danger:hover { opacity: 0.85; }
+        .btn-secondary { background: var(--surface); color: var(--text); }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .btn[disabled] { display: none; }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
+        .search-wrap { width: 100%; margin-top: 10px; display: none; }
+        .search-wrap.active { display: block; }
+        #searchBar {
+            width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border);
+            color: var(--text); border-radius: 6px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px;
         }
-
-        h1 span {
-            color: var(--accent);
-        }
+        #searchBar:focus { outline: none; border-color: var(--accent); }
+        #searchBar::placeholder { color: var(--text-muted); }
 
         .drop-zone {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: border-color 0.2s;
+            border: 2px dashed var(--border); border-radius: 8px; padding: 40px;
+            text-align: center; cursor: pointer; transition: all 0.3s ease;
         }
+        .drop-zone:hover { border-color: var(--accent); }
+        .drop-zone.dragover { border-color: var(--success); background: rgba(160, 208, 96, 0.05); }
+        .drop-zone p { color: var(--text-muted); margin-bottom: 8px; }
+        .drop-zone strong { color: var(--accent); }
+        #fileInput { display: none; }
 
-        .drop-zone:hover,
-        .drop-zone.dragover {
-            border-color: var(--accent);
+        .json-preview {
+            margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px;
+            background: var(--surface);
         }
-
-        .drop-zone p {
-            color: var(--text-muted);
-            margin-bottom: 10px;
+        .json-preview summary {
+            padding: 10px 14px; cursor: pointer; color: var(--text-muted); font-size: 13px;
+            user-select: none; font-family: 'Space Mono', monospace;
+        }
+        .json-preview summary:hover { color: var(--accent); }
+        .json-preview pre {
+            padding: 14px; margin: 0; overflow-x: auto; font-size: 12px;
+            background: rgba(0,0,0,0.3); border-top: 1px solid var(--border);
+            color: var(--accent); font-family: 'Space Mono', monospace;
         }
 
         .session-info {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 16px; margin-bottom: 20px;
         }
+        .session-info h2 { font-family: 'Space Mono', monospace; font-size: 16px; margin-bottom: 12px; }
+        .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+        .meta-item { font-size: 14px; }
+        .meta-item .label { color: var(--text-muted); }
 
-        .session-info h2 {
-            font-size: 16px;
-            margin-bottom: 12px;
+        .entries { display: flex; flex-direction: column; gap: 12px; }
+        .entries.side-by-side {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px;
         }
-
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-        }
-
-        .meta-item {
-            font-size: 14px;
-        }
-
-        .meta-item .label {
-            color: var(--text-muted);
-        }
-
-        .entries {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .entries.side-by-side .entry { margin-bottom: 0; }
 
         .entry {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 14px; position: relative;
+            border-left: 4px solid var(--border); transition: border-color 0.2s;
         }
-
-        .entry-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
+        .entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .entry-type {
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 500;
+            font-size: 11px; padding: 2px 8px; border-radius: 10px;
+            font-weight: 600; text-transform: uppercase; font-family: 'Space Mono', monospace;
         }
-
-        .type-user-query { background: var(--accent); color: #0a0a08; }
-        .type-thought { background: var(--warning); color: #0a0a08; }
-        .type-action { background: var(--success); color: #0a0a08; }
-        .type-answer { background: var(--text-muted); color: #0a0a08; }
-        .type-side-effect { background: var(--error); color: #fff; }
-        .type-context { background: #8a6020; color: #fff; }
-        .type-tool { background: #a0d060; color: #0a0a08; }
-
-        .entry-content {
-            font-size: 14px;
-            white-space: pre-wrap;
-            word-break: break-word;
+        .copy-btn {
+            margin-left: auto; padding: 3px 8px; font-size: 11px;
+            background: var(--bg); color: var(--text-muted); border: 1px solid var(--border);
+            border-radius: 4px; cursor: pointer; transition: all 0.2s;
+            font-family: 'Space Mono', monospace;
         }
+        .copy-btn:hover { background: var(--accent); color: #0a0a08; border-color: var(--accent); }
+        .copy-btn.copied { background: var(--success); color: #0a0a08; border-color: var(--success); }
 
+        .role-user { border-left-color: var(--accent); }
+        .role-user .entry-type { background: var(--accent); color: #0a0a08; }
+        .role-assistant { border-left-color: var(--success); }
+        .role-assistant .entry-type { background: var(--success); color: #0a0a08; }
+        .role-system { border-left-color: var(--warning); }
+        .role-system .entry-type { background: var(--warning); color: #0a0a08; }
+        .role-tool { border-left-color: var(--purple); }
+        .role-tool .entry-type { background: var(--purple); color: #fff; }
+        .role-error { border-left-color: var(--error); }
+        .role-error .entry-type { background: var(--error); color: #fff; }
+
+        .entry-content { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
         .entry-content code {
-            background: var(--bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 13px;
+            background: var(--bg); padding: 2px 6px; border-radius: 4px;
+            font-family: 'Space Mono', monospace; font-size: 12px;
         }
-
         .entry-content pre {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin-top: 8px;
+            background: var(--bg); padding: 12px; border-radius: 4px;
+            overflow-x: auto; margin-top: 8px;
         }
-
-        .entry-content pre code {
-            padding: 0;
-            background: none;
-        }
+        .entry-content pre code { padding: 0; background: none; }
 
         .metrics {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-            font-size: 13px;
-            color: var(--text-muted);
+            display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px;
+            padding-top: 14px; border-top: 1px solid var(--border);
+            font-size: 13px; color: var(--text-muted); font-family: 'Space Mono', monospace;
         }
 
-        .no-session {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-        }
-
-        #fileInput {
-            display: none;
-        }
+        .no-session { text-align: center; padding: 40px; color: var(--text-muted); }
+        .error-msg { color: var(--error); font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1><span>Agent</span>SON Viewer</h1>
+            <div class="controls">
+                <button id="layoutBtn" class="btn btn-secondary" disabled onclick="toggleLayout()">Side-by-Side</button>
+                <button id="sortBtn" class="btn btn-secondary" disabled onclick="toggleSort()">Sort: Newest</button>
+                <button id="downloadBtn" class="btn btn-primary" disabled onclick="downloadAgentSON()">Download .AgentSON</button>
+                <button id="clearBtn" class="btn btn-danger" disabled onclick="clearSession()">Clear</button>
+            </div>
+            <div class="search-wrap" id="searchWrap">
+                <input type="text" id="searchBar" placeholder="Filter entries..." oninput="filterEntries()">
+            </div>
         </header>
 
         <div class="drop-zone" id="dropZone">
-            <p>Drag & drop an <strong>.AgentSON</strong> file here</p>
+            <p>Drag &amp; drop an <strong>.AgentSON</strong> file here</p>
             <p>or click to select</p>
-            <input type="file" id="fileInput" accept=".json,.AgentSON,.agentson">
+            <input type="file" id="fileInput" accept=".AgentSON,.agentson,.json">
         </div>
 
         <div id="content">
-            <div class="no-session">
-                No session loaded. Drop a file to begin.
-            </div>
+            <div class="no-session">No session loaded. Drop a file to begin.</div>
         </div>
     </div>
 
     <script>
+        let currentFileData = null;
+        let sortOrder = 'desc';
+
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const content = document.getElementById('content');
+        const contentEl = document.getElementById('content');
 
         dropZone.addEventListener('click', () => fileInput.click());
 
@@ -233,13 +205,30 @@
         });
 
         function readFile(file) {
+            const name = file.name.toLowerCase();
+            const validExt = name.endsWith('.agentson') || name.endsWith('.json');
+            if (!validExt) {
+                contentEl.innerHTML = '<div class="no-session error-msg">Invalid file type. Please use an .AgentSON or .json file.</div>';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
+                    if (!data.entries) {
+                        throw new Error('Valid JSON but not AgentSON schema (missing "entries").');
+                    }
+                    currentFileData = data;
+                    sortOrder = 'desc';
                     renderSession(data);
+                    document.getElementById('downloadBtn').disabled = false;
+                    document.getElementById('layoutBtn').disabled = false;
+                    document.getElementById('sortBtn').disabled = false;
+                    document.getElementById('clearBtn').disabled = false;
+                    document.getElementById('searchWrap').classList.add('active');
+                    document.getElementById('sortBtn').textContent = 'Sort: Newest';
                 } catch (err) {
-                    content.innerHTML = `<div class="no-session">Error parsing file: ${err.message}</div>`;
+                    contentEl.innerHTML = '<div class="no-session error-msg">Error: ' + escapeHtml(err.message) + '</div>';
                 }
             };
             reader.readAsText(file);
@@ -250,79 +239,124 @@
             const agent = data.agent || {};
             const entries = data.entries || [];
             const metrics = data.metrics || {};
+            const displayEntries = sortOrder === 'desc' ? [...entries].reverse() : entries;
 
-            let html = `
-                <div class="session-info">
-                    <h2>Session: ${data.id || 'Unknown'}</h2>
-                    <div class="meta-grid">
-                        <div class="meta-item">
-                            <span class="label">Tool:</span> ${tool.name || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Agent:</span> ${agent.name || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Model:</span> ${agent.model || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Started:</span> ${data.started_at || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Entries:</span> ${entries.length}
-                        </div>
-                    </div>
-                </div>
-                <div class="entries">
-            `;
+            let html = '<details class="json-preview"><summary>View Raw JSON Metadata</summary><pre>' +
+                escapeHtml(JSON.stringify({ id: data.id, tool: tool, agent: agent, metrics: metrics, started_at: data.started_at }, null, 2)) +
+                '</pre></details>';
 
-            for (const entry of entries) {
+            html += '<div class="session-info"><h2>Session: ' + escapeHtml(data.id || 'Unknown') + '</h2><div class="meta-grid">';
+            html += '<div class="meta-item"><span class="label">Tool:</span> ' + escapeHtml(tool.name || 'Unknown') + '</div>';
+            html += '<div class="meta-item"><span class="label">Agent:</span> ' + escapeHtml(agent.name || 'Unknown') + '</div>';
+            html += '<div class="meta-item"><span class="label">Model:</span> ' + escapeHtml(agent.model || 'Unknown') + '</div>';
+            html += '<div class="meta-item"><span class="label">Started:</span> ' + escapeHtml(data.started_at || 'Unknown') + '</div>';
+            html += '<div class="meta-item"><span class="label">Entries:</span> ' + entries.length + '</div>';
+            html += '</div></div>';
+
+            html += '<div class="entries" id="entriesContainer">';
+            for (const entry of displayEntries) {
                 const type = entry.type || entry.role || 'unknown';
-                const typeClass = `type-${type.replace(/[^a-z-]/g, '-')}`;
-                
-                let content = '';
-                if (entry.text) {
-                    content += escapeHtml(entry.text);
-                }
-                if (entry.code) {
-                    content += `<pre><code>${escapeHtml(entry.code)}</code></pre>`;
-                }
-                if (entry.output) {
-                    content += `<div class="label">Output:</div><pre><code>${escapeHtml(entry.output)}</code></pre>`;
-                }
-                if (entry.query) {
-                    content += escapeHtml(entry.query);
-                }
+                const typeClass = 'type-' + type.replace(/[^a-z-]/g, '-');
+                let role = type.toLowerCase();
+                if (role.startsWith('user')) role = 'user';
+                else if (role === 'thought' || role === 'answer') role = 'assistant';
+                else if (role === 'action' || role.startsWith('tool')) role = 'tool';
+                else if (role === 'side-effect' || role === 'error') role = 'error';
+                else if (role === 'system' || role === 'context') role = 'system';
+                const roleClass = 'role-' + role;
 
-                html += `
-                    <div class="entry">
-                        <div class="entry-header">
-                            <span class="entry-type ${typeClass}">${type}</span>
-                        </div>
-                        <div class="entry-content">${content || '<em>No content</em>'}</div>
-                    </div>
-                `;
+                let body = '';
+                if (entry.text) body += escapeHtml(entry.text);
+                if (entry.code) body += '<pre><code>' + escapeHtml(entry.code) + '</code></pre>';
+                if (entry.output) body += '<div class="label" style="color:var(--text-muted);margin-top:4px">Output:</div><pre><code>' + escapeHtml(entry.output) + '</code></pre>';
+                if (entry.query) body += escapeHtml(entry.query);
+
+                html += '<div class="entry ' + roleClass + '">';
+                html += '<div class="entry-header"><span class="entry-type ' + typeClass + '">' + escapeHtml(type) + '</span>';
+                html += '<button class="copy-btn" onclick="copyEntry(this)">Copy</button></div>';
+                html += '<div class="entry-content">' + (body || '<em>No content</em>') + '</div>';
+                html += '</div>';
             }
-
             html += '</div>';
 
             if (metrics.total_tokens || metrics.cost) {
-                html += `
-                    <div class="metrics">
-                        ${metrics.total_tokens ? `<span>Tokens: ${metrics.total_tokens.toLocaleString()}</span>` : ''}
-                        ${metrics.cost ? `<span>Cost: $${metrics.cost.toFixed(4)}</span>` : ''}
-                        ${metrics.total_turns ? `<span>Turns: ${metrics.total_turns}</span>` : ''}
-                        ${metrics.total_tool_calls ? `<span>Tool Calls: ${metrics.total_tool_calls}</span>` : ''}
-                    </div>
-                `;
+                html += '<div class="metrics">';
+                if (metrics.total_tokens) html += '<span>Tokens: ' + metrics.total_tokens.toLocaleString() + '</span>';
+                if (metrics.cost) html += '<span>Cost: $' + metrics.cost.toFixed(4) + '</span>';
+                if (metrics.total_turns) html += '<span>Turns: ' + metrics.total_turns + '</span>';
+                if (metrics.total_tool_calls) html += '<span>Tool Calls: ' + metrics.total_tool_calls + '</span>';
+                html += '</div>';
             }
 
-            content.innerHTML = html;
+            contentEl.innerHTML = html;
         }
 
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function filterEntries() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const entries = document.querySelectorAll('.entry');
+            entries.forEach(entry => {
+                entry.style.display = entry.innerText.toLowerCase().includes(query) ? '' : 'none';
+            });
+        }
+
+        function toggleLayout() {
+            const container = document.getElementById('entriesContainer');
+            if (!container) return;
+            const btn = document.getElementById('layoutBtn');
+            if (container.classList.contains('side-by-side')) {
+                container.classList.remove('side-by-side');
+                btn.textContent = 'Side-by-Side';
+            } else {
+                container.classList.add('side-by-side');
+                btn.textContent = 'Stacked';
+            }
+        }
+
+        function toggleSort() {
+            if (!currentFileData) return;
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            document.getElementById('sortBtn').textContent = sortOrder === 'desc' ? 'Sort: Newest' : 'Sort: Oldest';
+            renderSession(currentFileData);
+        }
+
+        function copyEntry(btn) {
+            const entryContent = btn.closest('.entry').querySelector('.entry-content').innerText;
+            navigator.clipboard.writeText(entryContent).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+            });
+        }
+
+        function downloadAgentSON() {
+            if (!currentFileData) return;
+            const blob = new Blob([JSON.stringify(currentFileData, null, 4)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (currentFileData.id || 'session') + '.AgentSON';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearSession() {
+            currentFileData = null;
+            contentEl.innerHTML = '<div class="no-session">No session loaded. Drop a file to begin.</div>';
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('layoutBtn').disabled = true;
+            document.getElementById('sortBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+            document.getElementById('searchWrap').classList.remove('active');
+            document.getElementById('searchBar').value = '';
+            fileInput.value = '';
         }
     </script>
 </body>
