@@ -307,53 +307,44 @@ When you click "Copy to coding agent":
 
 ---
 
-## Why Preferences JSON?
+## Why Preferences JSON? (Empirical Inference)
 
-### Why Not SQLite?
+### What We Actually Extracted
 
-| SQLite | Preferences JSON |
-|--------|------------------|
-| Requires separate file | Already exists |
-| Needs permissions | Already has permissions |
-| Separate backup | Backed up with Chrome |
-| Extra dependency | Zero dependencies |
+| Tool | Storage | Sessions Found | How We Know |
+|------|---------|----------------|-------------|
+| **opencode** | SQLite | 5 | We read the database |
+| **MiniMax** | SQLite | 5 | We read the database |
+| **Antigravity IDE** | SQLite | 1 | We read the database |
+| **Chrome DevTools AI** | ? | Unknown | Not extracted yet |
 
-### Why Not IndexedDB?
+### The Pattern (Empirical Evidence)
 
-| IndexedDB | Preferences JSON |
-|-----------|------------------|
-| Async API | Sync API |
-| Complex queries | Simple key-value |
-| Browser-only | File accessible |
-| Can't export | Easy to export |
+```
+Desktop apps → SQLite (fast queries, local)
+Browser tools → Browser-native storage
+```
 
-### Why Not localStorage?
+### Why Chrome DevTools AI Likely Uses Preferences JSON
 
-| localStorage | Preferences JSON |
-|--------------|------------------|
-| 5MB limit | No practical limit |
-| Domain-bound | Global |
-| No structure | Structured JSON |
-| Can't sync | Synced across devices |
+| Evidence | Source |
+|----------|--------|
+| Chrome stores settings in Preferences | Chromium source (2012) |
+| Chrome syncs Preferences across devices | Chromium docs |
+| Chrome DevTools AI saves conversation history | Chrome blog (2026) |
+| Browser tools use browser-native storage | Industry pattern |
 
-### The Real Reason
+### What's Not Confirmed
 
-Chrome DevTools AI chose Preferences JSON because:
+| Claim | Status |
+|-------|--------|
+| "Chrome DevTools AI uses Preferences JSON" | **Inference, not confirmed** |
+| "The .ailog schema is from Chrome" | **Inference, not confirmed** |
+| "Sessions are in Preferences" | **Inference, not confirmed** |
 
-1. **It's already there** — Chrome syncs Preferences across devices
-2. **Zero extra work** — No new file, no new permissions
-3. **Instant access** — Synchronous API, no async needed
-4. **Portable** — Can be read by external tools (like AgentSON)
-5. **Backup included** — Backed up with Chrome profile
+### Honest Statement
 
-### The Tradeoff
-
-| Advantage | Disadvantage |
-|-----------|--------------|
-| Simple | Not optimized for queries |
-| Portable | Large file size |
-| Synced | Mixed with other settings |
-| No dependencies | Harder to parse |
+> Based on empirical data from three desktop tools (all SQLite) and Chrome's documented architecture (Preferences JSON), we infer that Chrome DevTools AI likely stores sessions in Preferences JSON. This has not been directly verified by extracting Chrome's data.
 
 ---
 
