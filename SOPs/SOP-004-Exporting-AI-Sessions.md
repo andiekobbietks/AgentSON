@@ -8,7 +8,7 @@
 
 ## Purpose
 
-This SOP describes how to export AI coding sessions from various tools (opencode, MiniMax, Antigravity IDE) into AgentSON format for search, backup, and cross-tool hydration.
+This SOP describes how to export AI coding sessions from various tools (opencode, MiniMax, Antigravity IDE, Chrome DevTools) into AgentSON format for search, backup, and cross-tool hydration.
 
 ---
 
@@ -29,6 +29,7 @@ This SOP describes how to export AI coding sessions from various tools (opencode
 | opencode | `~\.local\share\opencode\opencode.db` |
 | MiniMax | `~\.minimax\sqlite.db` |
 | Antigravity IDE | `~\.gemini\antigravity-ide\conversations\*.db` |
+| Chrome DevTools | Export from Chrome DevTools AI Assistance panel (Markdown export) |
 
 ---
 

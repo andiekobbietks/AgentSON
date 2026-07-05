@@ -19,7 +19,10 @@ def get_default_db_paths():
     return {
         "opencode": home / ".local" / "share" / "opencode" / "opencode.db",
         "minimax": home / ".minimax" / "sqlite.db",
-        "antigravity": home / ".gemini" / "antigravity-ide" / "conversations"
+        "antigravity": home / ".gemini" / "antigravity-ide" / "conversations",
+        "cursor": home / ".config" / "Cursor" / "User" / "globalStorage" / "state.vscdb",
+        "cline": home / ".config" / "Code" / "User" / "globalStorage" / "saoudrizwan.claude-dev" / "tasks",
+        "aider": Path(".") / ".aider.chat.history.md",
     }
 
 
@@ -143,6 +146,82 @@ def cmd_export(args):
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"Exported to {output_path}")
+    elif args.tool == "cursor":
+        from readers.cursor import read as read_cursor, list_sessions as list_cursor
+        
+        db_path = db_paths["cursor"]
+        if not db_path.exists():
+            print(f"Error: Cursor database not found at {db_path}", file=sys.stderr)
+            sys.exit(1)
+            
+        if args.all:
+            sessions = list_cursor(str(db_path))
+            for session in sessions:
+                print(f"Exporting: {session['title']} ({session['id']})")
+                data = read_cursor(str(db_path), session["id"])
+                output_path = Path(args.output) / f"cursor_{session['id']}.AgentSON"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_cursor(str(db_path), args.session)
+            output_path = Path(args.output) / f"cursor_{args.session}.AgentSON"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
+    elif args.tool == "cline":
+        from readers.cline import read as read_cline, list_sessions as list_cline
+        
+        tasks_dir = db_paths["cline"]
+        if not tasks_dir.exists():
+            print(f"Error: Cline tasks directory not found at {tasks_dir}", file=sys.stderr)
+            sys.exit(1)
+            
+        if args.all:
+            sessions = list_cline(str(tasks_dir))
+            for session in sessions:
+                print(f"Exporting: {session['title']} ({session['id']})")
+                data = read_cline(str(tasks_dir), session["id"])
+                output_path = Path(args.output) / f"cline_{session['id']}.AgentSON"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_cline(str(tasks_dir), args.session)
+            output_path = Path(args.output) / f"cline_{args.session}.AgentSON"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
+    elif args.tool == "aider":
+        from readers.aider import read as read_aider, list_sessions as list_aider
+        
+        repo_dir = Path(args.input) if args.input else Path(".")
+        aider_file = repo_dir / ".aider.chat.history.md"
+        if not aider_file.exists():
+            print(f"Error: Aider chat history not found at {aider_file}", file=sys.stderr)
+            sys.exit(1)
+            
+        if args.all:
+            sessions = list_aider(str(repo_dir))
+            for session in sessions:
+                print(f"Exporting: {session['title']} ({session['id']})")
+                data = read_aider(str(repo_dir), session["id"])
+                output_path = Path(args.output) / f"aider_{session['id']}.AgentSON"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            data = read_aider(str(repo_dir), args.session)
+            output_path = Path(args.output) / f"aider_{data['id']}.AgentSON"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
     else:
         print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
@@ -180,6 +259,28 @@ def cmd_list(args):
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
+    elif args.tool == "cursor":
+        from readers.cursor import list_sessions as list_cursor
+        db_path = db_paths["cursor"]
+        if not db_path.exists():
+            print(f"Error: Cursor database not found at {db_path}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_cursor(str(db_path), args.limit)
+    elif args.tool == "cline":
+        from readers.cline import list_sessions as list_cline
+        tasks_dir = db_paths["cline"]
+        if not tasks_dir.exists():
+            print(f"Error: Cline tasks directory not found at {tasks_dir}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_cline(str(tasks_dir), args.limit)
+    elif args.tool == "aider":
+        from readers.aider import list_sessions as list_aider
+        repo_dir = Path(".")
+        aider_file = repo_dir / ".aider.chat.history.md"
+        if not aider_file.exists():
+            print(f"Error: Aider chat history not found at {aider_file}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_aider(str(repo_dir), args.limit)
     else:
         print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
@@ -498,7 +599,7 @@ def main():
     
     # export command
     export_parser = subparsers.add_parser("export", help="Export sessions to AgentSON format")
-    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre"])
+    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "cline", "aider", "libre"])
     export_parser.add_argument("--session", help="Session ID to export")
     export_parser.add_argument("--all", action="store_true", help="Export all sessions")
     export_parser.add_argument("--output", default=".", help="Output directory")
@@ -513,7 +614,7 @@ def main():
     
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
-    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity"])
+    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "cursor", "cline", "aider"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
     
     # search command

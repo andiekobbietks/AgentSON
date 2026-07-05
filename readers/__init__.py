@@ -11,6 +11,9 @@ from .chrome_devtools import (
     parse_markdown as parse_chrome_devtools_markdown,
 )
 from .claude_code import ClaudeCodeReader
+from .cursor import CursorReader, read as read_cursor, list_sessions as list_cursor
+from .cline import ClineReader, read as read_cline, list_sessions as list_cline
+from .aider import AiderReader, read as read_aider, list_sessions as list_aider
 
 # Legacy aliases
 ClaudeCode = ClaudeCodeReader
