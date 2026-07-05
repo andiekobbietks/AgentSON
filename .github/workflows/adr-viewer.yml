@@ -1,0 +1,51 @@
+name: Regenerate ADR index
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "docs/standards/adrs/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-adr-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install adr-viewer
+        run: pip install adr-viewer
+
+      - name: Generate ADR index
+        run: |
+          adr-viewer \
+            --adr-path docs/standards/adrs/ \
+            --output docs/standards/adr-index.html \
+            --title "AgentSON — Architecture Decision Records"
+
+      - name: Check for changes
+        id: check
+        run: |
+          git add docs/standards/adr-index.html
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open PR with regenerated index
+        if: steps.check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs(adr): regenerate ADR index [automated]"
+          title: "docs(adr): regenerate ADR index"
+          body: "Automated regeneration of docs/standards/adr-index.html triggered by a change under docs/standards/adrs/."
+          branch: automated/adr-index-update
+          delete-branch: true
