@@ -186,7 +186,7 @@
             "properties": {
               "type": {"type": "string", "description": "Error class (e.g., TimeoutError, ParseError)" },
               "message": {"type": "string", "description": "Human-readable error message" },
-              "stack": {type": "string", "description": "Optional stack trace"}
+              "stack": {"type": "string", "description": "Optional stack trace"}
             }
           },
           "path": {
