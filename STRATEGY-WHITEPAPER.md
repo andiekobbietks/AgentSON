@@ -8,9 +8,9 @@
 
 ## What AgentSON Is
 
-AgentSON preserves the **operational life of an AI agent** independently of the runtime that hosted it. Every prompt, thought, tool call, observation, file change, and answer — in one self-contained JSON file that works across any tool, platform, or vendor.
+AgentSON asks: **what survives when the runtime disappears?** It preserves the **operational life of an AI agent** independently of the runtime that hosted it — every prompt, thought, tool call, observation, file change, and answer in one self-contained JSON file.
 
-It is **not** a memory system (those answer "what should the agent remember?"). It is **not** a replacement for MCP (which answers "how does an agent call a tool?"). It is **not** an observability platform (which answers "what happened inside this runtime?").
+It is **not** a memory system (those answer "what should the agent remember?"). It is **not** a replacement for MCP (which answers "how does an agent call a tool?"). It is **not** a workflow provenance system like PROV-AGENT (which captures agent traces within an MCP-enabled runtime). It is **not** an observability platform (which answers "what happened inside this runtime?").
 
 AgentSON answers a question none of those address: **how can one agent execution be represented, exchanged, replayed, and analysed independently of the runtime that produced it?**
 
@@ -372,23 +372,29 @@ Without enough users:
 
 # Part V: The Thesis
 
+The space is moving fast. PROV-AGENT (arXiv 2508.02866, Aug 2025, IEEE e-Science 2025) extends W3C PROV for agent workflow provenance via MCP and observability — valuable for runtime-internal traceability, but assumes the runtime stays in place. MemIR focuses on typed long-term memory to prevent provenance-role confusion. Neither asks the question AgentSON answers:
+
+> **What survives when the runtime disappears?**
+
 AgentSON sits at the convergence of:
 
-1. **Market timing** — The AI agent runtime ecosystem is fragmenting across 30+ tools and frameworks (OpenClaw, Claude Code, Cursor, LangGraph, CrewAI, AutoGen, opencode, etc.). None share a portable trace format. Network effects are unclaimed.
+1. **A unique research question** — Everyone is discussing provenance, memory, governance, and MCP, but they generally assume the runtime remains in place. AgentSON asks what happens when Claude disappears, Cursor changes format, or OpenClaw evolves. Can the operational history still exist independently of any particular infrastructure?
 
-2. **Regulatory tailwind** — GDPR Art. 20 and EU AI Act Art. 52 create legal demand for portable, structured, provenance-tracked agent session data.
+2. **Market timing** — The AI agent runtime ecosystem is fragmenting across 30+ tools and frameworks (OpenClaw, Claude Code, Cursor, LangGraph, CrewAI, AutoGen, opencode, etc.). None share a portable representation format. Network effects are unclaimed.
 
-3. **Technical defensibility** — Open event schema, provenance model, replay semantics, cross-runtime import/export architecture, and versioned spec with backward compatibility. Adjacent research (narrative reconstruction, browser capture, healthcare) is separated into follow-up papers — the core format is simpler to specify and harder to displace once adopted.
+3. **Regulatory tailwind** — GDPR Art. 20 and EU AI Act Art. 52 create legal demand for portable, structured, provenance-tracked agent session data.
 
-4. **Engineering validation** — An independent lineage of systems-engineering thought (antirez, 2024-2026) confirms the architecture: memory bandwidth is the bottleneck, not compute; small models in self-correcting loops with external verification achieve results far beyond their size.
+4. **Technical defensibility** — Open event schema, provenance model, replay semantics, cross-runtime import/export architecture, and versioned spec with backward compatibility. Adjacent research (narrative reconstruction, browser capture, healthcare) is separated into follow-up papers — the core format is simpler to specify and harder to displace once adopted.
 
-5. **Existing traction** — 7 working readers, examples from real tool databases, a working CLI, Supabase integration, a GDPR compliance model grounded in formal research (AER, HunterAgent).
+5. **Engineering validation** — An independent lineage of systems-engineering thought (antirez, 2024-2026) confirms the architecture: memory bandwidth is the bottleneck, not compute; small models in self-correcting loops with external verification achieve results far beyond their size.
+
+6. **Existing traction** — 7 working readers across AI coding and healthcare, dogfood artifact validated against spec v1.1, examples from real tool databases, a working CLI, Supabase integration, a GDPR compliance model grounded in formal research.
 
 **Short-term value (developer experience):** Your AI work doesn't die when you switch tools. Every `.AgentSON` file is a searchable, portable, analysable record — your personal engineering journal across every runtime you use.
 
-**Long-term value (institutional knowledge):** As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows? Memory systems don't give you portable answers to those questions. AgentSON does.
+**Long-term value (institutional knowledge):** As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows? Memory systems and runtime-internal provenance don't give you portable answers to those questions. AgentSON does.
 
-**The bet:** AI agent tooling will consolidate, but the representation layer should remain open — like TCP/IP survived the protocol wars, like OpenAPI standardised middleware interfaces. AgentSON is the open interchange format for agent execution history. Every runtime is a producer; AgentSON is the common record.
+**The bet:** AI agent tooling will consolidate, but the representation layer should remain open — like TCP/IP survived the protocol wars, like OpenAPI standardised middleware interfaces. AgentSON is the portable execution representation. Every runtime is a producer; AgentSON is what survives when the runtime disappears.
 
 **The architecture:**
 

@@ -1,16 +1,16 @@
-# AgentSON: A Portable Episodic Provenance Format for AI Agent Ecosystems
+# AgentSON: Portable Execution Representation for AI Agents
 
 ## Paper Outline
 
 **Target venue:** ACM CCS 2027 (Security/Compliance track) or NeurIPS 2027 Datasets & Benchmarks  
 **Author:** Andrea Enning  
-**Status:** Outline v2 — refocused on format intrinsics
+**Status:** Outline v3 — thesis: "what survives when the runtime disappears"
 
 ---
 
 ## Abstract
 
-Large language model agents are evolving from stateless assistants into persistent collaborators operating across heterogeneous tools, runtimes, and collaboration platforms. While protocols such as MCP standardize tool interaction and memory systems support long-term recall, there exists no vendor-neutral representation for complete agent execution histories. We present AgentSON, a portable episodic provenance format that preserves the **operational life of an AI agent** independently of the runtime that hosted it. The format defines a canonical event model (typed entries with explicit provenance levels), replay semantics, versioned schema, branching and parent-child episode composition, and a cross-runtime import/export architecture. We evaluate the format across 7 AI coding ecosystems, measuring schema fidelity, information retention during cross-tool conversion, and compatibility with downstream applications including replay, search, evaluation, and fine-tuning. Consistent with recent work distinguishing reasoning provenance from execution traces (AER, arXiv 2603.21692), AgentSON records observable execution events without claiming to reconstruct inaccessible internal reasoning.
+Modern AI agents are increasingly persistent collaborators operating across heterogeneous runtimes. Existing systems standardize tool invocation (MCP), memory retrieval (MemIR), or workflow provenance within specific environments (PROV-AGENT). We propose AgentSON, a vendor-neutral episodic provenance representation that preserves portable execution history **independently of the runtime that generated it**, enabling replay, migration, evaluation, archival, and compliance across agent ecosystems. The format defines a canonical event model, replay semantics, provenance vocabulary, branching and parent-child episode composition, and a cross-runtime import/export architecture validated across 7 AI coding ecosystems and a regulated healthcare domain (FreeStyle Libre 2, GDPR Article 20). Our central research question is not how to capture provenance within a runtime, but what survives when the runtime disappears.
 
 ---
 
@@ -29,25 +29,34 @@ This fragmentation creates real costs:
 
 ### 1.2 What this paper is not
 
-This paper does **not** propose a new memory system. Memory answers "what should the agent remember?" — a question of future behaviour. AgentSON answers "what actually happened?" — a question of past behaviour.
+This paper does **not** propose a new memory system. Memory answers "what should the agent remember?" — a question of future behaviour. AgentSON answers "what actually happened?" — a question of past behaviour. Recent work like MemIR focuses on typed long-term memory to prevent provenance-role confusion; AgentSON is orthogonal.
 
-This paper does **not** propose a replacement for MCP. MCP standardizes *how* agents call tools. AgentSON standardizes *what interaction occurred*. They compose vertically:
+This paper does **not** propose a replacement for MCP or a workflow provenance system within an MCP-enabled runtime. PROV-AGENT (arXiv 2508.02866) extends W3C PROV for agent workflow provenance via MCP and data observability — this is valuable for runtime-internal traceability but assumes the runtime remains in place. AgentSON asks a different question: what survives when the runtime disappears?
+
+This paper does **not** propose a reconstruction or gap-filling system. Reconstruction (narrative mode, SLM gap-filling, Generator-Verifier architectures) is a separate research problem that builds on top of a portable representation.
 
 ```
-Communication (MCP) → Execution (Agent Runtime) → Representation (AgentSON)
+     Communication           Execution              Representation
+     ─────────────           ─────────              ──────────────
+     MCP                     Agent Runtime          AgentSON
+     (how agents              (what happens           (what survives
+      call tools)              during execution)       when runtime
+                                                      disappears)
 ```
-
-This paper does **not** propose a reconstruction or gap-filling system. Reconstruction (narrative mode, SLM gap-filling, Generator-Verifier architectures) is a separate research problem that builds on top of a portable representation — it is not intrinsic to the format itself.
 
 ### 1.3 Contributions
 
+**Core (representation):**
 1. **Canonical event model** — a typed, provenance-tracked schema for agent execution trajectories (user-query, thought, action, observation, answer, side-effect)
 2. **Provenance vocabulary** — five-level confidence scale (confirmed, inferred, estimated, ml_generated, unknown) with semantic meaning for each level
 3. **Replay semantics** — deterministic ordering, correlation IDs for action-observation pairs, branching support for parallel or alternative trajectories
-4. **Cross-runtime import/export architecture** — reader pattern for tool-specific extraction, normalizer pipeline, validator
+4. **Parent-child episode composition** — sessions can reference parent episodes, enabling chain-of-thought across multiple sessions and long-running agent workflows
 5. **Versioned schema with backward compatibility** — schema URI pinning, documented upgrade path for v1.x
-6. **Parent-child episode composition** — sessions can reference parent episodes, enabling chain-of-thought across multiple sessions and long-running agent workflows
-7. **Multi-ecosystem evaluation** — format fidelity, cross-tool information retention, and downstream application compatibility measured across 7 AI coding tools
+
+**Evidence (that the representation generalises):**
+6. **Cross-runtime import/export architecture** — reader pattern for tool-specific extraction, normalizer pipeline, validator; implemented for 7 ecosystems (opencode, Claude Code, ChatGPT, MiniMax, Chrome DevTools AI, Copilot Chat, FreeStyle Libre 2)
+7. **Multi-ecosystem evaluation** — format fidelity, cross-tool information retention, and downstream application compatibility across AI coding tools
+8. **Regulated domain validation** — healthcare compliance case study (FreeStyle Libre 2, GDPR Article 20) demonstrating robustness in a highly regulated environment
 
 ---
 
@@ -74,7 +83,9 @@ This paper does **not** propose a reconstruction or gap-filling system. Reconstr
 
 **MCP (Model Context Protocol):** Standardizes tool discovery and invocation. Does not specify any trace recording or session history format. AgentSON is complementary: MCP defines the communication layer, AgentSON defines the representation layer.
 
-**Memory systems (A-MEM, Mem0, Claude memory, EntraBot):** Address long-term recall — what the agent should retain across sessions. Microsoft's EntraBot work (2025-2026) treats memory as an enterprise governed resource with TTL, retention, and access control. AgentSON is orthogonal: it records *what happened*, not *what should be remembered*.
+**PROV-AGENT (arXiv 2508.02866, Aug 2025, IEEE e-Science 2025):** Extends W3C PROV for agent workflow provenance using MCP and data observability. Captures prompts, responses, decisions in near real-time across edge/cloud/HPC environments. **Key difference for AgentSON:** PROV-AGENT assumes the runtime remains in place (MCP-enabled, instrumented environment). AgentSON asks what survives when the runtime disappears — a portable representation that exists independently of any particular infrastructure.
+
+**Memory systems (A-MEM, Mem0, Claude memory, EntraBot, MemIR):** Address long-term recall — what the agent should retain across sessions. Recent work on MemIR focuses on typed long-term memory to prevent provenance-role confusion (distinguishing what happened from what should be remembered). AgentSON is orthogonal: it records *what happened* (past), not *what should be remembered* (future).
 
 **Observability platforms (Langfuse, Arize Phoenix, Helicone):** Provide real-time monitoring and telemetry for LLM applications within a single runtime. AgentSON is file-based, portable, and designed for post-hoc analysis across runtimes.
 
@@ -272,14 +283,17 @@ Every `.AgentSON` file is validated against the JSON Schema at export time. Vali
 
 **RQ3:** Can the import/export architecture be extended to a new tool with minimal effort?
 
+**RQ4:** Does the AgentSON representation generalise beyond AI coding tools to regulated domains (healthcare)?
+
 ### 5.2 Datasets
 
-| Source | Sessions | Events | Ground truth |
-|--------|----------|--------|-------------|
-| opencode SQLite | 100 | ~30,000 | Native tool logs |
-| Claude Code JSONL | 50 | ~15,000 | Native tool logs |
-| Chrome DevTools AI Markdown | 30 | ~2,000 | Rendered page |
-| MiniMax SQLite | 20 | ~1,500 | Native tool logs |
+| Source | Domain | Sessions | Events | Ground truth |
+|--------|--------|----------|--------|-------------|
+| opencode SQLite | AI coding | 100 | ~30,000 | Native tool logs |
+| Claude Code JSONL | AI coding | 50 | ~15,000 | Native tool logs |
+| Chrome DevTools AI Markdown | AI coding | 30 | ~2,000 | Rendered page |
+| MiniMax SQLite | AI coding | 20 | ~1,500 | Native tool logs |
+| FreeStyle Libre 2 NFC | Healthcare | 5 patients, 14 days each | ~40,000 | Sensor readings |
 
 ### 5.3 Metrics
 
@@ -290,6 +304,7 @@ Every `.AgentSON` file is validated against the JSON Schema at export time. Vali
 | **Cross-tool fidelity** | Fraction of events preserved when converting Tool A → AgentSON → Tool B | >0.90 |
 | **Replay accuracy** | Fraction of replayable sessions producing identical tool-call sequences | >0.95 |
 | **Reader development cost** | Person-hours to implement a new reader | <8 hours |
+| **Domain generality** | Whether the same reader pattern works for non-coding data sources | Confirmed (healthcare) |
 
 ### 5.4 Evaluation scenarios
 
@@ -307,6 +322,11 @@ Every `.AgentSON` file is validated against the JSON Schema at export time. Vali
 **Scenario 3: Reader extensibility (RQ3)**
 - Measure time to implement a new reader for an unfamiliar tool
 - Report common patterns and reusable components across reader implementations
+
+**Scenario 4: Domain generality (RQ4)**
+- Apply the same reader pattern to a non-coding data source (FreeStyle Libre 2)
+- Verify schema validity, provenance tracking, and downstream export pathways (CSV, FHIR)
+- Confirm that the typed event vocabulary (user-query, observation, side-effect) generalises to sensor data
 
 ### 5.5 Expected results
 
@@ -330,9 +350,15 @@ The typed event vocabulary (user-query, thought, action, observation, answer, si
 
 Consistent with AER (arXiv 2603.21692), AgentSON does not attempt to reconstruct why an agent chose a particular action. The format captures observable execution events only. This is a deliberate design boundary, not a gap.
 
-### 6.3 Live capture requires separate infrastructure
+### 6.3 Healthcare validation is limited to a single device class
+
+The FreeStyle Libre 2 reader demonstrates domain generality for one device class (continuous glucose monitors). Full clinical workflow integration — lab results, prescriptions, clinician notes — requires additional readers and remains future work.
+
+### 6.4 Live capture requires separate infrastructure
 
 AgentSON's native readers operate on persisted artifacts (databases, log files, DOM). Contemporaneous capture (browser extensions, API listeners) requires separate infrastructure that feeds into the same format but is outside the scope of this paper.
+
+### 6.5 Format adoption requires network effects
 
 ### 6.4 Format adoption requires network effects
 
@@ -352,7 +378,7 @@ Filling execution event gaps using an SLM generator with deterministic verificat
 
 ### 7.3 Healthcare and IoT applications
 
-Extending the reader pattern beyond AI coding tools to medical devices, IoT sensors, and other data-generating systems. The FreeStyle Libre 2 reader is a proof of concept. Application paper.
+Extending the reader pattern beyond AI coding tools to medical devices, IoT sensors, and other data-generating systems. The FreeStyle Libre 2 reader in this paper demonstrates that the representation generalises; future work would expand to additional devices and full clinical workflow integration.
 
 ### 7.4 Automated reader generation
 
@@ -396,11 +422,12 @@ As AI agents evolve from stateless assistants into persistent collaborators with
 
 | Paper | Venue | Date | Relevance |
 |-------|-------|------|-----------|
+| PROV-AGENT — Unified Provenance for Agentic Workflows | arXiv 2508.02866, IEEE e-Science 2025 | Aug 2025 | Runtime-internal workflow provenance (complementary — different RQ) |
 | AER — Agent Execution Record | arXiv 2603.21692 | Mar 2026 | Compliance boundary for reasoning provenance |
 | HunterAgent | arXiv 2605.29269 | May 2026 | Generator-Verifier architecture (future work) |
 | Evidence Tracing Survey | arXiv 2606.04990 | Jun 2026 | Provenance taxonomy |
 | Memorywire | arXiv | May 2026 | Adjacent memory wire format |
-| Agent Memory Systems (EntraBot) | Microsoft Research | 2025-2026 | Enterprise memory architecture |
+| Agent Memory Systems (EntraBot, MemIR) | Microsoft Research | 2025-2026 | Enterprise memory architecture, typed memory |
 
 ---
 
