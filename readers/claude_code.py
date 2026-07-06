@@ -152,14 +152,14 @@ class ClaudeCodeReader:
         return self._to_agentson(entries, metadata)
 
     def export_session(self, session_id: str, output_dir: str) -> Optional[str]:
-        """Export a session to .AgentSON file."""
+        """Export a session to .agentson file."""
         session = self.read_session(session_id)
         if not session:
             return None
 
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        out_file = output_path / f"claude-code-{session_id}.AgentSON"
+        out_file = output_path / f"claude-code-{session_id}.agentson"
 
         with open(out_file, "w", encoding="utf-8") as f:
             json.dump(session, f, indent=2, ensure_ascii=False)
@@ -167,7 +167,7 @@ class ClaudeCodeReader:
         return str(out_file)
 
     def export_all(self, output_dir: str) -> list[str]:
-        """Export all sessions to .AgentSON files."""
+        """Export all sessions to .agentson files."""
         exported = []
         for session_info in self.list_sessions():
             session_id = session_info.get("sessionId", "")
