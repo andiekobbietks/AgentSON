@@ -30,6 +30,9 @@ jobs:
             --output docs/standards/adr-index.html \
             --title "AgentSON — Architecture Decision Records"
 
+      - name: Apply amber-phosphor theme (ADR-004 tokens)
+        run: python3 .github/workflows/apply_adr_theme.py
+
       - name: Check for changes
         id: check
         run: |
