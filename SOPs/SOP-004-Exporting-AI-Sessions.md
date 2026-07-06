@@ -75,9 +75,9 @@ python -m cli.main export --tool minimax --all --output "~/Downloads"
 
 | Tool | File Pattern |
 |------|--------------|
-| opencode | `opencode_ses_xxx.AgentSON` |
-| MiniMax | `minimax_xxx.AgentSON` |
-| Antigravity | `antigravity_xxx.AgentSON` |
+| opencode | `opencode_ses_xxx.agentson` |
+| MiniMax | `minimax_xxx.agentson` |
+| Antigravity | `antigravity_xxx.agentson` |
 
 ---
 

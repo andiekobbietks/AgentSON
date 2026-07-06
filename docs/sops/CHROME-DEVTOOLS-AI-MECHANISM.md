@@ -474,7 +474,7 @@ Chrome DevTools AI → AgentSON → Any coding agent
 
 ```bash
 # Search across all Chrome DevTools AI sessions
-grep -r "performance" *.AgentSON
+grep -r "performance" --include="*.agentson" .
 ```
 
 ### 3. Hydration
@@ -507,7 +507,7 @@ Chrome DevTools AI → AgentSON → Any coding agent
 
 ```bash
 # Search across all Chrome DevTools AI sessions
-grep -r "performance" *.AgentSON
+grep -r "performance" --include="*.agentson" .
 ```
 
 ### 3. Hydration
@@ -538,7 +538,7 @@ Full trace of debugging session for:
 | **opencode** | SQLite | Fast queries, local |
 | **MiniMax** | SQLite | Fast queries, local |
 | **Antigravity IDE** | SQLite | Fast queries, local |
-| **AgentSON** | `.AgentSON` files | Portable, searchable |
+| **AgentSON** | `.agentson` files | Portable, searchable |
 
 ### The Pattern
 

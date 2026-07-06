@@ -39,14 +39,14 @@ python -m cli.main export --tool libre --input "~/Documents/libre_data.csv" --ou
 ### Step 3: Verify Output
 
 ```powershell
-Get-Item "~/Downloads/libre_libre_data.AgentSON"
+Get-Item "~/Downloads/libre_libre_data.agentson"
 ```
 
 Expected output:
 ```
 Name                          Length LastWriteTime
 ----                          ------ -------------
-libre_libre_data.AgentSON     12345  05/07/2026 00:53
+libre_libre_data.agentson     12345  05/07/2026 00:53
 ```
 
 ---
@@ -55,7 +55,7 @@ libre_libre_data.AgentSON     12345  05/07/2026 00:53
 
 | File | Description |
 |------|-------------|
-| `libre_libre_data.AgentSON` | Glucose data in AgentSON format |
+| `libre_libre_data.agentson` | Glucose data in AgentSON format |
 
 ---
 
