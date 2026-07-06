@@ -1,0 +1,77 @@
+{
+  "$schema": "https://agentsong.dev/schema/v1.json",
+  "id": "example-minimax-session",
+  "tool": {
+    "name": "minimax",
+    "version": "1.0.0",
+    "session_id": "minimax_example_456"
+  },
+  "agent": {
+    "name": "gemini-2.5-flash",
+    "provider": "minimax",
+    "variant": "fast"
+  },
+  "started_at": "2026-07-05T02:00:00Z",
+  "ended_at": "2026-07-05T02:30:00Z",
+  "context": {
+    "working_directory": "C:\\Users\\LLM-Test\\Documents\\webproject",
+    "platform": "win32",
+    "shell": "powershell"
+  },
+  "entries": [
+    {
+      "type": "user-query",
+      "text": "Help me fix the CSS layout issue on my homepage",
+      "timestamp": 1783107200000
+    },
+    {
+      "type": "thought",
+      "text": "The user has a CSS layout issue. I need to examine the HTML and CSS files to understand the problem.",
+      "model": "gemini-2.5-flash"
+    },
+    {
+      "type": "action",
+      "tool": "read",
+      "code": "index.html",
+      "output": "<!DOCTYPE html>\\n<html>\\n<head>...</head>\\n<body>...</body>\\n</html>",
+      "status": "success"
+    },
+    {
+      "type": "action",
+      "tool": "read",
+      "code": "styles.css",
+      "output": ".container { display: flex; }\\n.header { width: 100%; }",
+      "status": "success"
+    },
+    {
+      "type": "thought",
+      "text": "I see the issue. The container is using flexbox but the children don't have proper flex properties set.",
+      "model": "gemini-2.5-flash"
+    },
+    {
+      "type": "action",
+      "tool": "edit",
+      "code": ".container { display: flex; flex-wrap: wrap; gap: 20px; }\\n.header { flex: 1 1 100%; }\\n.content { flex: 1 1 300px; }",
+      "output": "File updated",
+      "status": "success"
+    },
+    {
+      "type": "answer",
+      "text": "I've fixed the CSS layout issue. The problem was that the flex container didn't have proper flex properties for its children. I added `flex-wrap: wrap` and `gap` to the container, and `flex: 1 1 300px` to the content area so it wraps properly on smaller screens.",
+      "format": "markdown"
+    },
+    {
+      "type": "side-effect",
+      "action": "file_edit",
+      "path": "C:\\Users\\LLM-Test\\Documents\\webproject\\styles.css",
+      "diff": "+3 lines, -1 line"
+    }
+  ],
+  "metadata": {
+    "total_tokens": 850,
+    "cost": 0.002,
+    "messages": 1,
+    "parts": 5,
+    "exported_at": "2026-07-05T12:30:00Z"
+  }
+}
