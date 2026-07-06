@@ -16,7 +16,7 @@ This SOP describes how to export and share glucose data and AI session insights 
 
 | Item | Requirement |
 |------|-------------|
-| **Input** | `.AgentSON` file with glucose data |
+| **Input** | `.agentson` file with glucose data |
 | **Software** | AgentSON CLI, web browser |
 | **Output** | HTML report or PDF |
 
@@ -30,7 +30,7 @@ This SOP describes how to export and share glucose data and AI session insights 
 cd ~/agentson
 
 # Render glucose data as HTML
-python -m cli.main render "~/Downloads/libre_libre_data.AgentSON" --format html --output "~/Downloads/glucose_report.html"
+python -m cli.main render "~/Downloads/libre_libre_data.agentson" --format html --output "~/Downloads/glucose_report.html"
 ```
 
 ### Step 2: Open Report in Browser
