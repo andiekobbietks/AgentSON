@@ -1,8 +1,8 @@
-# Draft PR: AgentSON Integration for Chrome DevTools MCP
+# Draft PR: AgentSON Observability Layer for Chrome DevTools MCP
 
 ## Summary
 
-Adds AgentSON integration to Chrome DevTools MCP, enabling portable execution traces for browser agent actions.
+Adds `--record-agentson` flag to Chrome DevTools MCP, enabling portable execution traces for browser agent actions. This is an **observability layer** (like OpenTelemetry), not a control layer.
 
 ## What is AgentSON?
 
@@ -12,25 +12,18 @@ AgentSON is a streaming format for recording agent actions, observations, and th
 - Provenance tracking for audit and debugging
 - Cross-tool integration (browser + filesystem + database)
 
+## Why This Matters
+
+Chrome DevTools MCP is the **execution interface** (Google owns this).
+AgentSON is the **execution memory + coordination layer** (community owns this).
+
+This PR adds observability without changing MCP semantics.
+
 ## Changes
 
-### Option 1: Skill File
-- Added `skills/agentson/SKILL.md` with instructions for agents
-- Added example .agentson traces in `skills/agentson/examples/`
-- No code changes required
+### Added: `--record-agentson` Flag
 
-### Option 2: --record-agentson Flag
-- Added `src/tools/agentson-recorder.ts` for recording tool calls
-- Added `src/agentson/` utilities for .agentson format
-- Added `--record-agentson` CLI flag
-- Modified tool execution to record to .agentson stream
-
-### Option 3: --agentson-output Flag
-- Added `src/agentson/` utilities for .agentson format
-- Added `--agentson-output` CLI flag
-- Modified tool results to include .agentson entries
-
-## Example .agentson Stream
+When enabled, all tool calls are recorded to an .agentson stream:
 
 ```json
 {"type": "stream-meta", "stream_id": "chrome-devtools-2026-07-06", "agents": [{"id": "chrome-devtools", "capabilities": ["navigate", "screenshot", "evaluate"]}]}
@@ -40,12 +33,28 @@ AgentSON is a streaming format for recording agent actions, observations, and th
 {"type": "observation", "text": "Screenshot captured"}
 ```
 
+### Implementation
+
+- Added `src/tools/agentson-recorder.ts` - .agentson stream recorder
+- Added `src/agentson/` - .agentson format utilities
+- Added `--record-agentson` CLI flag
+- Modified tool execution to record to .agentson stream
+
 ## Use Cases
 
 1. **Debugging**: Record all browser actions to trace what happened
 2. **Replay**: Re-execute the same sequence to verify findings
 3. **Handoff**: Share execution traces between agents
 4. **Audit**: Complete provenance of browser interactions
+
+## Positioning
+
+This is "OpenTeAgent for browser agents" - an observability layer that sits above MCP:
+
+```
+Chrome MCP = execution interface (Google owns this)
+AgentSON   = execution memory + coordination layer (community owns this)
+```
 
 ## Testing
 
@@ -56,7 +65,7 @@ AgentSON is a streaming format for recording agent actions, observations, and th
 ## Documentation
 
 - [ ] Updated README.md with new flag
-- [ ] Added .agentson skill documentation
+- [ ] Added .agentson observability documentation
 - [ ] Updated tool reference
 
 ## Related
@@ -64,3 +73,7 @@ AgentSON is a streaming format for recording agent actions, observations, and th
 - AgentSON repo: https://github.com/andiekobbietks/AgentSON
 - AgentSON spec: https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json
 - AgentSON ontology: https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md
+
+## CLA
+
+- [ ] Google CLA signed at https://cla.developers.google.com/
