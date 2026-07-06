@@ -146,3 +146,59 @@ def test_export_session(sample_history, tmp_path):
         data = json.load(f)
     assert data["id"] == "copilot-chat-session-001"
     assert len(data["entries"]) == 5
+
+
+def test_export_session_sanitizes_path_traversal_attempt(tmp_path):
+    """
+    Regression test for a real path traversal vulnerability: a crafted
+    session_id like "../../etc/passwd" used to resolve the export
+    filename outside the intended output directory entirely. Confirmed
+    with a direct pathlib reproduction before the fix landed.
+    """
+    history_dir = tmp_path / "history"
+    history_dir.mkdir()
+    output_dir = tmp_path / "safe_output"
+
+    evil_id = "../../../tmp/agentson_escape_proof"
+    history_file = history_dir / "history.jsonl"
+    entries = [
+        {"type": "user", "content": "hi", "sessionId": evil_id, "timestamp": "2026-01-01T00:00:00Z"},
+        {"type": "assistant", "content": "hello", "model": "gpt-4", "sessionId": evil_id, "timestamp": "2026-01-01T00:00:01Z"},
+    ]
+    with open(history_file, "w", encoding="utf-8") as f:
+        for e in entries:
+            f.write(json.dumps(e) + "\n")
+
+    reader = CopilotChatReader(str(history_dir))
+    result_path = reader.export_session(evil_id, str(output_dir))
+
+    assert result_path is not None
+    resolved = Path(result_path).resolve()
+    assert str(resolved).startswith(str(output_dir.resolve())), (
+        f"Export escaped the intended output directory: {resolved}"
+    )
+
+
+def test_agent_provider_reflects_actual_model_used(tmp_path):
+    """
+    Regression test: agent.name/provider used to be hardcoded to
+    "gpt-4"/"openai" regardless of which model actually answered.
+    Copilot Chat can be backed by Claude, Gemini, etc. -- an entry
+    answered by claude-3.5-sonnet must not be reported as gpt-4/openai.
+    """
+    history_dir = tmp_path / "history"
+    history_dir.mkdir()
+    history_file = history_dir / "history.jsonl"
+    entries = [
+        {"type": "user", "content": "hi", "sessionId": "s1", "timestamp": "2026-01-01T00:00:00Z"},
+        {"type": "assistant", "content": "hello", "model": "claude-3.5-sonnet", "sessionId": "s1", "timestamp": "2026-01-01T00:00:01Z"},
+    ]
+    with open(history_file, "w", encoding="utf-8") as f:
+        for e in entries:
+            f.write(json.dumps(e) + "\n")
+
+    reader = CopilotChatReader(str(history_dir))
+    session = reader.read_session("s1")
+
+    assert session["agent"]["name"] == "claude-3.5-sonnet"
+    assert session["agent"]["provider"] == "anthropic"
