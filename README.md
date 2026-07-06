@@ -1,6 +1,6 @@
 # AgentSON
 
-**Agent + JSON** — The open interchange format for AI agent session traces.
+**Preserve the operational life of an AI agent, independently of the runtime that hosted it.**
 
 [![PyPI version](https://img.shields.io/pypi/v/agentson.svg)](https://pypi.org/project/agentson/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -42,28 +42,31 @@ Every AI coding agent stores session data in its own proprietary database. There
 AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    AgentSON Architecture                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Cursor    │  │ Claude Code │  │   opencode  │        │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘        │
-│         │                │                │                  │
-│         ▼                ▼                ▼                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │         .AgentSON Files (Open Spec)                  │   │
-│  │     Portable, vendor-neutral, file-based             │   │
-│  └─────────────────────────┬───────────────────────────┘   │
-│                             │                                │
-│              ┌──────────────┼──────────────┐               │
-│              ▼              ▼              ▼               │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐      │
-│  │   Local CLI  │ │   Supabase   │ │  Web Viewer  │      │
-│  │  (offline)   │ │  (optional)  │ │   (shared)   │      │
-│  └──────────────┘ └──────────────┘ └──────────────┘      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                  Agent Runtime Layer (producers)                   │
+├───────────────────────────────────────────────────────────────────┤
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐ │
+│  │ OpenClaw│ │ClaudeCode│ │  Cursor  │ │ opencode │ │LangGraph│ │
+│  └────┬────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬────┘ │
+│  ┌────┴────┐ ┌────┴─────┐ ┌────┴─────┐ ┌────┴─────┐ ┌────┴────┐ │
+│  │ CrewAI  │ │ AutoGen  │ │ OpenAI   │ │  Gemini  │ │  Cline  │ │
+│  │         │ │          │ │ Agents   │ │   CLI    │ │  Aider  │ │
+│  └────┬────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬────┘ │
+│       │           │            │           │             │       │
+│       ▼           ▼            ▼           ▼             ▼       │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                   .AgentSON Files (Open Spec)               │ │
+│  │               Portable, vendor-neutral, file-based          │ │
+│  └───────────────────────────┬─────────────────────────────────┘ │
+│                              │                                    │
+│               ┌──────────────┼──────────────┐                   │
+│               ▼              ▼              ▼                   │
+│  ┌─────────────────┐ ┌──────────────┐ ┌──────────────────┐    │
+│  │   Local CLI     │ │   Supabase   │ │  Web Viewer      │    │
+│  │  (search/replay)│ │  (optional)  │ │  (shared replay) │    │
+│  └─────────────────┘ └──────────────┘ └──────────────────┘    │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -183,14 +186,25 @@ Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 | Copilot | Partial (API) | No | No |
 | **AgentSON** | **Yes (JSON)** | **Yes** | **Yes** |
 
-### What AgentSON Gives You
+### For Developers
 
-1. **Portability** — Switch tools without losing context
-2. **Training data** — Export to Unsloth/Olive for fine-tuning
-3. **Search** — Full-text search across all your sessions
-4. **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
-5. **Interoperability** — One format, all tools
-6. **Legal compliance** — GDPR Art. 20 + EU AI Act Art. 52
+Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, Aider, Cline, Gemini CLI — becomes one searchable, portable, analysable record. Switch runtimes without losing your operational history. Every `.AgentSON` file is a personal engineering journal that follows you.
+
+- **Portability** — Switch tools without losing context
+- **Search** — Full-text search across all your sessions
+- **Replay** — Re-run or review any agent session offline
+- **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
+
+### For the Organisation
+
+As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows?
+
+Memory systems (MCP, bespoke databases) don't give you portable answers to those questions. AgentSON does.
+
+- **Institutional knowledge** — Preserve the operational life of every agent independently of where it ran
+- **Vendor independence** — Change runtimes, keep the record
+- **Compliance** — GDPR Art. 20 + EU AI Act Art. 52
+- **Training-data export** — Export to Unsloth/Olive for fine-tuning
 
 ---
 
@@ -331,7 +345,7 @@ agentson/
 
 See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
 
-**Next readers:** Cursor, Cline, Aider, Gemini CLI, Copilot
+**Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
 
 **Version targets:**
 - v0.2.0 (Aug 2026): 10+ readers, real-world data
@@ -354,4 +368,4 @@ See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tool
 
 ---
 
-*"The format that AI companies spend billions to own, AgentSON gives away for free."*
+*"The operational life of an AI agent, preserved independently of the runtime that hosted it."*
