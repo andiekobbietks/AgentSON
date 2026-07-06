@@ -1,0 +1,62 @@
+{
+  "$schema": "https://agentsong.dev/schema/v1.json",
+  "id": "example-opencode-session",
+  "tool": {
+    "name": "opencode",
+    "version": "0.0.13",
+    "session_id": "ses_example_123"
+  },
+  "agent": {
+    "name": "mimo-v2.5-free",
+    "provider": "opencode",
+    "variant": "high"
+  },
+  "started_at": "2026-07-05T00:00:00Z",
+  "ended_at": "2026-07-05T01:00:00Z",
+  "context": {
+    "working_directory": "C:\\Users\\LLM-Test\\Documents\\myproject",
+    "platform": "win32",
+    "shell": "powershell"
+  },
+  "entries": [
+    {
+      "type": "user-query",
+      "text": "Create a simple Python function that calculates the factorial of a number",
+      "timestamp": 1783100000000
+    },
+    {
+      "type": "thought",
+      "text": "The user wants a factorial function. I should create a recursive or iterative implementation with proper error handling.",
+      "model": "mimo-v2.5-free",
+      "tokens": {
+        "input": 150,
+        "output": 50
+      }
+    },
+    {
+      "type": "action",
+      "tool": "write",
+      "code": "def factorial(n):\n    if n < 0:\n        raise ValueError('Factorial is not defined for negative numbers')\n    if n == 0 or n == 1:\n        return 1\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
+      "output": "File written to factorial.py",
+      "status": "success"
+    },
+    {
+      "type": "answer",
+      "text": "I've created a factorial function in `factorial.py`. The function uses an iterative approach which is more efficient than recursion for this use case. It includes input validation to handle negative numbers.",
+      "format": "markdown"
+    },
+    {
+      "type": "side-effect",
+      "action": "file_write",
+      "path": "C:\\Users\\LLM-Test\\Documents\\myproject\\factorial.py",
+      "diff": "+8 lines"
+    }
+  ],
+  "metadata": {
+    "total_tokens": 200,
+    "cost": 0.0,
+    "messages": 1,
+    "parts": 3,
+    "exported_at": "2026-07-05T12:00:00Z"
+  }
+}

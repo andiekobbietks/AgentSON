@@ -1,0 +1,13 @@
+{
+  "name": "agentson-stream",
+  "version": "0.1.0",
+  "description": "AgentSON stream collaboration — JSONL blackboard + Chrome CDP bridge for inter-agent handoff with Gemini Nano",
+  "type": "module",
+  "main": "lib/cli.js",
+  "bin": {
+    "agentson-stream": "./lib/cli.js"
+  },
+  "scripts": {
+    "start": "node lib/cli.js"
+  }
+}
