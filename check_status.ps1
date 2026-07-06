@@ -31,7 +31,7 @@ if (Test-Path .git) {
 
 # Check project files
 Write-Host "Project files:" -ForegroundColor Cyan
-$keyFiles = @(\"README.md\", \"pyproject.toml\", \"CHANGELOG.md\", \"LICENSE\", \"PRD.md\")
+$keyFiles = @("README.md", "pyproject.toml", "CHANGELOG.md", "LICENSE", "PRD.md")
 foreach ($file in $keyFiles) {
     if (Test-Path $file) {
         Write-Host "✓ $file" -ForegroundColor Green
@@ -42,18 +42,18 @@ foreach ($file in $keyFiles) {
 
 # Check license file
 Write-Host "License content:" -ForegroundColor Cyan
-if (Test-Path \"LICENSE\") {
-    $license = Get-Content -Path \"LICENSE\" -First 5
+if (Test-Path "LICENSE") {
+    $license = Get-Content -Path "LICENSE" -First 5
     Write-Host $license
 }
 
 # Check CHANGELOG
 Write-Host "Latest CHANGELOG entry:" -ForegroundColor Cyan
-if (Test-Path \"CHANGELOG.md\") {
-    $latest = Select-String -Path \"CHANGELOG.md\" -Pattern \"^## v0\.1\.0\" -Context 5 -SimpleMatch
+if (Test-Path "CHANGELOG.md") {
+    $latest = Select-String -Path "CHANGELOG.md" -Pattern "## v0.1.0" -Context 5 -SimpleMatch
     if ($latest) {
         Write-Host $latest
     } else {
-        Write-Host \"## v0.1.0 not found\" -ForegroundColor Yellow
+        Write-Host "## v0.1.0 not found" -ForegroundColor Yellow
     }
 }
