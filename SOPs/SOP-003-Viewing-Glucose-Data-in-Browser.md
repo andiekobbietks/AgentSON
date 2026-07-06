@@ -16,7 +16,7 @@ This SOP describes how to view AgentSON glucose data in a web browser using the 
 
 | Item | Requirement |
 |------|-------------|
-| **Input** | `.AgentSON` file (from SOP-002) |
+| **Input** | `.agentson` file (from SOP-002) |
 | **Software** | Any modern web browser (Edge, Chrome, Firefox) |
 | **Location** | `~/agentson/viewers/web/index.html` |
 
@@ -39,7 +39,7 @@ double-click ~/agentson/viewers/web/index.html
 
 ### Step 2: Load AgentSON File
 
-1. Drag `.AgentSON` file from `~/Downloads/` onto the viewer
+1. Drag `.agentson` file from `~/Downloads/` onto the viewer
 2. **OR** click the drop zone and select the file
 
 ### Step 3: View Data
@@ -70,7 +70,7 @@ The viewer displays:
    - Connect to same WiFi as PC
    - Open Safari
    - Enter: `http://YOUR-PC-IP:8080`
-   - Drag `.AgentSON` file onto viewer
+   - Drag `.agentson` file onto viewer
 
 ### Option B: Free Hosting (Works Anywhere)
 
@@ -81,7 +81,7 @@ The viewer displays:
    ```
 
 2. **Share URL with mother**
-3. **On mother's iPhone**: Open URL, drag `.AgentSON` file
+3. **On mother's iPhone**: Open URL, drag `.agentson` file
 
 ---
 
@@ -100,6 +100,6 @@ The viewer displays:
 
 | Issue | Solution |
 |-------|----------|
-| File not loading | Check file extension is `.AgentSON` or `.json` |
+| File not loading | Check file extension is `.agentson` or `.json` |
 | Blank screen | Refresh page, try different browser |
 | Can't access from iPhone | Ensure same WiFi network, check firewall |

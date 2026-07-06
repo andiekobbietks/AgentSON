@@ -11,6 +11,8 @@ from .chrome_devtools import (
     parse_markdown as parse_chrome_devtools_markdown,
 )
 from .claude_code import ClaudeCodeReader
+from .copilot_chat import CopilotChatReader, read as read_copilot_chat, list_sessions as list_copilot_chat
 
 # Legacy aliases
 ClaudeCode = ClaudeCodeReader
+CopilotChat = CopilotChatReader
