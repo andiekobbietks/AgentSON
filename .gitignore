@@ -26,6 +26,11 @@ Thumbs.db
 *.csv
 *.db
 *.AgentSON
+*.agentson
+
+# But keep curated examples
+!examples/*.AgentSON
+!examples/*.agentson
 
 # Secrets
 .env

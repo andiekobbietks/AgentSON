@@ -1,6 +1,6 @@
 # AgentSON
 
-**Agent + JSON** — The open interchange format for AI agent session traces.
+**Preserve the operational life of an AI agent, independently of the runtime that hosted it.**
 
 [![PyPI version](https://img.shields.io/pypi/v/agentson.svg)](https://pypi.org/project/agentson/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -8,6 +8,28 @@
 [![CI](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml/badge.svg)](https://github.com/andiekobbietks/AgentSON/actions)
 
 > Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
+
+---
+
+## Why This Exists
+
+This project started with a FreeStyle Libre 2 continuous glucose monitor.
+
+Managing a chronic condition means your most personal data — blood glucose readings every 5 minutes, 24/7 — lives inside a vendor's app. Abbott's FreeStyle Libre app stores your data. It doesn't export to JSON. It doesn't integrate with your AI tools. It doesn't connect to your doctor's system without jumping through NHS FHIR hoops.
+
+The same lock-in problem exists everywhere:
+
+| Domain | Vendor | Data trapped |
+|--------|--------|--------------|
+| Health | Abbott (FreeStyle Libre 2) | Glucose readings, trends, reports |
+| AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
+| Development | Cursor, Copilot, Claude Code | Code context, edit history |
+
+**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+
+The FreeStyle Libre reader (`readers/libre.py`) was the first reader built — not because glucose data is the most important, but because it's the most personal. If the format can handle medical time-series data, it can handle anything.
+
+> **Your health data. Your code sessions. Your data. One format.**
 
 ---
 
@@ -20,28 +42,31 @@ Every AI coding agent stores session data in its own proprietary database. There
 AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    AgentSON Architecture                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Cursor    │  │ Claude Code │  │   opencode  │        │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘        │
-│         │                │                │                  │
-│         ▼                ▼                ▼                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │         .AgentSON Files (Open Spec)                  │   │
-│  │     Portable, vendor-neutral, file-based             │   │
-│  └─────────────────────────┬───────────────────────────┘   │
-│                             │                                │
-│              ┌──────────────┼──────────────┐               │
-│              ▼              ▼              ▼               │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐      │
-│  │   Local CLI  │ │   Supabase   │ │  Web Viewer  │      │
-│  │  (offline)   │ │  (optional)  │ │   (shared)   │      │
-│  └──────────────┘ └──────────────┘ └──────────────┘      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                  Agent Runtime Layer (producers)                   │
+├───────────────────────────────────────────────────────────────────┤
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐ │
+│  │ OpenClaw│ │ClaudeCode│ │  Cursor  │ │ opencode │ │LangGraph│ │
+│  └────┬────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬────┘ │
+│  ┌────┴────┐ ┌────┴─────┐ ┌────┴─────┐ ┌────┴─────┐ ┌────┴────┐ │
+│  │ CrewAI  │ │ AutoGen  │ │ OpenAI   │ │  Gemini  │ │  Cline  │ │
+│  │         │ │          │ │ Agents   │ │   CLI    │ │  Aider  │ │
+│  └────┬────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬────┘ │
+│       │           │            │           │             │       │
+│       ▼           ▼            ▼           ▼             ▼       │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                   .AgentSON Files (Open Spec)               │ │
+│  │               Portable, vendor-neutral, file-based          │ │
+│  └───────────────────────────┬─────────────────────────────────┘ │
+│                              │                                    │
+│               ┌──────────────┼──────────────┐                   │
+│               ▼              ▼              ▼                   │
+│  ┌─────────────────┐ ┌──────────────┐ ┌──────────────────┐    │
+│  │   Local CLI     │ │   Supabase   │ │  Web Viewer      │    │
+│  │  (search/replay)│ │  (optional)  │ │  (shared replay) │    │
+│  └─────────────────┘ └──────────────┘ └──────────────────┘    │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -54,8 +79,8 @@ AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
 
 ```mermaid
 pie title Reader Coverage (v0.1.0)
-    "Working (7)" : 7
-    "Planned (26)" : 26
+    "Working (6)" : 6
+    "Planned (27)" : 27
 ```
 
 ### RICE Priority (Top 10 Readers)
@@ -142,12 +167,6 @@ xychart-beta
 
 ## Why AgentSON Matters
 
-### You Have the Legal Right
-
-GDPR Article 20 gives you the right to export your data in a machine-readable format. The EU AI Act requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
-
-> **You have the legal right to your data. AgentSON is how you exercise it.**
-
 ### The Unsloth Analogy
 
 Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
@@ -167,14 +186,25 @@ Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 | Copilot | Partial (API) | No | No |
 | **AgentSON** | **Yes (JSON)** | **Yes** | **Yes** |
 
-### What AgentSON Gives You
+### For Developers
 
-1. **Portability** — Switch tools without losing context
-2. **Training data** — Export to Unsloth/Olive for fine-tuning
-3. **Search** — Full-text search across all your sessions
-4. **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
-5. **Interoperability** — One format, all tools
-6. **Legal compliance** — GDPR Art. 20 + EU AI Act Art. 52
+Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, Aider, Cline, Gemini CLI — becomes one searchable, portable, analysable record. Switch runtimes without losing your operational history. Every `.AgentSON` file is a personal engineering journal that follows you.
+
+- **Portability** — Switch tools without losing context
+- **Search** — Full-text search across all your sessions
+- **Replay** — Re-run or review any agent session offline
+- **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
+
+### For the Organisation
+
+As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows?
+
+Memory systems (MCP, bespoke databases) don't give you portable answers to those questions. AgentSON does.
+
+- **Institutional knowledge** — Preserve the operational life of every agent independently of where it ran
+- **Vendor independence** — Change runtimes, keep the record
+- **Compliance** — GDPR Art. 20 + EU AI Act Art. 52
+- **Training-data export** — Export to Unsloth/Olive for fine-tuning
 
 ---
 
@@ -315,7 +345,7 @@ agentson/
 
 See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
 
-**Next readers:** Cursor, Cline, Aider, Gemini CLI, Copilot
+**Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
 
 **Version targets:**
 - v0.2.0 (Aug 2026): 10+ readers, real-world data
@@ -327,7 +357,7 @@ See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tool
 ## Standards
 
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
-- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records
+- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
 - [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
 
 ---
@@ -338,4 +368,4 @@ See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tool
 
 ---
 
-*"The format that AI companies spend billions to own, AgentSON gives away for free."*
+*"The operational life of an AI agent, preserved independently of the runtime that hosted it."*
