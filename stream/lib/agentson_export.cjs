@@ -149,7 +149,7 @@ async function convert() {
 }
 
 // Fetch mode
-async function fetch() {
+async function fetchFromCDP() {
     const sessionId = input;
     const outputFile = output || `chatgpt_${sessionId}.agentson`;
     
@@ -159,8 +159,14 @@ async function fetch() {
     console.log('');
     
     // Connect to Chrome CDP
-    const resp = await fetch('http://localhost:9222/json');
-    const tabs = await resp.json();
+    const http = require('http');
+    const tabs = await new Promise((resolve, reject) => {
+        http.get('http://localhost:9222/json', (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve(JSON.parse(data)));
+        }).on('error', reject);
+    });
     
     // Find a ChatGPT tab or any page tab
     let tab = tabs.find(t => t.url.includes('chatgpt.com/c/'));
@@ -200,12 +206,16 @@ async function fetch() {
     console.log('Navigating to ChatGPT session...');
     await send('Page.enable');
     await send('Page.navigate', { url });
-    await new Promise(r => setTimeout(r, 5000));
+    await new Promise(r => setTimeout(r, 8000));
     
     // Verify we're on the right page
     const titleResult = await send('Runtime.evaluate', { expression: 'document.title' });
     const title = titleResult.result?.result?.value || 'Unknown';
     console.log(`Page title: ${title}`);
+    
+    // Debug: check page content
+    const bodyResult = await send('Runtime.evaluate', { expression: 'document.body.innerText.substring(0, 500)' });
+    console.log('Page preview:', bodyResult.result?.result?.value?.substring(0, 200) || 'empty');
     
     // Initialize output
     if (existsSync(outputFile)) {
@@ -321,7 +331,7 @@ if (mode === 'convert') {
         process.exit(1);
     });
 } else if (mode === 'fetch') {
-    fetch().catch(e => {
+    fetchFromCDP().catch(e => {
         console.error('Error:', e.message);
         process.exit(1);
     });
