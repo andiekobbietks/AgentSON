@@ -849,6 +849,179 @@ comparison from scratch.</li>
                 </div>
             </div>
             
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse12">ADR-013: finetune, push, and pull violate the core/downstream scope rule</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse12" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-013: <code>finetune</code>, <code>push</code>, and <code>pull</code> violate the core/downstream scope rule</h1>
+<p><strong>Status:</strong> Proposed
+<strong>Date:</strong> 2026-07-06</p>
+<h2>Context</h2>
+<p>The project's own scope rule states:</p>
+<blockquote>
+<p>Core <code>agentson</code> package = spec + CLI only (import/export/validate/
+search/render). Anything that <em>uses</em> the format for a downstream
+purpose (fine-tuning, archiving, replay tooling, analytics) belongs
+in a separate package (<code>agentson-train</code>, <code>agentson-archive</code>, etc.)
+that depends on core, not the reverse.</p>
+<p>Litmus test: &quot;Is this defining AgentSON, or using AgentSON?&quot;
+Defining → core. Using → downstream package.</p>
+</blockquote>
+<p>A code review of <code>cli/main.py</code> (prompted by building a manual <code>.agentson</code>
+reconstruction of an agent session and checking what the actual CLI
+surface supports) found three registered subcommands that fail this
+test:</p>
+<ul>
+<li><code>finetune</code> (<code>cmd_finetune</code>) — exports an <code>.agentson</code> file to
+Unsloth/Olive fine-tuning format. This is explicitly the
+<code>agentson-train</code> use case named in the scope rule itself.</li>
+<li><code>push</code> (<code>cmd_push</code>) — pushes a session to Supabase.</li>
+<li><code>pull</code> (<code>cmd_pull</code>) — pulls sessions from Supabase, with search/filter
+options.</li>
+</ul>
+<p><code>push</code>/<code>pull</code> are archiving/sync functionality — the <code>agentson-archive</code>
+use case, also named explicitly in the scope rule.</p>
+<p>All three are <em>using</em> AgentSON (consuming an already-captured episode
+for a downstream purpose), not <em>defining</em> it. None of the three touch
+<code>spec/v1.json</code>, and none are things a user needs merely to capture,
+validate, or inspect a session — the stated core verbs.</p>
+<p>This is not a hypothetical scope question — it is the exact violation
+the litmus test was written to catch, discovered by applying the test
+to the shipped code rather than only to new proposals.</p>
+<h2>Decision</h2>
+<p><strong>Proposed, not yet actioned</strong> (this ADR documents the finding and the
+options; the actual code change is a separate PR after a decision is
+made):</p>
+<ul>
+<li>Remove <code>finetune</code>, <code>push</code>, and <code>pull</code> from <code>cli/main.py</code>'s core
+subcommand registration.</li>
+<li>Move <code>cmd_finetune</code> (and its Unsloth/Olive export logic) into a new
+<code>agentson-train</code> package, depending on <code>agentson</code> core for reading
+<code>.agentson</code> files.</li>
+<li>Move <code>cmd_push</code>/<code>cmd_pull</code> (and the Supabase client code) into a new
+<code>agentson-archive</code> package, same dependency direction.</li>
+<li>Core's registered subcommands become exactly the five named in the
+scope rule: <code>export</code>, <code>import</code>, <code>validate</code> (see ADR-014's companion
+finding — this doesn't exist yet either), <code>search</code>, <code>render</code>.</li>
+</ul>
+<h2>Consequences</h2>
+<ul>
+<li><strong>Positive:</strong> Core stays narrow and matches its own documented scope.
+A user who only wants to capture and inspect sessions doesn't need
+Supabase client dependencies or fine-tuning format logic pulled in.</li>
+<li><strong>Negative:</strong> Existing users of <code>agentson finetune</code>/<code>push</code>/<code>pull</code> (if
+any, given v0.1 pre-launch status) would need to install a second
+package. Given the project is pre-launch, this is the cheapest point
+to make this change — the cost only grows with adoption.</li>
+<li><strong>Neutral:</strong> No spec change required. This is purely a CLI/package
+boundary decision.</li>
+</ul>
+<h2>Open question for Andie</h2>
+<p>Should this be actioned before or after v0.1 launch? Pre-launch, this
+is a clean cut with no migration cost to real users. Post-launch, it
+becomes a breaking change requiring a deprecation path.</p>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse13">ADR-014: &#34;observation&#34; is missing from the entry type enum</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse13" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-014: <code>&quot;observation&quot;</code> is missing from the entry <code>type</code> enum</h1>
+<p><strong>Status:</strong> Proposed
+<strong>Date:</strong> 2026-07-06</p>
+<h2>Context</h2>
+<p>While hand-building a real <code>.agentson</code> file (a dogfooding exercise —
+reconstructing an actual agent session as a validation test, not a
+synthetic demo) and validating it against <code>spec/v1.json</code> with the
+<code>jsonschema</code> library, validation failed with:</p>
+<pre><code>'observation' is not one of ['user-query', 'context', 'querying',
+'title', 'thought', 'action', 'answer', 'side-effect']
+</code></pre>
+<p>Checking why revealed the entry type was used deliberately, not a
+typo: <strong><code>readers/claude_code.py</code></strong> (on <code>master</code>) and
+<strong><code>readers/copilot_chat.py</code></strong> (PR #20) both emit
+<code>{&quot;type&quot;: &quot;observation&quot;, ...}</code> entries for tool-result/system-feedback
+content — distinct from <code>action</code> (the tool invocation itself) and
+<code>side-effect</code> (a file diff or external change).</p>
+<p>This means every real session either of these readers has ever
+produced is schema-invalid against <code>spec/v1.json</code> as it currently
+stands. The mismatch was silent until an actual validation run against
+the schema surfaced it — neither reader's own test suite catches this,
+since neither runs its output through <code>jsonschema</code> against the real
+spec.</p>
+<h2>Decision</h2>
+<p><strong>Proposed, not yet actioned.</strong> Applying the project's own spec-only
+litmus test:</p>
+<blockquote>
+<p>Does this improve fidelity, portability, replayability, or
+analyzability of a captured episode?</p>
+</blockquote>
+<p>An agent's trace is naturally a thought → action → observation loop
+(the ReAct pattern this project's own tooling already produces).
+Folding &quot;observation&quot; into <code>action</code> loses the distinction between <em>what
+the agent did</em> and <em>what it learned as a result</em> — a real fidelity
+loss. Folding it into <code>side-effect</code> is worse: <code>side-effect</code> already has
+a specific, narrower meaning (a diff/external change), and observation
+entries aren't always diffs (e.g. &quot;the search returned 3 results&quot;).</p>
+<p>This suggests <code>&quot;observation&quot;</code> should be <strong>added to the enum</strong>, not that
+the readers should be changed to avoid it — the readers reflect a real,
+useful distinction the spec is currently missing, not a bug in the
+readers.</p>
+<p><strong>Two implementation paths, either acceptable:</strong></p>
+<ol>
+<li>Add <code>&quot;observation&quot;</code> directly to the <code>entries[].type</code> enum in
+<code>spec/v1.json</code>, alongside a description matching how it's already
+used in practice (result/feedback from a tool or system, with
+optional <code>source</code> and <code>correlation_id</code> fields — both already used by
+<code>readers/claude_code.py</code> and not currently documented in the schema
+at all).</li>
+<li>If a schema version bump is preferred over a patch to v1, this could
+land as part of a <code>v1.1</code> schema (note: <code>readers/copilot_chat.py</code>
+already references <code>&quot;$schema&quot;: &quot;https://agentson.dev/schema/v1.1.json&quot;</code>
+in its output — a version that doesn't yet exist in <code>spec/</code>, which is
+its own small inconsistency worth resolving as part of this decision).</li>
+</ol>
+<h2>Consequences</h2>
+<ul>
+<li><strong>Positive:</strong> Real session files produced by existing readers become
+actually schema-valid. Closes a silent fidelity gap between what the
+format claims to capture and what a compliant validator will accept.</li>
+<li><strong>Negative:</strong> Any external tooling that already validates strictly
+against the current enum (unlikely, given pre-launch status) would
+need to accept the new value.</li>
+<li><strong>Neutral:</strong> <code>source</code> and <code>correlation_id</code> (already used by
+<code>readers/claude_code.py</code>'s observation entries) should be added to
+the entry schema's documented properties at the same time, since
+they're currently accepted only because the schema doesn't set
+<code>additionalProperties: false</code> — undocumented, not intentionally
+supported.</li>
+</ul>
+<h2>Open question for Andie</h2>
+<p>Patch <code>v1.json</code>'s enum directly, or formalize this as the first real
+change under a <code>v1.1</code> schema version (which <code>readers/copilot_chat.py</code>
+already assumes exists)?</p>
+</div>
+                </div>
+            </div>
+            
         </div>
         <footer>
             Generated with &lt;3 using ADR Viewer
