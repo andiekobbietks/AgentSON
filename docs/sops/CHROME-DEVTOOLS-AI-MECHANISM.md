@@ -474,7 +474,7 @@ Chrome DevTools AI → AgentSON → Any coding agent
 
 ```bash
 # Search across all Chrome DevTools AI sessions
-grep -r "performance" *.agentson
+grep -r "performance" --include="*.agentson" .
 ```
 
 ### 3. Hydration
@@ -507,7 +507,7 @@ Chrome DevTools AI → AgentSON → Any coding agent
 
 ```bash
 # Search across all Chrome DevTools AI sessions
-grep -r "performance" *.agentson
+grep -r "performance" --include="*.agentson" .
 ```
 
 ### 3. Hydration

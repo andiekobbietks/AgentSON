@@ -1,6 +1,6 @@
 # SOP-015: AI-Agent Repository Operating Procedure for AgentSON
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Date:** 06 July 2026  
 **Author:** Andrea Enning (AndieKobbieTech)
 
@@ -146,9 +146,17 @@ python3 tests/test_<relevant>.py
 # or, if pytest-based:
 python3 -m pytest tests/test_<relevant>.py -v
 
-# Then, always, on every file you touched:
-pyrefly check <files you changed>
+# If you touched Python files, always:
+pyrefly check <python files you changed>
 ```
+
+`pyrefly` only validates Python — it has nothing to say about
+markdown, HTML, or other non-Python files. For those, the equivalent
+check is different per case: does the HTML actually parse
+(`html.parser`), does JSON validate against its schema, does a
+generated page render with the expected content present. The principle
+is the same regardless of file type — actually verify it, don't assume
+it — but the specific tool changes.
 
 **"Tested" means it actually ran and passed** — not "I wrote code that
 should work." If there's no existing test for what you changed, write
@@ -280,11 +288,18 @@ At the end of a session or task:
 
 ```bash
 rm -f ~/.git-credentials
+git config --global --unset credential.helper
 ```
+
+Deleting `~/.git-credentials` alone is not enough — Step 1 set
+`credential.helper store` **globally**, so leaving it configured means
+any future token written to that file (by this session or another
+tool) gets picked up automatically. Unset the helper too, not just the
+file.
 
 And revoke the token on GitHub's side at
 **https://github.com/settings/tokens?type=beta** if it's no longer
-needed — local file deletion doesn't revoke it remotely.
+needed — local file/config cleanup doesn't revoke it remotely.
 
 ---
 
