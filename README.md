@@ -1,4 +1,4 @@
-# AgentSON
+# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
 
 **Preserve the operational life of an AI agent, independently of the runtime that hosted it.**
 
