@@ -20,9 +20,12 @@ Entry format (internal):
 
 import json
 import os
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, List, Any
+
+_SAFE_SEGMENT = re.compile(r"[^A-Za-z0-9_.-]+")
 
 
 class CopilotChatReader:
@@ -128,7 +131,12 @@ class CopilotChatReader:
 
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        out_file = output_path / f"copilot-chat-{session_id}.agentson"
+        # session_id comes from history.jsonl entries, not fully trusted --
+        # sanitize before it's used to build a filesystem path, otherwise a
+        # crafted value like "../../etc/passwd" would resolve outside
+        # output_dir entirely.
+        safe_id = _SAFE_SEGMENT.sub("_", session_id)
+        out_file = output_path / f"copilot-chat-{safe_id}.agentson"
 
         with open(out_file, "w", encoding="utf-8") as f:
             json.dump(session, f, indent=2, ensure_ascii=False)
@@ -140,6 +148,7 @@ class CopilotChatReader:
         agentson_entries = []
         task = ""
         outcome = "partial"
+        last_model = "gpt-4"
 
         for entry in entries:
             entry_type = entry.get("type", "")
@@ -161,13 +170,15 @@ class CopilotChatReader:
 
             elif entry_type == "assistant":
                 # Assistant response (can include code, explanation, etc.)
+                model = entry.get("model", "gpt-4")
+                last_model = model
                 if content:
                     agentson_entries.append(
                         {
                             "type": "answer",
                             "text": content,
                             "timestamp": timestamp,
-                            "model": entry.get("model", "gpt-4"),
+                            "model": model,
                         }
                     )
                 outcome = "success"
@@ -225,8 +236,8 @@ class CopilotChatReader:
                 "session_id": session_id,
             },
             "agent": {
-                "name": "gpt-4",
-                "provider": "openai",
+                "name": last_model,
+                "provider": self._detect_provider(last_model),
                 "variant": "copilot",
             },
             "started_at": self._timestamp_to_iso(
@@ -242,6 +253,24 @@ class CopilotChatReader:
                 "exported_at": datetime.utcnow().isoformat() + "Z",
             },
         }
+
+    @staticmethod
+    def _detect_provider(model: str) -> str:
+        """Best-effort provider detection from a Copilot Chat model string.
+
+        GitHub Copilot Chat can be backed by multiple providers depending
+        on which model the user selected (GPT-4o/o1 via OpenAI, Claude via
+        Anthropic, Gemini via Google, etc). This is a heuristic based on
+        naming convention, not an authoritative mapping.
+        """
+        model_lower = (model or "").lower()
+        if "claude" in model_lower:
+            return "anthropic"
+        if "gemini" in model_lower:
+            return "google"
+        if "gpt" in model_lower or model_lower.startswith("o1") or model_lower.startswith("o3"):
+            return "openai"
+        return "unknown"
 
     @staticmethod
     def _timestamp_to_iso(timestamp: Optional[str]) -> Optional[str]:
