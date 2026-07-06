@@ -33,7 +33,17 @@
             font-family: 'Space Mono', 'Consolas', 'Monaco', monospace;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
 
         header {
             text-align: center;
@@ -297,7 +307,7 @@
 
     <section>
         <h2>Supported Tools</h2>
-        <p class="section-subtitle">6 readers, 3 importers, 33 tools identified.</p>
+        <p class="section-subtitle">6 tools supported today, 3 more planned.</p>
         <div class="grid">
             <div class="card">
                 <h3>opencode</h3>
@@ -331,17 +341,17 @@
             </div>
             <div class="card">
                 <h3>Cursor</h3>
-                <p>RICE: 2700 — biggest market, biggest lock-in</p>
+                <p>Biggest market, biggest lock-in</p>
                 <span class="status status-planned">Planned</span>
             </div>
             <div class="card">
                 <h3>Cline</h3>
-                <p>RICE: 1350 — open source, BYOK, users care about data</p>
+                <p>Open source, BYOK, users who care about their data</p>
                 <span class="status status-planned">Planned</span>
             </div>
             <div class="card">
                 <h3>Aider</h3>
-                <p>RICE: 1350 — MIT, terminal-first</p>
+                <p>MIT-licensed, terminal-first</p>
                 <span class="status status-planned">Planned</span>
             </div>
         </div>
@@ -371,6 +381,7 @@ open docs/viewer/</code></pre>
     <section>
         <h2>The Pipeline</h2>
         <div class="flow">
+            <span class="sr-only">Data flow: Your sessions are parsed by readers into normalized AgentSON format, then converted by exporters into fine-tuning formats like Unsloth and Olive, so you can train on your own data.</span>
             <em>your sessions</em> → <em>readers</em> → <em>.AgentSON</em> → <em>exporters</em> → <em>fine-tuning data</em><br><br>
             opencode sessions ─┐<br>
             Claude Code logs ──┤<br>
@@ -430,9 +441,10 @@ open docs/viewer/</code></pre>
     </section>
 
     <footer>
-        <p>AgentSON — Agent + JSON</p>
+        <p>AgentSON — The universal format for AI agent session data.</p>
         <p>Your data. Portable. Auditable. Yours.</p>
         <p>© 2026 Andrea Enning (AndieKobbieTech)</p>
     </footer>
+
 </body>
 </html>
