@@ -91,17 +91,21 @@ class PIIRedactor:
             })
             redacted = redacted.replace(match.group(), "[PRIVATE_EMAIL]")
         
-        # Phone numbers (various formats)
+        # Phone numbers (strict patterns only)
         phone_patterns = [
-            r'\+?[\d\s\-\(\)]{10,}',
-            r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',
-            r'\+\d{1,3}\s?\d{4,14}'
+            r'\+\d{1,3}[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{4}',  # +1 (555) 123-4567
+            r'\(\d{3}\)\s*\d{3}[\s\-]\d{4}',  # (555) 123-4567
+            r'\d{3}[\s\-]\d{3}[\s\-]\d{4}',  # 555-123-4567
+            r'\+\d{10,}',  # +1234567890
         ]
         for pattern in phone_patterns:
             for match in re.finditer(pattern, text):
-                # Validate it looks like a phone number
-                digits = re.sub(r'\D', '', match.group())
-                if 10 <= len(digits) <= 15:
+                # Additional validation: must have letters around it (not just numbers)
+                start = max(0, match.start() - 5)
+                end = min(len(text), match.end() + 5)
+                context = text[start:end]
+                # Skip if context is mostly numbers/symbols (table data)
+                if re.search(r'[A-Za-z]{3,}', context):
                     redactions.append({
                         "type": "private_phone",
                         "text": match.group(),
