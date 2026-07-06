@@ -286,10 +286,50 @@ def cmd_excel(args):
     """Export AgentSON file(s) to Excel with charts and analytics."""
     from exporters.excel import export_to_excel, export_all_to_excel
     
+    # Optionally redact PII first
+    input_path = args.input
+    if args.redact:
+        from tools.pii_redactor import PIIRedactor
+        redactor = PIIRedactor(use_model=False)
+        
+        if args.all:
+            # Redact all files to temp directory
+            import tempfile
+            with tempfile.TemporaryDirectory() as tmpdir:
+                redact_all(args.input, tmpdir)
+                export_all_to_excel(tmpdir, args.output or "exports")
+        else:
+            # Redact single file to temp
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix='.agentson', delete=False) as tmp:
+                tmp_path = tmp.name
+            redactor.redact_file(input_path, tmp_path)
+            export_to_excel(tmp_path, args.output)
+            import os
+            os.unlink(tmp_path)
+        return
+    
     if args.all:
-        export_all_to_excel(args.input, args.output or "exports")
+        export_all_to_excel(input_path, args.output or "exports")
     else:
-        export_to_excel(args.input, args.output)
+        export_to_excel(input_path, args.output)
+
+
+def cmd_redact(args):
+    """Redact PII from AgentSON files."""
+    from tools.pii_redactor import PIIRedactor, redact_all
+    
+    if args.all:
+        redact_all(args.input, args.output or "examples_redacted")
+    else:
+        redactor = PIIRedactor(use_model=False)
+        output = args.output or args.input
+        stats = redactor.redact_file(args.input, output)
+        
+        print(f"Redacted: {stats['input_file']} -> {stats['output_file']}")
+        print(f"Total redactions: {stats['total_redactions']}")
+        for pii_type, count in stats["by_type"].items():
+            print(f"  - {pii_type}: {count}")
 
 
 def render_markdown(data: dict) -> str:
@@ -550,6 +590,13 @@ def main():
     excel_parser.add_argument("input", help="Input .agentson file or directory")
     excel_parser.add_argument("--output", help="Output .xlsx file or directory")
     excel_parser.add_argument("--all", action="store_true", help="Export all .agentson files in directory")
+    excel_parser.add_argument("--redact", action="store_true", help="Redact PII before export")
+    
+    # redact command
+    redact_parser = subparsers.add_parser("redact", help="Redact PII from AgentSON files")
+    redact_parser.add_argument("input", help="Input .agentson file or directory")
+    redact_parser.add_argument("--output", help="Output .agentson file or directory")
+    redact_parser.add_argument("--all", action="store_true", help="Process all .agentson files in directory")
 
     # push command
     push_parser = subparsers.add_parser("push", help="Push session to Supabase")
@@ -578,6 +625,8 @@ def main():
         cmd_render(args)
     elif args.command == "excel":
         cmd_excel(args)
+    elif args.command == "redact":
+        cmd_redact(args)
     elif args.command == "push":
         cmd_push(args)
     elif args.command == "pull":
