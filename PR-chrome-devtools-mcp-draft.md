@@ -1,8 +1,17 @@
-# Draft PR: AgentSON Observability Layer for Chrome DevTools MCP
+# Draft PR: AgentSON - Abstraction Layer Above MCP
 
 ## Summary
 
 Adds `--record-agentson` flag to Chrome DevTools MCP, enabling portable execution traces for browser agent actions. This is an **observability layer** (like OpenTelemetry), not a control layer.
+
+**Don't chase Chrome. Build the abstraction layer that survives Chrome.**
+
+## Mental Model
+
+```
+MCP = execution interface (standard, won)
+AgentSON = execution memory + coordination layer (abstraction above)
+```
 
 ## What is AgentSON?
 
@@ -14,10 +23,12 @@ AgentSON is a streaming format for recording agent actions, observations, and th
 
 ## Why This Matters
 
-Chrome DevTools MCP is the **execution interface** (Google owns this).
-AgentSON is the **execution memory + coordination layer** (community owns this).
+MCP has already won:
+- Chrome DevTools MCP: 46k stars, Google-owned
+- Azure MCP Server: 260+ tools across 50+ services
+- Every major cloud provider is adopting MCP
 
-This PR adds observability without changing MCP semantics.
+AgentSON should sit ABOVE this ecosystem, not integrate with any specific MCP server.
 
 ## Changes
 
@@ -49,11 +60,12 @@ When enabled, all tool calls are recorded to an .agentson stream:
 
 ## Positioning
 
-This is "OpenTeAgent for browser agents" - an observability layer that sits above MCP:
+This is "OpenTelemetry for MCP agents" - an observability layer that sits above MCP:
 
 ```
 Chrome MCP = execution interface (Google owns this)
-AgentSON   = execution memory + coordination layer (community owns this)
+Azure MCP = execution interface (Microsoft owns this)
+AgentSON = execution memory + coordination layer (community owns this)
 ```
 
 ## Testing
