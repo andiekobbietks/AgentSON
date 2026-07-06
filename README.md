@@ -1,5 +1,7 @@
 # AgentSON
 
+> ⚠️ **Alpha, pre-release software.** This is not production-ready. Interfaces, the file format, and CLI commands can change without notice between versions. Known open design questions and gaps are tracked publicly at [github.com/andiekobbietks/AgentSON/issues](https://github.com/andiekobbietks/AgentSON/issues) — check there before depending on this for anything you can't afford to break. If you find a security issue, please open an issue or contact the maintainer directly rather than assuming it's already known.
+
 **Preserve the operational life of an AI agent, independently of the runtime that hosted it.**
 
 [![PyPI version](https://img.shields.io/pypi/v/agentson.svg)](https://pypi.org/project/agentson/)
