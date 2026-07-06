@@ -114,22 +114,21 @@ class PIIRedactor:
                     })
                     redacted = redacted.replace(match.group(), "[PRIVATE_PHONE]")
         
-        # GitHub tokens
-        ghp_pattern = r'ghp_[A-Za-z0-9]{36}'
-        for match in re.finditer(ghp_pattern, text):
-            redactions.append({
-                "type": "secret",
-                "text": match.group(),
-                "start": match.start(),
-                "end": match.end()
-            })
-            redacted = redacted.replace(match.group(), "[SECRET]")
-        
-        # API keys (generic pattern)
-        api_key_pattern = r'\b[A-Za-z0-9]{32,}\b'
-        for match in re.finditer(api_key_pattern, text):
-            # Only flag if it looks like a key (contains mixed case/digits)
-            if re.search(r'[A-Z]', match.group()) and re.search(r'[a-z]', match.group()) and re.search(r'\d', match.group()):
+        # Known secret prefixes (real API keys)
+        secret_prefixes = [
+            r'ghp_[A-Za-z0-9]{36}',  # GitHub PAT
+            r'gho_[A-Za-z0-9]{36}',  # GitHub OAuth
+            r'github_pat_[A-Za-z0-9]{82}',  # GitHub fine-grained PAT
+            r'sk-[A-Za-z0-9]{48}',  # OpenAI API key
+            r'sk_live_[A-Za-z0-9]{32,}',  # Stripe live key
+            r'sk_test_[A-Za-z0-9]{32,}',  # Stripe test key
+            r'AKIA[A-Z0-9]{16}',  # AWS Access Key
+            r'xox[bpas]-[A-Za-z0-9\-]+',  # Slack token
+            r'Bearer [A-Za-z0-9\-._~+/]+=*',  # Bearer token
+            r'eyJ[A-Za-z0-9\-._]+\.eyJ[A-Za-z0-9\-._]+\.[A-Za-z0-9\-._]+',  # JWT
+        ]
+        for pattern in secret_prefixes:
+            for match in re.finditer(pattern, text):
                 redactions.append({
                     "type": "secret",
                     "text": match.group(),
