@@ -16,7 +16,7 @@ This SOP describes how to search across exported AgentSON sessions for specific 
 
 | Item | Requirement |
 |------|-------------|
-| **Input** | `.AgentSON` files (from SOP-004) |
+| **Input** | `.agentson` files (from SOP-004) |
 | **Software** | PowerShell or grep-compatible tool |
 
 ---
@@ -27,28 +27,28 @@ This SOP describes how to search across exported AgentSON sessions for specific 
 
 ```powershell
 # Search for specific term
-Select-String -Path "~/Downloads\*.AgentSON" -Pattern "nightscout"
+Select-String -Path "~/Downloads\*.agentson" -Pattern "nightscout"
 ```
 
 ### Step 2: Search All Sessions
 
 ```powershell
 # Search all AgentSON files in directory
-Get-ChildItem "~/Downloads\*.AgentSON" | Select-String -Pattern "function"
+Get-ChildItem "~/Downloads\*.agentson" | Select-String -Pattern "function"
 ```
 
 ### Step 3: Search with Context
 
 ```powershell
 # Show 2 lines before and after match
-Select-String -Path "~/Downloads\*.AgentSON" -Pattern "error" -Context 2,2
+Select-String -Path "~/Downloads\*.agentson" -Pattern "error" -Context 2,2
 ```
 
 ### Step 4: Search Specific Fields
 
 ```powershell
 # Search for code blocks
-Select-String -Path "~/Downloads\*.AgentSON" -Pattern '"code":'
+Select-String -Path "~/Downloads\*.agentson" -Pattern '"code":'
 ```
 
 ---
