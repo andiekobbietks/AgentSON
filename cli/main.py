@@ -282,6 +282,16 @@ def cmd_render(args):
         print(output)
 
 
+def cmd_excel(args):
+    """Export AgentSON file(s) to Excel with charts and analytics."""
+    from exporters.excel import export_to_excel, export_all_to_excel
+    
+    if args.all:
+        export_all_to_excel(args.input, args.output or "exports")
+    else:
+        export_to_excel(args.input, args.output)
+
+
 def render_markdown(data: dict) -> str:
     """Render AgentSON data as Markdown."""
     lines = []
@@ -534,6 +544,12 @@ def main():
     render_parser.add_argument("input", help="Input AgentSON JSON file")
     render_parser.add_argument("--format", choices=["md", "html"], default="md")
     render_parser.add_argument("--output", help="Output file")
+    
+    # excel command
+    excel_parser = subparsers.add_parser("excel", help="Export to Excel with charts and analytics")
+    excel_parser.add_argument("input", help="Input .agentson file or directory")
+    excel_parser.add_argument("--output", help="Output .xlsx file or directory")
+    excel_parser.add_argument("--all", action="store_true", help="Export all .agentson files in directory")
 
     # push command
     push_parser = subparsers.add_parser("push", help="Push session to Supabase")
@@ -560,6 +576,8 @@ def main():
         cmd_finetune(args)
     elif args.command == "render":
         cmd_render(args)
+    elif args.command == "excel":
+        cmd_excel(args)
     elif args.command == "push":
         cmd_push(args)
     elif args.command == "pull":
