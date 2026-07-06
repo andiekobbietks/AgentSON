@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Studies — AgentSON</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/theme.css">
+    <style>
+        code, pre, .mono {
+            font-family: 'Space Mono', 'Consolas', 'Monaco', monospace;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        .back { font-size: 14px; }
+
+        header { padding: 40px 0 20px; }
+
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 40px;
+            margin: 20px 0 10px;
+        }
+
+        .tagline {
+            font-size: 17px;
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+
+        section { padding: 40px 0; border-top: 1px solid var(--border); }
+
+        h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 26px;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+
+        section > p { color: var(--text-muted); margin-bottom: 10px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card h3 {
+            color: var(--text);
+            font-size: 16px;
+            margin-bottom: 6px;
+            font-family: 'Space Mono', monospace;
+        }
+        .card p { color: var(--text-muted); font-size: 13px; }
+
+        pre {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat { text-align: center; }
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label { font-size: 14px; color: var(--text-muted); }
+
+        .sop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .sop-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .sop-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 700;
+            min-width: 60px;
+        }
+
+        .sop-title { font-size: 14px; }
+
+        .cost-value { font-size: 32px; margin-bottom: 6px; }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 30px; }
+            .stats { flex-direction: column; gap: 20px; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="../" class="back">← Back to AgentSON</a>
+            <h1><span style="color: var(--accent);">Case</span> Studies</h1>
+            <p class="tagline">Real deployments of AgentSON in the wild — from diabetes monitoring to community health alerts.</p>
+        </header>
+
+        <section>
+            <h2>Diabetes Monitoring</h2>
+            <p>AgentSON powers real-time glucose monitoring for carers and clinicians.</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">571</div>
+                    <div class="stat-label">Glucose Readings</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">9.33</div>
+                    <div class="stat-label">Avg mmol/L</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">60.6%</div>
+                    <div class="stat-label">Time in Range</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">SOPs Written</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>SOPs (Standard Operating Procedures)</h2>
+            <p>14 documented procedures covering sensor reading, data conversion, sharing with clinicians, and community alerting. <a href="../sops/" class="back">View full SOP list →</a></p>
+            <div class="sop-grid">
+                <div class="sop-item"><span class="sop-num">SOP-001</span><span class="sop-title">Reading FreeStyle Libre 2 Sensor</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-002</span><span class="sop-title">Converting Libre Data to AgentSON</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-003</span><span class="sop-title">Viewing Glucose Data in Browser</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-004</span><span class="sop-title">Exporting AI Sessions</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-005</span><span class="sop-title">Searching AI Sessions</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-006</span><span class="sop-title">Sharing Data with Doctors</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-007</span><span class="sop-title">Setting Up Nightscout Server</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-008</span><span class="sop-title">WhatsApp Bot Setup</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-009</span><span class="sop-title">TV Dashboard Setup</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-010</span><span class="sop-title">Setting Up MedGemma/HAI-DEF</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-011</span><span class="sop-title">Fine-tuning MedGemma on Glucose Data</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-012</span><span class="sop-title">Setting Up Juggluco on Mother's Phone</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-013</span><span class="sop-title">NHS FHIR Integration</span></div>
+                <div class="sop-item"><span class="sop-num">SOP-014</span><span class="sop-title">West Africa Voice Alerts</span></div>
+            </div>
+        </section>
+
+        <section>
+            <h2>The Stack</h2>
+            <pre><code>DATA COLLECTION:
+├── Juggluco (mother's phone)
+├── FreeStyle Libre 2 (sensor)
+└── Manual entry (CHWs in West Africa)
+
+DATA STORAGE:
+├── Nightscout (self-hosted)
+├── AgentSON (.AgentSON files)
+└── Supabase (optional cloud)
+
+AI/ML:
+├── MedGemma (Google HAI-DEF)
+├── Fine-tuned glucose model
+└── MedASR (speech-to-text)
+
+ALERTS:
+├── WhatsApp (whatsapp-web.js)
+├── SMS (Africa's Talking)
+├── Voice (Coqui TTS)
+└── TV Dashboard
+
+CLINICAL:
+├── NHS FHIR (intu)
+├── EMIS/SystmOne (when available)
+└── GP reports (HTML/PDF)
+
+DEVELOPER TOOLS:
+├── Backstage (documentation portal)
+├── AgentSON (session portability)
+└── GitHub (version control)</code></pre>
+        </section>
+
+        <section>
+            <h2>Cost</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Build Cost</h3>
+                    <p class="cost-value" style="color: var(--success);">£0</p>
+                    <p>All open source, free tools</p>
+                </div>
+                <div class="card">
+                    <h3>Running Cost</h3>
+                    <p class="cost-value" style="color: var(--success);">£2-5/month</p>
+                    <p>Electricity only</p>
+                </div>
+                <div class="card">
+                    <h3>NHS Equivalent</h3>
+                    <p class="cost-value" style="color: var(--error);">£50-200/month</p>
+                    <p>Proprietary systems</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>AgentSON — Agent + JSON</p>
+        <p>Built with ❤️ for carers, clinicians, and communities.</p>
+        <p>© 2026 Andrea Enning (AndieKobbieTech)</p>
+    </footer>
+</body>
+</html>
