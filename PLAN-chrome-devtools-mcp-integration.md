@@ -1,66 +1,68 @@
-# Chrome DevTools MCP Integration Plan
+# AgentSON: Abstraction Layer Above MCP
 
-## Goal
-Submit AgentSON as a standard integration to Chrome DevTools MCP (https://github.com/ChromeDevTools/chrome-devtools-mcp)
+## Mental Model
 
-## Why
-- Chrome DevTools MCP is Google-owned, 46k stars, widely adopted
-- Integration would make .agentson the standard format for recording agent browser actions
-- Enables portable execution traces across all Chrome DevTools MCP users
+```
+MCP = execution interface (standard, won)
+AgentSON = execution memory + coordination layer (abstraction above)
+```
 
-## Options
+**Don't chase Chrome. Build the abstraction layer that survives Chrome.**
 
-### Option 1: Add .agentson Skill (Low Effort)
-Add an instruction file to `skills/` directory that teaches agents how to use Chrome DevTools and record traces.
+## Why This Matters
 
-**What to add:**
-- `skills/agentson/SKILL.md` - Instructions for agents
-- `skills/agentson/examples/` - Example .agentson traces
+MCP has already won:
+- Chrome DevTools MCP: 46k stars, Google-owned
+- Azure MCP Server: 260+ tools across 50+ services
+- Every major cloud provider is adopting MCP
 
-**PR title:** `feat: add AgentSON skill for recording browser action traces`
+AgentSON should sit ABOVE this ecosystem, not integrate with any specific MCP server.
 
-### Option 2: Add --record-agentson Flag (Medium Effort)
-Add a flag that wraps all tool calls with .agentson stream entries.
+## What AgentSON Provides (That MCP Doesn't)
 
-**What to add:**
-- `src/tools/agentson-recorder.ts` - .agentson stream recorder
-- `src/agentson/` - .agentson format utilities
-- `--record-agentson` CLI flag
+1. **Portable execution traces** - Record all MCP tool calls in a standard format
+2. **Replay capability** - Re-execute sequences across different MCP servers
+3. **Cross-tool integration** - Browser + filesystem + database in one trace
+4. **Provenance tracking** - Who did what, when, with what arguments
+5. **Semantic routing** - Intent → adapter selection (not CDP method names)
 
-**PR title:** `feat: add --record-agentson flag for portable execution traces`
+## Architecture
 
-### Option 3: Add --agentson-output Flag (Medium Effort)
-Add a flag that includes .agentson-formatted entries in tool results.
+```
+AgentSON (L3) - Coordination + Provenance + Replay
+    ↓
+Semantic Agent API (L2) - browser.list-tabs, filesystem.read, database.query
+    ↓
+MCP Servers (L1) - Chrome DevTools, Azure, custom servers
+```
 
-**What to add:**
-- `src/agentson/` - .agentson format utilities
-- `--agentson-output` CLI flag
-- Modify tool result format to include .agentson entries
+## Integration Strategy
 
-**PR title:** `feat: add --agentson-output flag for .agentson-formatted results`
+### Option 1: MCP Observability Layer (Recommended)
+- Frame as "OpenTelemetry for MCP agents"
+- Add `--record-agentson` flag to ANY MCP server
+- Don't change MCP semantics, just observe
 
-## Steps
+### Option 2: AgentSON as MCP Server
+- Implement AgentSON as an MCP server itself
+- Other MCP servers can write to AgentSON streams
+- Enables cross-server provenance
 
-1. [ ] Sign Google's CLA at https://cla.developers.google.com/
-2. [ ] Fork https://github.com/ChromeDevTools/chrome-devtools-mcp
-3. [ ] Choose integration option (1, 2, or 3)
-4. [ ] Implement changes
-5. [ ] Add tests
-6. [ ] Update documentation
-7. [ ] Submit PR with conventional commits
+### Option 3: AgentSON as Output Format
+- Add .agentson as output format option to MCP servers
+- Standardized execution trace format
+- Portable across environments
+
+## Next Steps
+
+1. **Update PR framing** - Position as "abstraction layer above MCP", not "Chrome DevTools integration"
+2. **Build MCP observability layer** - Generic tool that records ANY MCP server's tool calls
+3. **Test with multiple MCP servers** - Chrome DevTools + Azure + custom servers
+4. **Submit to MCP ecosystem** - Not just Chrome DevTools, but MCP as a whole
 
 ## Resources
 
-- Chrome DevTools MCP repo: https://github.com/ChromeDevTools/chrome-devtools-mcp
-- CONTRIBUTING.md: https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/CONTRIBUTING.md
-- Google CLA: https://cla.developers.google.com/
+- MCP spec: https://modelcontextprotocol.io/
+- Chrome DevTools MCP: https://github.com/ChromeDevTools/chrome-devtools-mcp
+- Azure MCP Server: https://github.com/Azure/azure-mcp-server
 - AgentSON spec: https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json
-- AgentSON ontology: https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md
-
-## Status
-- [ ] CLA signed
-- [ ] Fork created
-- [ ] Integration implemented
-- [ ] Tests passing
-- [ ] Documentation updated
-- [ ] PR submitted
