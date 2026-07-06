@@ -157,7 +157,31 @@ class OpencodeReader:
                             "text": part_data.get("text", ""),
                             "timestamp": msg["time_created"]
                         })
+                    elif part_type == "reasoning":
+                        # Real opencode sessions emit standalone reasoning
+                        # parts (verified against a live message/parts
+                        # export, not just synthetic fixtures).
+                        entries.append({
+                            "type": "thought",
+                            "text": part_data.get("text", ""),
+                            "timestamp": (part_data.get("time") or {}).get("start", msg["time_created"])
+                        })
+                    elif part_type == "tool":
+                        # Current opencode schema: tool name at top level,
+                        # input/output/status nested under "state".
+                        state = part_data.get("state", {}) or {}
+                        status_raw = state.get("status", "")
+                        entries.append({
+                            "type": "action",
+                            "tool": part_data.get("tool", "unknown"),
+                            "code": json.dumps(state.get("input", {})),
+                            "output": str(state.get("output", "")),
+                            "status": "success" if status_raw == "completed" else (status_raw or "unknown"),
+                            "timestamp": (state.get("time") or {}).get("start", msg["time_created"])
+                        })
                     elif part_type == "tool-invocation":
+                        # Older opencode schema shape, kept as a fallback
+                        # for exports predating the "tool" part type.
                         entries.append({
                             "type": "action",
                             "tool": part_data.get("toolName", "unknown"),

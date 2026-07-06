@@ -22,7 +22,7 @@ def import_chatgpt(
     
     Args:
         export_path: Path to conversations.json from ChatGPT export
-        output_path: Optional path to write .AgentSON file
+        output_path: Optional path to write .agentson file
         session_id: Optional custom session ID
         all_branches: If True, include all branches; if False, follow main path
     
@@ -114,7 +114,7 @@ def _convert_conversation(
     
     if output_path:
         with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(agentson, f, indent=2, ensure_ascii=False, default=str)
+            json.dump(agentson, f, indent=2, ensure_ascii=False, default=str)
 
     return agentson
 
@@ -230,7 +230,7 @@ def _message_to_entry(message: dict) -> Optional[dict]:
 def _detect_model(mapping: dict) -> str:
     """Detect the model used from ChatGPT messages."""
     for node_id, node in mapping.items():
-        message = node.get("message", {})
+        message = node.get("message") or {}
         metadata = message.get("metadata", {})
         model_slug = metadata.get("model_slug", "")
         if model_slug:
