@@ -1,6 +1,6 @@
 # SOP-015: AI-Agent Repository Operating Procedure for AgentSON
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** 06 July 2026  
 **Author:** Andrea Enning (AndieKobbieTech)
 
@@ -92,7 +92,7 @@ git checkout -b fix/short-description
 
 # 3. Make the change
 
-# 4. Test it — see Step 3 before committing
+# 4. Test it — see Step 4 before committing
 
 # 5. Commit with a real message (what + why, not just "fix bug")
 git add <files>
@@ -107,9 +107,38 @@ git push -u origin fix/short-description
 
 ---
 
-## Step 3: Test before calling anything done
+## Step 3: When you find a bug (before writing the fix)
 
-Per `CONVENTIONS.md`, this isn't optional:
+Finding a bug and fixing a bug are not the same step. Do both, in order,
+every time — this is the same procedure documented in
+`docs/standards/coding-standards.md`'s "Bug Response Procedure" section,
+made concrete here:
+
+1. **Reproduce it.** Run the failing case. Don't fix something you've
+   only read about — a bug you haven't triggered yourself isn't
+   confirmed yet.
+2. **Check if it's pre-existing.** `git stash` (or check out `master`
+   directly), rerun the reproduction, `git stash pop`. This tells you
+   whether you're fixing a regression you just caused or something
+   that was already broken.
+3. **Decide scope before touching code.** A mechanical one-line fix?
+   Fix it. A design question (spec change, missing core command, a
+   litmus-test violation)? Flag it and stop — that decision isn't
+   yours to make unilaterally.
+4. **Fix it, then re-run the exact same reproduction from step 1.**
+   Confirm the specific failing case now passes — not just that the
+   code "looks right."
+5. **Write or extend a real test.** Use real reference data if you
+   have it. If you only have synthetic data, say so explicitly.
+6. Continue into Step 4 below (testing) and the rest of this workflow
+   as normal — this step happens *before* you commit, not instead of
+   the standard testing/PR process.
+
+---
+
+## Step 4: Test before calling anything done
+
+Per `docs/standards/coding-standards.md`, this isn't optional:
 
 ```bash
 # Run whatever test file(s) are relevant
@@ -129,7 +158,7 @@ something real.
 
 ---
 
-## Step 4: Open the PR
+## Step 5: Open the PR
 
 Using the GitHub API directly (works from any shell with `curl`, no `gh`
 CLI dependency):
@@ -162,7 +191,7 @@ curl -s -X PUT -H "Authorization: Bearer ${TOKEN}" \
 
 ---
 
-## Step 5: CHANGELOG discipline
+## Step 6: CHANGELOG discipline
 
 Every PR that fixes a bug or adds a capability gets a CHANGELOG.md entry
 under `## [Unreleased]`, in the same file as the code change (same PR,
@@ -185,7 +214,7 @@ something is fixed without saying how it was verified.
 
 ---
 
-## Step 6: Cutting a release (after merge)
+## Step 7: Cutting a release (after merge)
 
 Decide **patch vs. minor** first:
 
@@ -226,7 +255,7 @@ curl -s -X POST -H "Authorization: Bearer ${TOKEN}" \
 
 ---
 
-## Step 7: Scope discipline — the litmus tests
+## Step 8: Scope discipline — the litmus tests
 
 Before adding anything to the `agentson` core package, run it through:
 
@@ -245,7 +274,7 @@ it and suggest where it *does* belong instead of silently including it.
 
 ---
 
-## Step 8: Housekeeping — token cleanup
+## Step 9: Housekeeping — token cleanup
 
 At the end of a session or task:
 
@@ -273,7 +302,7 @@ needed — local file deletion doesn't revoke it remotely.
 
 ## Related documents
 
-- `CONVENTIONS.md` — the engineering principles this SOP operationalizes
+- `docs/standards/coding-standards.md` — the engineering principles this SOP operationalizes (there is no separate top-level CONVENTIONS.md file; this is the real file that plays that role)
 - `docs/standards/adrs/` — architecture decisions (the *why*, not the *how*)
 - `CHANGELOG.md` — historical record this SOP requires you to maintain
 - `PRD.md` — product scope and status
