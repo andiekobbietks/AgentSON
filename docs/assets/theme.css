@@ -1,0 +1,51 @@
+/*
+ * AgentSON docs — shared base theme (ADR-004 amber-phosphor tokens).
+ *
+ * Extracted from the rules that were genuinely byte-identical (or a
+ * strict superset) across docs/index.html, docs/case-studies/index.html,
+ * and docs/sops/index.html, per CodeRabbit's review on PR #13.
+ *
+ * Deliberately conservative: per-page layout values that differ between
+ * these pages (container max-width, header padding, h1 sizing, .card
+ * padding) are NOT included here and stay in each page's own <style>
+ * block. Merging those would require assuming they're meant to be
+ * identical, which can't be confirmed without visually rendering the
+ * live site -- not available in this environment. Extracting only the
+ * confirmed-identical subset avoids a silent visual regression.
+ */
+
+:root {
+    --bg: #0a0a08;
+    --surface: #141410;
+    --border: #2a2a1e;
+    --text: #e8e0c8;
+    --text-muted: #9a9070;
+    --accent: #ffb000;
+    /* Semantic colors used by docs/index.html and
+       docs/case-studies/index.html; harmless if unused elsewhere. */
+    --success: #a0d060;
+    --warning: #ffb000;
+    --error: #e05040;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.back {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.back:hover {
+    text-decoration: underline;
+}
