@@ -96,10 +96,32 @@ When a `thought` event is encountered:
 
 ### Rule 6: Side-Effect Processing
 
+**⚠️ Security note:** `side-effect` entries can carry arbitrary `path`
+and `diff` values. A `.agentson` file may originate from an untrusted
+or unverified source (a shared session, a downloaded example, a
+compromised export). Applying `path`/`diff` verbatim during replay
+means replay becomes an untrusted filesystem-mutation path — a replay
+engine that blindly does this on arbitrary input files creates a real
+data-loss and security risk, not just a correctness one.
+
+A conformant replay implementation MUST NOT apply `side-effect` diffs
+directly to the filesystem unless at least one of the following holds:
+- replay is running inside a sandboxed/isolated environment with no
+  access to files outside an explicitly scoped working directory, or
+- the user has explicitly opted into non-dry-run replay for this
+  specific file (not a global "always allow" setting), or
+- replay is running in an explicit dry-run/preview mode that reports
+  what *would* change without writing anything.
+
+The specific sandboxing/isolation mechanism is implementation-defined
+and is not specified further here — this section defines the
+requirement, not the mechanism.
+
 When a `side-effect` event is encountered:
 
 1. If `path` exists, verify file exists
-2. If `diff` exists, apply diff to file
+2. If `diff` exists, apply diff to file **only under the conditions
+   above** — never unconditionally
 3. Log the change
 
 ### Rule 7: Answer Processing
