@@ -103,11 +103,11 @@ def session_all_types(ctx):
     }
 
 
-@given(parsers.parse('a session containing an entry of type "observation"'))
-def session_with_observation(ctx):
+@given(parsers.parse('a session whose only entry is the pinned "{etype}" type'))
+def session_with_observation(ctx, etype):
     ctx["doc"] = {
         "id": "test-session-observation",
-        "entries": [{"type": "observation", "text": "x"}],
+        "entries": [{"type": etype, "text": "x"}],
     }
 
 

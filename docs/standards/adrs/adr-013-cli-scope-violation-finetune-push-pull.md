@@ -74,3 +74,8 @@ made):
 Should this be actioned before or after v0.1 launch? Pre-launch, this
 is a clean cut with no migration cost to real users. Post-launch, it
 becomes a breaking change requiring a deprecation path.
+
+## See also
+- [ADR-018](adr-018-adopt-project-brief-as-scope-charter.md) — the litmus test this ADR already applies, formalized after the fact
+- [SOP-011](../../../SOPs/SOP-011-Fine-tuning-MedGemma-on-Glucose-Data.md), [SOP-016](../../../SOPs/SOP-016-Work-In-Progress-Governance.md)
+- [Full catalogue](../ADR-SOP-CATALOGUE.md)
