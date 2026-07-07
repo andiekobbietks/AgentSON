@@ -18,9 +18,69 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 
 ### Known issues (flagged, not yet fixed)
 
+Findings below are from a structured audit on 2026-07-07, confirmed by
+reproduction against the real repo (not assumed from reading). Repair
+path is tracked as work packets WP1–WP5; ADR-015/016/017 pending.
+
+- **`spec/v1.2.json` enforces nothing.** Its top-level `required` array is
+  empty and no `oneOf`/`anyOf` discriminates per-line event types, so an
+  empty object `{}` validates successfully. The per-primitive required
+  fields documented in `spec/ontology.md` (e.g. `stream-meta` →
+  `stream_id`, `agents[]`) are not encoded in the schema. Reproduced via
+  jsonschema Draft 2020-12 validation. (WP2)
+
+- **`spec/ontology.md` contradicts the v1/v1.1 entry-type enum.** The
+  ontology declares "exactly 12 primitives," but `context`, `querying`,
+  and `title` exist in the v1 enum and not in the ontology, while
+  `handoff`, `presence`, `capabilities`, `user-feedback`, `system-event`,
+  `stream-meta`, and `observation` exist in the ontology and not in the
+  v1 enum. ADR-014 covers only the `observation` case; the full
+  reconciliation needs ADR-016. (WP1/WP2)
+
+- **No `agentson validate` CLI command exists**, despite validation being
+  a named core capability. Validation is currently only possible by
+  calling jsonschema directly. (WP3)
+
+- **Dependency declaration is inverted.** `pyproject.toml` declares only
+  `requests` (which serves `push`/`pull` — flagged as core scope
+  violations in ADR-013), while `jsonschema` — the single dependency core
+  is supposed to have — is neither declared nor imported anywhere in the
+  package. (WP3 / ADR-013)
+
+- **`cmd_search` is defined twice in `cli/main.py`** (approx. lines 259
+  and 423); the later definition silently shadows the earlier one. The
+  surviving behavior is pinned by a Gherkin scenario so removal of the
+  dead definition can be verified as behavior-neutral. (WP3)
+
+- **No document states which schema version is canonical.** v1 and v1.1
+  both require `id`/`tool`/`entries`; example files reference v1.1;
+  `spec/adapter-spec.md` calls the v1.2 JSONL stream "canonical";
+  ADR-001's framing is single-document. Four of ten shipped examples are
+  JSONL streams, six are single documents. Resolution needs ADR-015. (WP1)
+
+- **The v1.2 layer (ontology, adapter-spec, replay-semantics, JSONL
+  streaming, handoff/presence/capabilities) landed without any ADR**,
+  bypassing the project's own decision framework. `presence` and live-
+  channel semantics additionally appear to fail the spec litmus test
+  (coordination infrastructure rather than captured-episode fidelity);
+  decision needed in ADR-017. (WP1)
+
 - `readers/claude_code.py` uses the deprecated `datetime.datetime.utcnow()`
   (surfaced as a `DeprecationWarning` during test runs). Low priority,
   not user-facing, left open as a separate cleanup item.
+
+### Added (unreleased, in progress)
+
+- Gherkin/BDD regression suite scaffold under `tests/features/`: 71
+  scenarios across 13 feature files in 7 taxonomy folders
+  (spec_validation, importers, readers, cli, provenance, constants,
+  quarantine_scope_violations). Status honestly stated: 1 of 13 families
+  has executable step definitions and has been run (spec_validation:
+  4 pass / 6 fail, all failures traced to the schema-version issues
+  above, not to reader/CLI code). Remaining families are scenarios only,
+  pending WP2/WP3 decisions. The quarantine folder pins current
+  `finetune`/`push`/`pull` behavior solely so their extraction per
+  ADR-013 can be verified as behavior-preserving.
 
 ## [0.1.1] - 2026-07-05
 
