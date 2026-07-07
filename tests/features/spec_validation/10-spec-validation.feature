@@ -31,7 +31,7 @@ Feature: Spec v1 schema validation
     Then it validates with zero errors
 
   Scenario: Observation entry type status is pinned (ADR-014)
-    Given a session containing an entry of type "observation"
+    Given a session whose only entry is the pinned "observation" type
     When I validate it against the schema
     Then the result matches the current ADR-014 decision
     # Today this FAILS (observation not in enum) while readers emit it.
