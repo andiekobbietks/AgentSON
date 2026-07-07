@@ -1,8 +1,12 @@
-# AgentSON
+# Agentic Internet powered by JSON — sorry, I meant AgentSON
+
+**'Cause you deserve for your private sessions to be portable, in a format no vendor controls.**
+
+> *Lineage — the title this project carried before it found its voice:*
+> *"AgentSON: Preserve the operational life of an AI agent, independently of the runtime that hosted it."*
+> *Still true; still the defensible claim underneath the tagline. See [ANTIREZ-LINEAGE.md](ANTIREZ-LINEAGE.md) for the full design lineage.*
 
 > ⚠️ **Alpha, pre-release software.** This is not production-ready. Interfaces, the file format, and CLI commands can change without notice between versions. Known open design questions and gaps are tracked publicly at [github.com/andiekobbietks/AgentSON/issues](https://github.com/andiekobbietks/AgentSON/issues) — check there before depending on this for anything you can't afford to break. If you find a security issue, please open an issue or contact the maintainer directly rather than assuming it's already known.
-
-**Preserve the operational life of an AI agent, independently of the runtime that hosted it.**
 
 [![PyPI version](https://img.shields.io/pypi/v/agentson.svg)](https://pypi.org/project/agentson/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
