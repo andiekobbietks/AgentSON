@@ -77,3 +77,8 @@ AI's biggest debate is about openness. The OSI is defining it. Companies are fig
 AgentSON is that infrastructure. Not a definition — a working format. Not a policy — a tool. The Open Interchange Format for session traces that power AI.
 
 The value isn't competing with any company's valuation. It's solving a real problem that nobody else has solved: making your AI session data yours.
+
+## See also
+- [ADR-017](adr-017-presence-live-channel-scope.md) — keeps this ADR's "training data format" claim honest by keeping live-coordination out of scope
+- [ADR-001](adr-001-agentSON-format.md), [ADR-008](adr-008-trace-data-interchange.md)
+- [Full catalogue](../ADR-SOP-CATALOGUE.md)

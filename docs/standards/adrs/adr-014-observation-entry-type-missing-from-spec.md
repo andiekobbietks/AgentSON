@@ -84,3 +84,8 @@ readers.
 Patch `v1.json`'s enum directly, or formalize this as the first real
 change under a `v1.1` schema version (which `readers/copilot_chat.py`
 already assumes exists)?
+
+## See also
+- [ADR-016](adr-016-ontology-enum-reconciliation.md) — supersedes this ADR with the full reconciliation (not just `observation`)
+- [ADR-015](adr-015-canonical-schema-version.md) — the "formalize as v1.1/v1.2" question this ADR raised, now decided at the version level instead
+- [Full catalogue](../ADR-SOP-CATALOGUE.md)

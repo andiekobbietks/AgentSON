@@ -32,3 +32,8 @@ Create a single, vendor-neutral JSON format (.AgentSON) that captures the full s
 ### Neutral
 - The format will evolve (v1.0 → v1.1 → ...) as new tools emerge
 - Backward compatibility is mandatory — old files must always work
+
+## See also
+- [ADR-015](adr-015-canonical-schema-version.md) — where the "v1.0 → v1.1 → ..." evolution promised here is actually being decided
+- [ADR-009](adr-009-osi-open-interchange.md), [ADR-018](adr-018-adopt-project-brief-as-scope-charter.md)
+- [Full catalogue](../ADR-SOP-CATALOGUE.md)
