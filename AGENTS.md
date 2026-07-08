@@ -77,6 +77,27 @@ WP1 (ADR-015/016/017) ✅ ──→ WP2 (Schema: real required + oneOf) ✅
 
 **All critical path items DONE** (2026-07-08). WP5 in progress.
 
+## Platform Context
+
+A separate managed service (Data Rights Intelligence Platform) is defined in ADR-018–021 and spec'd in `docs/platform/mvp-spec.md`. It sits architecturally above AgentSON but does not impact the core format, CLI, or readers.
+
+```
+AgentSON (open source)              Platform (managed service)
+  ├── CLI (export/search/render)       ├── Crawler (wraps agentson export)
+  ├── Readers (7 working)              ├── Analyst (LLM truth-teller)
+  ├── Schema (v1.2 canonical)          ├── Enforcer (opt-out injection)
+  └── Apache 2.0                       └── Supabase + billing
+```
+
+Revenue from the platform funds AgentSON development. Both can exist without the other.
+
+**Sprint 1 BUILT (2026-07-08):** Crawl → Classify → Report loop working end-to-end.
+- `agentson platform detect` — lists installed AI tools + data paths
+- `agentson platform scan` — detects tools, exports all sessions, classifies, writes Markdown + JSON report
+- 62 sessions from 3 tools (opencode/minimax/antigravity) analyzed, 111 concerns found, 50 high/critical
+- Tier 1 rule-based classifier: detects API keys, emails, phones, file paths, telemetry signals, URLs
+- SLM classifier stub with graceful fallback to rules
+
 ## File Map (Vercel Compressed Index)
 
 | Path | Purpose | Status |
@@ -92,10 +113,24 @@ WP1 (ADR-015/016/017) ✅ ──→ WP2 (Schema: real required + oneOf) ✅
 | `spec/ADR-015-canonical-schema.md` | JSONL is canonical | ✅ Accepted |
 | `spec/ADR-016-ontology-enum-reconciliation.md` | 12 primitives = source of truth | ✅ Accepted |
 | `spec/ADR-017-core-vs-streaming.md` | Core vs streaming separation | ✅ Accepted |
+| `docs/standards/adrs/adr-018-managed-service-architecture.md` | Platform separation from core AgentSON | ✅ Accepted 2026-07-08 |
+| `docs/standards/adrs/adr-019-llm-analysis-privacy-model.md` | Three-tier LLM privacy model | ✅ Accepted 2026-07-08 |
+| `docs/standards/adrs/adr-020-data-rights-enforcement.md` | Opt-out injection scope & legal boundary | ✅ Accepted 2026-07-08 |
+| `docs/standards/adrs/adr-021-business-model-self-sustainability.md` | Tiered pricing & self-sustainability | ✅ Accepted 2026-07-08 |
+| `docs/platform/mvp-spec.md` | MVP architecture: Crawler→Analyze→Report→Enforce | ✅ Spec complete |
 | `readers/opencode.py` | OpenCode reader | ✅ |
 | `readers/claude_code.py` | Claude Code reader | ✅ |
 | `readers/chrome_devtools.py` | Chrome DevTools reader | ✅ |
-| `cli/main.py` | CLI (10 commands) | ✅ |
+| `cli/main.py` | CLI (13 commands: +reconstruct, +platform) | ✅ |
+| `cli/compliance.py` | GDPR/EU AI Act compliance engine (dual-track EU/UK) | ✅ Resolved 2026-07-08 |
+| `cli/reconstruct.py` | Three-mode reconstructor (forensic/narrative/live) | ✅ Resolved 2026-07-08 |
+| `agentson_platform/tool_registry.py` | Tool path registry (8 tools, cross-platform) | ✅ Sprint 1 |
+| `agentson_platform/crawler.py` | Auto-detect + export all sessions from all tools | ✅ Sprint 1 |
+| `agentson_platform/digest.py` | ComplianceDigest schema (dataclass) | ✅ Sprint 1 |
+| `agentson_platform/classifier.py` | Tier 1 rule-based classifier (PII + telemetry) | ✅ Sprint 1 |
+| `agentson_platform/classifier_slm.py` | SLM-enhanced classifier (graceful fallback) | ✅ Sprint 1 |
+| `agentson_platform/report.py` | Markdown + JSON report renderer | ✅ Sprint 1 |
+| `agentson_platform/scan.py` | End-to-end Crawl→Analyze→Report entry point | ✅ Sprint 1 |
 | `tests/test_schema.py` | 70 schema validation tests | ✅ |
 | `tools/flatten_schema.py` | Generates v1.2-entries.json | ✅ |
 | `tools/heart_monitor.py` | Health dashboard | ✅ |
@@ -122,8 +157,13 @@ Stack: L0 Identity → L1 Execution → L2 Knowledge → L3 Display
 2. ~~**No `jsonschema` in pyproject.toml**~~ — ✅ Added
 3. ~~**`requests` serves push/pull**~~ — ✅ Removed (ADR-013)
 4. ~~**No ADR-015/016/017**~~ — ✅ Accepted (2026-07-08)
-5. **CHANGELOG.md stale** — needs v0.2.1 entry
-6. **chrome-devtools not in CLI export/list** — needs handler
+5. ~~**GDPR compliance model unimplemented**~~ — ✅ Resolved (`cli/compliance.py` + `cli/reconstruct.py` + schema v1.2 updated)
+6. **CHANGELOG.md stale** — needs v0.2.1 entry
+7. ~~**chrome-devtools not in CLI export/list**~~ — ✅ In CLI export (already had handler in cmd_export)
+8. ~~**Data Rights Platform not built**~~ — ✅ Sprint 1 BUILT (`agentson_platform/` — Crawl→Classify→Report working)
+9. **claude-code reader wired into CLI** — ✅ Added to export + list commands (Sprint 1)
+10. **Sprint 2** — Supabase backend + web dashboard + auth + Stripe (not started)
+11. **Sprint 3** — LLM Tier 3 analysis + injection engine (not started)
 
 ## Session Context
 
@@ -133,6 +173,7 @@ Stack: L0 Identity → L1 Execution → L2 Knowledge → L3 Display
 - Edge CDP: port 9226 (with `--user-data-dir=%TEMP%\edge_cdp_demo`)
 - MiKTeX: `C:\Users\LLM-Test\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe`
 - mcp-use venv: `mcp_env/Scripts/python`
+- **Package naming:** `agentson_platform/` not `platform/` — `platform` shadows Python stdlib and breaks `attrs`/`jsonschema`
 
 ## Evolution Rule
 

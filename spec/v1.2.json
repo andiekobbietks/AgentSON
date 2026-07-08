@@ -85,6 +85,50 @@
         "parts": { "type": "integer" },
         "exported_at": { "type": "string", "format": "date-time" }
       }
+    },
+    "compliance": {
+      "type": "object",
+      "description": "GDPR + EU AI Act compliance manifest. Bounds what AgentSON claims. See cli/compliance.py.",
+      "properties": {
+        "jurisdiction": { "type": "string", "enum": ["eu", "uk", "dual"] },
+        "bases": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["gdpr_art_20_portability", "uk_gdpr_art_20_portability", "uk_duaa_recognised_legitimate_interests", "eu_ai_act_art_50_transparency"] }
+        },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "schema_version": { "type": "string" },
+        "provenance_bounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claim": { "type": "string" },
+              "scope": { "type": "string" },
+              "limitation": { "type": "string" },
+              "aer_reference": { "type": "string" }
+            }
+          }
+        },
+        "precedent_citations": {
+          "type": "object",
+          "description": "Key precedent cases informing this implementation."
+        }
+      }
+    },
+    "reconstruct_mode": {
+      "type": "string",
+      "enum": ["forensic", "narrative", "live"],
+      "description": "Reconstruction mode used to produce this session."
+    },
+    "digest": {
+      "type": "object",
+      "description": "Entry type/confidence summary for the session.",
+      "properties": {
+        "total_entries": { "type": "integer" },
+        "by_type": { "type": "object" },
+        "by_confidence": { "type": "object" },
+        "has_gaps": { "type": "boolean" }
+      }
     }
   },
   "$defs": {
@@ -99,8 +143,18 @@
           "type": "object",
           "properties": {
             "confidence": { "type": "string", "enum": ["confirmed", "inferred", "estimated", "ml_generated", "unknown"] },
-            "source": { "type": "string", "enum": ["cdp", "mcp", "extension", "user", "system", "other"] },
+            "source": { "type": "string", "enum": ["cdp", "mcp", "extension", "user", "system", "other", "export", "reconstructor"] },
             "timestamp_ms": { "type": "integer" }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": { "type": "boolean" },
+            "marking_scheme": { "type": "string" },
+            "compliant_with": { "type": "array", "items": { "type": "string" } },
+            "detectable": { "type": "boolean" }
           }
         }
       }
@@ -145,7 +199,20 @@
                 },
                 "$docs": { "type": "string", "format": "uri" }
               }
-            }
+            },
+            "compliance": {
+              "type": "object",
+              "description": "GDPR + EU AI Act compliance manifest for this reconstructed stream.",
+              "properties": {
+                "jurisdiction": { "type": "string", "enum": ["eu", "uk", "dual"] },
+                "bases": { "type": "array", "items": { "type": "string" } },
+                "generated_at": { "type": "string", "format": "date-time" },
+                "schema_version": { "type": "string" },
+                "provenance_bounds": { "type": "array" },
+                "precedent_citations": { "type": "object" }
+              }
+            },
+            "reconstruct_mode": { "type": "string", "enum": ["forensic", "narrative", "live"] }
           },
           "required": ["stream_id", "agents", "mode"]
         }
@@ -318,7 +385,8 @@
           "properties": {
             "type": { "const": "system-event" },
             "text": { "type": "string" },
-            "source": { "type": "string", "enum": ["cron", "webhook", "timer", "healthcheck", "manual", "other"] }
+            "source": { "type": "string", "enum": ["cron", "webhook", "timer", "healthcheck", "manual", "other", "reconstructor"] },
+            "gap_ms": { "type": "integer", "description": "Duration of gap if this marks a missing segment" }
           },
           "required": ["text", "source"]
         }
