@@ -9,33 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../shared/design-tokens.css">
     <style>
-        :root {
-            --bg: #0a0a08;
-            --bg-card: #141410;
-            --bg-code: #11110e;
-            --bg-header: #1a1a14;
-            --border: #2a2a1e;
-            --border-mid: #3a3a2e;
-            --text: #e8e0c8;
-            --text-dim: #c8c0a8;
-            --muted: #9a9070;
-            --accent: #ffb000;
-            --blue: #5b9ef6;
-            --green: #a0d060;
-            --orange: #ffb000;
-            --red: #e05040;
-            --purple: #a070d0;
-            --green-bg: rgba(160, 208, 96, 0.12);
-            --green-border: rgba(160, 208, 96, 0.30);
-            --blue-bg: rgba(91, 158, 246, 0.12);
-            --orange-bg: rgba(255, 176, 0, 0.12);
-            --red-bg: rgba(224, 80, 64, 0.12);
-            --purple-bg: rgba(160, 112, 208, 0.12);
-        }
-        body { background: var(--bg); color: var(--text); font-family: var(--font-ui); }
         header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
         h1 { font-family: var(--font-code); font-size: 24px; font-weight: 700; }
-        h1 span { color: var(--accent); }
+        h1 span { color: var(--amber); }
 
         .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
         .btn {
@@ -43,12 +19,12 @@
             font-family: var(--font-ui); font-size: 13px;
             border: 1px solid var(--border); transition: all 0.2s;
         }
-        .btn-primary { background: var(--accent); color: #0a0a08; border-color: var(--accent); }
+        .btn-primary { background: var(--amber); color: #0a0a08; border-color: var(--amber); }
         .btn-primary:hover { opacity: 0.85; }
         .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
         .btn-danger:hover { opacity: 0.85; }
         .btn-secondary { background: var(--bg-card); color: var(--text); }
-        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
         .btn[disabled] { display: none; }
 
         .search-wrap { width: 100%; margin-top: 10px; display: none; }
@@ -57,17 +33,17 @@
             width: 100%; padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border);
             color: var(--text); border-radius: 6px; font-family: var(--font-ui); font-size: 14px;
         }
-        #searchBar:focus { outline: none; border-color: var(--accent); }
+        #searchBar:focus { outline: none; border-color: var(--amber); }
         #searchBar::placeholder { color: var(--muted); }
 
         .drop-zone {
             border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px;
             text-align: center; cursor: pointer; transition: all 0.3s ease;
         }
-        .drop-zone:hover { border-color: var(--accent); }
+        .drop-zone:hover { border-color: var(--amber); }
         .drop-zone.dragover { border-color: var(--green); background: var(--green-bg); }
         .drop-zone p { color: var(--muted); margin-bottom: 8px; }
-        .drop-zone strong { color: var(--accent); }
+        .drop-zone strong { color: var(--amber); }
         #fileInput { display: none; }
 
         .json-preview {
@@ -78,11 +54,11 @@
             padding: 10px 14px; cursor: pointer; color: var(--muted); font-size: 13px;
             user-select: none; font-family: var(--font-code);
         }
-        .json-preview summary:hover { color: var(--accent); }
+        .json-preview summary:hover { color: var(--amber); }
         .json-preview pre {
             padding: 14px; margin: 0; overflow-x: auto; font-size: 12px;
             background: rgba(0,0,0,0.3); border-top: 1px solid var(--border);
-            color: var(--accent); font-family: var(--font-code);
+            color: var(--amber); font-family: var(--font-code);
         }
 
         .session-info {
@@ -116,11 +92,11 @@
             border-radius: 4px; cursor: pointer; transition: all 0.2s;
             font-family: var(--font-code);
         }
-        .copy-btn:hover { background: var(--accent); color: #0a0a08; border-color: var(--accent); }
+        .copy-btn:hover { background: var(--amber); color: #0a0a08; border-color: var(--amber); }
         .copy-btn.copied { background: var(--green); color: #0a0a08; border-color: var(--green); }
 
-        .role-user { border-left-color: var(--accent); }
-        .role-user .entry-type { background: var(--accent); color: #0a0a08; }
+        .role-user { border-left-color: var(--amber); }
+        .role-user .entry-type { background: var(--amber); color: #0a0a08; }
         .role-assistant { border-left-color: var(--green); }
         .role-assistant .entry-type { background: var(--green); color: #0a0a08; }
         .role-system { border-left-color: var(--blue); }
@@ -131,14 +107,8 @@
         .role-error .entry-type { background: var(--red); color: #fff; }
 
         .entry-content { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
-        .entry-content code {
-            background: var(--bg); padding: 2px 6px; border-radius: 4px;
-            font-family: var(--font-code); font-size: 12px;
-        }
-        .entry-content pre {
-            background: var(--bg); padding: 12px; border-radius: 4px;
-            overflow-x: auto; margin-top: 8px;
-        }
+        .entry-content code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-family: var(--font-code); font-size: 12px; }
+        .entry-content pre { background: var(--bg); padding: 12px; border-radius: 4px; overflow-x: auto; margin-top: 8px; }
         .entry-content pre code { padding: 0; background: none; }
 
         .metrics {
