@@ -4,182 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentSON Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../shared/design-tokens.css">
     <style>
         :root {
             --bg: #0d1117;
-            --surface: #161b22;
+            --bg-card: #161b22;
+            --bg-code: #0d1117;
+            --bg-header: #1c2128;
             --border: #30363d;
+            --border-mid: #404850;
             --text: #c9d1d9;
-            --text-muted: #8b949e;
+            --text-dim: #b0b8c0;
+            --muted: #8b949e;
             --accent: #58a6ff;
-            --success: #3fb950;
-            --warning: #d29922;
-            --error: #f85149;
+            --blue: #58a6ff;
+            --green: #3fb950;
+            --orange: #d29922;
+            --red: #f85149;
+            --purple: #bc8cff;
+            --blue-bg: rgba(88, 166, 255, 0.12);
+            --green-bg: rgba(63, 185, 80, 0.12);
+            --orange-bg: rgba(210, 153, 34, 0.12);
+            --red-bg: rgba(248, 81, 73, 0.12);
+            --purple-bg: rgba(188, 140, 255, 0.12);
         }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-ui); }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            border-bottom: 1px solid var(--border);
-            padding: 20px 0;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        h1 span {
-            color: var(--accent);
-        }
+        header { border-bottom: 1px solid var(--border); padding: 20px 0; margin-bottom: 20px; }
+        h1 { font-family: var(--font-code); font-size: 24px; font-weight: 600; }
+        h1 span { color: var(--accent); }
 
         .drop-zone {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
+            border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px;
+            text-align: center; cursor: pointer; transition: border-color var(--t-fast);
             margin-bottom: 20px;
-            cursor: pointer;
-            transition: border-color 0.2s;
         }
-
-        .drop-zone:hover,
-        .drop-zone.dragover {
-            border-color: var(--accent);
-        }
-
-        .drop-zone p {
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); }
+        .drop-zone p { color: var(--muted); margin-bottom: 10px; }
+        #fileInput { display: none; }
 
         .session-info {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
         }
+        .session-info h2 { font-family: var(--font-code); font-size: 16px; margin-bottom: 12px; }
+        .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .meta-item { font-size: 14px; }
+        .meta-item .label { color: var(--muted); }
 
-        .session-info h2 {
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-        }
-
-        .meta-item {
-            font-size: 14px;
-        }
-
-        .meta-item .label {
-            color: var(--text-muted);
-        }
-
-        .entries {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+        .entries { display: flex; flex-direction: column; gap: 12px; }
         .entry {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px;
         }
-
-        .entry-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
+        .entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .entry-type {
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 500;
+            font-size: 12px; padding: 2px 8px; border-radius: 4px;
+            font-weight: 500; font-family: var(--font-code);
         }
+        .type-user-query { background: var(--blue-bg); color: var(--blue); }
+        .type-thought { background: var(--orange-bg); color: var(--orange); }
+        .type-action { background: var(--green-bg); color: var(--green); }
+        .type-answer { background: var(--purple-bg); color: var(--purple); }
+        .type-side-effect { background: var(--red-bg); color: var(--red); }
+        .type-context { background: var(--purple-bg); color: var(--purple); }
+        .type-tool { background: var(--green-bg); color: var(--green); }
 
-        .type-user-query { background: var(--accent); color: #000; }
-        .type-thought { background: var(--warning); color: #000; }
-        .type-action { background: var(--success); color: #000; }
-        .type-answer { background: var(--text-muted); color: #000; }
-        .type-side-effect { background: var(--error); color: #fff; }
-        .type-context { background: #8957e5; color: #fff; }
-        .type-tool { background: #3fb950; color: #000; }
-
-        .entry-content {
-            font-size: 14px;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
+        .entry-content { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
         .entry-content code {
-            background: var(--bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 13px;
+            background: var(--bg-code); padding: 2px 6px; border-radius: 4px;
+            font-family: var(--font-code); font-size: 13px;
         }
-
         .entry-content pre {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin-top: 8px;
+            background: var(--bg-code); padding: 12px; border-radius: 4px;
+            overflow-x: auto; margin-top: 8px;
         }
-
-        .entry-content pre code {
-            padding: 0;
-            background: none;
-        }
+        .entry-content pre code { padding: 0; background: none; }
 
         .metrics {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-            font-size: 13px;
-            color: var(--text-muted);
+            display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px;
+            padding-top: 12px; border-top: 1px solid var(--border);
+            font-size: 13px; color: var(--muted); font-family: var(--font-code);
         }
-
-        .no-session {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-        }
-
-        #fileInput {
-            display: none;
-        }
+        .no-session { text-align: center; padding: 40px; color: var(--muted); }
     </style>
 </head>
 <body>
@@ -195,9 +105,7 @@
         </div>
 
         <div id="content">
-            <div class="no-session">
-                No session loaded. Drop a file to begin.
-            </div>
+            <div class="no-session">No session loaded. Drop a file to begin.</div>
         </div>
     </div>
 
@@ -207,27 +115,15 @@
         const content = document.getElementById('content');
 
         dropZone.addEventListener('click', () => fileInput.click());
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
             if (file) readFile(file);
         });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) readFile(file);
-        });
+        fileInput.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) readFile(file); });
 
         function readFile(file) {
             const reader = new FileReader();
@@ -252,21 +148,11 @@
                 <div class="session-info">
                     <h2>Session: ${data.id || 'Unknown'}</h2>
                     <div class="meta-grid">
-                        <div class="meta-item">
-                            <span class="label">Tool:</span> ${tool.name || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Agent:</span> ${agent.name || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Model:</span> ${agent.model || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Started:</span> ${data.started_at || 'Unknown'}
-                        </div>
-                        <div class="meta-item">
-                            <span class="label">Entries:</span> ${entries.length}
-                        </div>
+                        <div class="meta-item"><span class="label">Tool:</span> ${tool.name || 'Unknown'}</div>
+                        <div class="meta-item"><span class="label">Agent:</span> ${agent.name || 'Unknown'}</div>
+                        <div class="meta-item"><span class="label">Model:</span> ${agent.model || 'Unknown'}</div>
+                        <div class="meta-item"><span class="label">Started:</span> ${data.started_at || 'Unknown'}</div>
+                        <div class="meta-item"><span class="label">Entries:</span> ${entries.length}</div>
                     </div>
                 </div>
                 <div class="entries">
@@ -275,44 +161,28 @@
             for (const entry of entries) {
                 const type = entry.type || entry.role || 'unknown';
                 const typeClass = `type-${type.replace(/[^a-z-]/g, '-')}`;
-                
-                let content = '';
-                if (entry.text) {
-                    content += escapeHtml(entry.text);
-                }
-                if (entry.code) {
-                    content += `<pre><code>${escapeHtml(entry.code)}</code></pre>`;
-                }
-                if (entry.output) {
-                    content += `<div class="label">Output:</div><pre><code>${escapeHtml(entry.output)}</code></pre>`;
-                }
-                if (entry.query) {
-                    content += escapeHtml(entry.query);
-                }
-
+                let body = '';
+                if (entry.text) body += escapeHtml(entry.text);
+                if (entry.code) body += `<pre><code>${escapeHtml(entry.code)}</code></pre>`;
+                if (entry.output) body += `<div class="label">Output:</div><pre><code>${escapeHtml(entry.output)}</code></pre>`;
+                if (entry.query) body += escapeHtml(entry.query);
                 html += `
                     <div class="entry">
-                        <div class="entry-header">
-                            <span class="entry-type ${typeClass}">${type}</span>
-                        </div>
-                        <div class="entry-content">${content || '<em>No content</em>'}</div>
+                        <div class="entry-header"><span class="entry-type ${typeClass}">${type}</span></div>
+                        <div class="entry-content">${body || '<em>No content</em>'}</div>
                     </div>
                 `;
             }
-
             html += '</div>';
 
             if (metrics.total_tokens || metrics.cost) {
-                html += `
-                    <div class="metrics">
-                        ${metrics.total_tokens ? `<span>Tokens: ${metrics.total_tokens.toLocaleString()}</span>` : ''}
-                        ${metrics.cost ? `<span>Cost: $${metrics.cost.toFixed(4)}</span>` : ''}
-                        ${metrics.total_turns ? `<span>Turns: ${metrics.total_turns}</span>` : ''}
-                        ${metrics.total_tool_calls ? `<span>Tool Calls: ${metrics.total_tool_calls}</span>` : ''}
-                    </div>
-                `;
+                html += `<div class="metrics">
+                    ${metrics.total_tokens ? `<span>Tokens: ${metrics.total_tokens.toLocaleString()}</span>` : ''}
+                    ${metrics.cost ? `<span>Cost: $${metrics.cost.toFixed(4)}</span>` : ''}
+                    ${metrics.total_turns ? `<span>Turns: ${metrics.total_turns}</span>` : ''}
+                    ${metrics.total_tool_calls ? `<span>Tool Calls: ${metrics.total_tool_calls}</span>` : ''}
+                </div>`;
             }
-
             content.innerHTML = html;
         }
 

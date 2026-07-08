@@ -1,0 +1,16 @@
+{
+  "name": "agentic-internet-stack",
+  "version": "0.1.0",
+  "description": "AgentSON — the agentic internet stack",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@esbuild/win32-x64": "^0.28.1",
+    "astro": "^7.0.0",
+    "esbuild": "^0.28.1"
+  }
+}

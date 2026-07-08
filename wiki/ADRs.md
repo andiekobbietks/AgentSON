@@ -19,6 +19,12 @@ ADRs capture significant architectural decisions with context and rationale.
 | 009 | [OSI Open Interchange](ADR-009) | 2026-07-05 | Accepted |
 | 010 | [GDPR Data Liberation](ADR-010) | 2026-07-05 | Accepted |
 | 011 | [Rename to AgentSON](ADR-011) | 2026-07-05 | Accepted |
+| 012 | [Academic Literature Relationship](ADR-012) | 2026-07-05 | Accepted |
+| 013 | [CLI Scope Violation (finetune/push/pull)](ADR-013) | 2026-07-06 | Accepted |
+| 014 | [Observation Entry Type Missing](ADR-014) | 2026-07-06 | Accepted |
+| 015 | [Canonical Schema](ADR-015) | 2026-07-07 | Accepted |
+| 016 | [Ontology↔Enum Reconciliation](ADR-016) | 2026-07-07 | Accepted |
+| 017 | [Core vs Streaming Separation](ADR-017) | 2026-07-07 | Accepted |
 
 ---
 

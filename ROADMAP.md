@@ -126,6 +126,9 @@ AgentSON is the universal interchange format for AI agent session traces. This r
 | Chrome DevTools AI | ✅ Working | `readers/chrome_devtools.py` | ✅ 9 tests |
 | Claude Code | ✅ Working | `readers/claude_code.py` | ✅ Passing |
 | ChatGPT | ✅ Working | `importers/chatgpt.py` | ✅ Passing |
+| MCP (protocol) | ✅ Working | `importers/mcp.py` | ✅ Loads |
+| A2A (protocol) | ✅ Working | `importers/a2a.py` | ✅ Loads |
+| AGNTCY (protocol) | ✅ Working | `importers/agntcy.py` | ✅ Loads |
 
 ---
 
@@ -134,11 +137,22 @@ AgentSON is the universal interchange format for AI agent session traces. This r
 | Version | Target Date | Criteria | Readers |
 |---------|-------------|----------|---------|
 | **v0.1.0** | 2026-07-05 | Initial release | 6 + importer |
-| **v0.2.0** | 2026-08 | Beta: 10+ working readers, real-world data | 12+ |
-| **v0.3.0** | 2026-09 | Corpus: 10+ readers, sample data from each | 15+ |
-| **v1.0.0** | 2026-10 | Stable: all Tier 1 readers, CI/CD, docs | 20+ |
+| **v0.2.0** | 2026-07 | Protocol adapters + Docker/LXD Hub tools + Astro 7 site | 8 + 3 protocol importers |
+| **v0.3.0** | 2026-08 | Corpus: 10+ readers, sample data from each | 15+ |
+| **v1.0.0** | 2026-09 | Stable: all Tier 1 readers, CI/CD, docs | 20+ |
 
 ---
+
+## Distribution Channels
+
+| Channel | Status | Use Case |
+|---------|--------|----------|
+| **PyPI** | ✅ Done | Python CLI & library distribution |
+| **Docker Hub** | 🛠 Tools built | OCI artifact distribution + Docker Agent integration |
+| **LXD Hub** | 🛠 Tools built | System containers for persistent agent daemons |
+| **npm** | 🔜 Planned | JavaScript/TypeScript CLI & stream module |
+
+AgentSON sessions are **cross-registry compatible** — publish to Docker Hub as OCI artifacts, pull from LXD Hub as system containers. No conversion needed.
 
 ## What NOT to Build
 

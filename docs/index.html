@@ -6,44 +6,10 @@
     <title>AgentSON — The Universal Format for AI Agent Session Data</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/design-tokens.css">
     <style>
-        :root {
-            --bg: #0a0a08;
-            --surface: #141410;
-            --border: #2a2a1e;
-            --text: #e8e0c8;
-            --text-muted: #9a9070;
-            --accent: #ffb000;
-            --success: #a0d060;
-            --warning: #ffb000;
-            --error: #e05040;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        code, pre, .mono {
-            font-family: 'Space Mono', 'Consolas', 'Monaco', monospace;
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
+        .container { max-width: var(--container); margin: 0 auto; padding: var(--space-xl); }
 
         header {
             text-align: center;
@@ -51,12 +17,12 @@
         }
 
         h1 {
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 56px;
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
-        h1 span { color: var(--accent); }
+        h1 span { color: var(--amber); }
 
         .tagline {
             font-size: 22px;
@@ -90,7 +56,7 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 20px;
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 0.75rem;
             color: var(--text-muted);
         }
@@ -109,7 +75,7 @@
             color: #0a0a08;
             text-decoration: none;
             border-radius: 6px;
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-weight: 600;
             margin: 8px;
             font-size: 14px;
@@ -126,7 +92,7 @@
         section { padding: 60px 20px; border-top: 1px solid var(--border); }
 
         h2 {
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 28px;
             margin-bottom: 16px;
             color: var(--accent);
@@ -157,7 +123,7 @@
             color: var(--text);
             font-size: 16px;
             margin-bottom: 6px;
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
         }
         .card p { color: var(--text-muted); font-size: 13px; }
 
@@ -165,7 +131,7 @@
             display: inline-block;
             padding: 3px 8px;
             border-radius: 4px;
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 11px;
             font-weight: 600;
             margin-top: 8px;
@@ -185,7 +151,7 @@
         }
 
         code {
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 13px;
         }
 
@@ -204,7 +170,7 @@
         }
 
         .legal-card h3 {
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 16px;
             color: var(--accent);
             margin-bottom: 10px;
@@ -217,7 +183,7 @@
         }
 
         .legal-card .cite {
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 12px;
             color: var(--text-muted);
             margin-top: 10px;
@@ -229,7 +195,7 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 24px;
-            font-family: 'Space Mono', monospace;
+            font-family: var(--font-code);
             font-size: 13px;
             line-height: 1.8;
             margin-top: 24px;
@@ -307,7 +273,7 @@
 
     <section>
         <h2>Supported Tools</h2>
-        <p class="section-subtitle">6 tools supported today, 3 more planned.</p>
+        <p class="section-subtitle">6 readers, 3 importers, 33 tools identified.</p>
         <div class="grid">
             <div class="card">
                 <h3>opencode</h3>
@@ -341,17 +307,17 @@
             </div>
             <div class="card">
                 <h3>Cursor</h3>
-                <p>Biggest market, biggest lock-in</p>
+                <p>RICE: 2700 — biggest market, biggest lock-in</p>
                 <span class="status status-planned">Planned</span>
             </div>
             <div class="card">
                 <h3>Cline</h3>
-                <p>Open source, BYOK, users who care about their data</p>
+                <p>RICE: 1350 — open source, BYOK, users care about data</p>
                 <span class="status status-planned">Planned</span>
             </div>
             <div class="card">
                 <h3>Aider</h3>
-                <p>MIT-licensed, terminal-first</p>
+                <p>RICE: 1350 — MIT, terminal-first</p>
                 <span class="status status-planned">Planned</span>
             </div>
         </div>
@@ -381,7 +347,6 @@ open docs/viewer/</code></pre>
     <section>
         <h2>The Pipeline</h2>
         <div class="flow">
-            <span class="sr-only">Data flow: Your sessions are parsed by readers into normalized AgentSON format, then converted by exporters into fine-tuning formats like Unsloth and Olive, so you can train on your own data.</span>
             <em>your sessions</em> → <em>readers</em> → <em>.AgentSON</em> → <em>exporters</em> → <em>fine-tuning data</em><br><br>
             opencode sessions ─┐<br>
             Claude Code logs ──┤<br>
@@ -441,10 +406,9 @@ open docs/viewer/</code></pre>
     </section>
 
     <footer>
-        <p>AgentSON — The universal format for AI agent session data.</p>
+        <p>AgentSON — Agent + JSON</p>
         <p>Your data. Portable. Auditable. Yours.</p>
         <p>© 2026 Andrea Enning (AndieKobbieTech)</p>
     </footer>
-
 </body>
 </html>

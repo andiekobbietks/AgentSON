@@ -1,5 +1,10 @@
 # Issue: AgentSON GDPR Compliance Model — Reconstruction Layer Positioning
 
+> **RESOLVED** — 08 July 2026
+>
+> Implementation delivered in `cli/compliance.py` + `cli/reconstruct.py` + `spec/v1.2.json`.
+> See decision log below for architectural choices.
+
 ## The core distinction
 
 AgentSON is not a telemetry system. It does not sit inside the execution path of any tool. It is a **reconstruction layer** — it ingests partial, multi-system export artifacts and stitches them into a unified execution graph.
@@ -327,6 +332,37 @@ OUTPUT BEHAVIOR
   "linked_events": ["evt-004", "evt-008"]
 }
 ```
+
+## Implementation Delivered
+
+| Module | What It Does | Key Files |
+|--------|-------------|-----------|
+| **Compliance Engine** | Dual-track EU/UK compliance manifest generation, provenance confidence bounds, AI Act Art. 50(2) transparency marking, precedent case citations | `cli/compliance.py` |
+| **Reconstructor** | Three-mode session reconstruction (forensic/narrative/live), deduplication, gap detection, multi-source stitching | `cli/reconstruct.py` |
+| **Schema Update** | Added `_transparency`, `compliance`, `reconstruct_mode`, `digest`, `gap_ms` fields to v1.2 schema | `spec/v1.2.json` |
+| **CLI Integration** | `agentson reconstruct` command with `--jurisdiction`, `--mode`, `--format`, `--no-ai-act-marks` flags | `cli/main.py` |
+
+### Key Architectural Decisions
+
+1. **Dual-track at type level, not runtime switch** — `Jurisdiction.EU` / `Jurisdiction.UK` / `Jurisdiction.DUAL` are enum values baked into the compliance manifest. The output format is identical; the legal basis strings differ. This avoids conditional code paths.
+
+2. **Precedent cases hard-coded, not fetched live** — The four key cases (Meta/Hive, WhatsApp v EDPB, Brillen Rottler, UK Adequacy) are citation constants. These change slowly (years). Live fetching would add a network dependency and break offline-first.
+
+3. **EU AI Act Art. 50(2) marking is `_transparency`, not `transparency`** — The underscore prefix signals this is a compliance annotation, not a user-facing field. It can be stripped for display or counted for audit.
+
+4. **Provenance bounds are explicit, not buried** — The compliance manifest lists 5 bounded claims. Each has a `limitation` field. This is legally defensible: the user cannot claim AgentSON guarantees what it explicitly disclaims.
+
+5. **`reconstruct_mode` at session level** — A session produced in 'forensic' mode cannot be re-sold as 'live'. The mode is locked into the stream-meta.
+
+### Future-proofing for 10+ year horizon
+
+| Horizon | Change Expected | How AgentSON Handles It |
+|---------|----------------|-------------------------|
+| 2026-2027 | EU AI Act Art. 50(2) enforcement begins | `_transparency` marking already compliant; Code of Practice refinement is additive |
+| 2027-2028 | EU GDPR 2.0 reform | `ComplianceBasis` enum extension is one line; schema is backward-compatible |
+| 2027-2031 | UK adequacy review cycle | Dual-track architecture survives adequacy loss; UK-only path remains operable |
+| 2030+ | Data portability extends to non-personal data (EU Data Act) | AgentSON's AER-bounded claims already cover execution traces; expansion is additive |
+| 2030+ | AI-specific regulation in UK (parallel to EU AI Act) | `compliance.bases` array accepts new basis strings without breaking schema |
 
 ## Relationship to existing documents
 

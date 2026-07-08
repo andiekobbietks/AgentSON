@@ -21,7 +21,7 @@ CREATE TABLE sessions (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   
-  -- Session data (the full .agentsong JSON)
+  -- Session data (the full .agentson JSON)
   data JSONB NOT NULL,
   
   -- Full-text search vector (auto-generated)

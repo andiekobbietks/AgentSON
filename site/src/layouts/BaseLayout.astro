@@ -1,0 +1,84 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f0f0f">
+  <meta name="color-scheme" content="dark">
+  <title>{title}</title>
+  <meta name="description" content={description || "AgentSON — The agentic internet stack"}>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/design-tokens.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <span class="nav-logo">
+          <span class="nav-logo-dot" style="background:var(--blue)"></span>
+          <span class="nav-logo-dot" style="background:var(--green)"></span>
+          <span class="nav-logo-dot" style="background:var(--amber)"></span>
+          <span class="nav-logo-dot" style="background:var(--red)"></span>
+          <span class="nav-logo-dot" style="background:var(--purple)"></span>
+        </span>
+        AgentSON
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" id="navToggle">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/stack" class="nav-link">The Stack</a></li>
+        <li><a href="/protocols" class="nav-link">Protocols</a></li>
+        <li><a href="/adapter" class="nav-link">Adapters</a></li>
+        <li><a href="/distribute" class="nav-link">Distribution</a></li>
+        <li><a href="/normalization" class="nav-link">Normalization</a></li>
+        <li><a href="/docs/viewer/" class="nav-cta">Viewer</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-inner">
+      <a href="/" class="footer-brand">
+        <span class="nav-logo">
+          <span class="nav-logo-dot" style="background:var(--blue)"></span>
+          <span class="nav-logo-dot" style="background:var(--green)"></span>
+          <span class="nav-logo-dot" style="background:var(--amber)"></span>
+          <span class="nav-logo-dot" style="background:var(--red)"></span>
+          <span class="nav-logo-dot" style="background:var(--purple)"></span>
+        </span>
+        AgentSON
+      </a>
+      <ul class="footer-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/stack">Stack</a></li>
+        <li><a href="/protocols">Protocols</a></li>
+        <li><a href="https://github.com/andiekobbietks/AgentSON">GitHub</a></li>
+      </ul>
+    </div>
+    <div class="footer-copy text-center">&copy; 2026 Andrea Enning (AndieKobbieTech). AgentSON — Open source under MIT.</div>
+  </footer>
+
+  <script>
+    document.getElementById('navToggle')?.addEventListener('click', () => {
+      document.querySelector('.nav-links')?.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
