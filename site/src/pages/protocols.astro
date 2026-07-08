@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Protocols — AgentSON" description="MCP, A2A, AGNTCY — every execution protocol normalizes into AgentSON provenance.">
+  <section class="section hero" style="padding-bottom:var(--space-2xl);">
+    <div class="container">
+      <h1>Execution Protocols</h1>
+      <p class="hero-subtitle">MCP, A2A, AGNTCY are execution protocols with no provenance format. AgentSON fills the gap.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div style="max-width:var(--max-prose);margin:0 auto;">
+        <div class="callout callout-blue" style="margin-bottom:var(--space-2xl);">
+          <div>
+            <strong>Key insight:</strong> MCP/A2A/AGNTCY define how agents communicate, not what they did. AgentSON is the only provenance format — the "PDF of agent sessions."
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3 class="text-blue">MCP</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-sm);">Model Context Protocol</p>
+          <p>Tool execution protocol. AgentSON normalizes MCP tool calls into <code>action</code>, <code>observation</code>, and <code>thought</code> primitives.</p>
+          <pre style="margin:var(--space-md) 0 0;">tool_call &rarr; action + observation
+tool_result &rarr; observation
+error &rarr; system-event</pre>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 class="text-green">A2A</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-sm);">Agent-to-Agent</p>
+          <p>Inter-agent communication. AgentSON captures handoff, delegation, and multi-agent coordination.</p>
+          <pre style="margin:var(--space-md) 0 0;">handoff &rarr; system-event
+delegation &rarr; action
+result &rarr; observation</pre>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--amber);">
+          <h3 class="text-amber">AGNTCY</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-sm);">Agent Protocol</p>
+          <p>Standardized agent runtime. AgentSON captures task lifecycle, step execution, and artifact production.</p>
+          <pre style="margin:var(--space-md) 0 0;">task &rarr; system-event
+step &rarr; action
+artifact &rarr; observation</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">Why Protocol Adapters?</h2>
+      <p class="section-subtitle">Protocols change. Provenance is forever.</p>
+      <div class="card" style="margin-bottom:var(--space-lg);">
+        <p>Every execution protocol produces traces. But traces are ephemeral — stored in proprietary SQLite databases, protobuf blobs, or lost when the session ends.</p>
+      </div>
+      <div class="card">
+        <p>AgentSON normalizes all traces into one format. When the protocol changes (MCP v2, A2A v3), only the adapter changes. Downstream tools never notice.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -185,6 +185,40 @@ Streams can branch when agents explore alternatives:
 
 ---
 
+## ISO Litmus Test
+
+> "Is this the only format solving this problem at the international level?"
+
+AgentSON is the **only** format doing agent session provenance. No other standard — MCP, A2A, AGNTCY, OpenClaw — records what agents actually did in a portable, vendor-neutral file format.
+
+### Five questions for ISO readiness
+
+| # | Question | AgentSON |
+|---|----------|----------|
+| 1 | **Does any ISO standard already cover this?** | ❌ No. ISO has SQL, PDF, Unicode. No agent provenance format. |
+| 2 | **Does any non-ISO standard cover this?** | ❌ No. MCP/A2A/AGNTCY are execution protocols, not provenance formats. |
+| 3 | **Is this royalty-free and open?** | ✅ Apache 2.0. No patents. |
+| 4 | **Is this stable enough?** | ✅ v1.2 JSONL, 12 primitives, schema validated. |
+| 5 | **Does this have broad industry potential?** | ✅ Every AI agent produces session traces. Every enterprise needs audit trails. |
+
+### Why AgentSON and not MCP/A2A/AGNTCY
+
+| Layer | What it does | ISO candidate? |
+|-------|-------------|----------------|
+| **Execution** | How agents talk (MCP, A2A, AGNTCY) | Maybe — but LF handles it |
+| **Framework** | How agents run (OpenClaw, NemoClaw) | No — vendor-specific |
+| **Provenance** | What agents did (AgentSON) | **Yes — only format in this category** |
+
+MCP, A2A, and AGNTCY are execution protocols. They define how agents communicate. They have the Linux Foundation.
+
+AgentSON is a provenance format. It defines what agents actually did. **No other format does this.** That's not competition — it's a gap in the standardization landscape.
+
+### The PDF analogy
+
+PDF got ISO 32000 because it was the only format normalizing document layout across vendors. AgentSON normalizes agent session traces across vendors. Same pattern. Same gap. Same opportunity.
+
+---
+
 ## Next Steps
 
 1. [ ] Implement replay engine that executes .agentson streams

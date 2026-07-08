@@ -5,34 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentSON Viewer</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a2e">
+    <meta name="theme-color" content="#0f0f0f">
     <meta name="description" content="View and search AgentSON session files">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/design-tokens.css">
     <style>
         :root {
             --bg: #0f0f23;
-            --surface: #1a1a2e;
+            --bg-card: #1a1a2e;
+            --bg-code: #16162a;
+            --bg-header: #22223a;
             --border: #2d2d44;
+            --border-mid: #3a3a55;
             --text: #e0e0e0;
-            --text-muted: #8888aa;
+            --text-dim: #c0c0d0;
+            --muted: #8888aa;
             --accent: #00d4ff;
-            --accent-dim: #00d4ff33;
-            --success: #00ff88;
-            --warning: #ffaa00;
-            --error: #ff4444;
+            --blue: #00d4ff;
+            --green: #00ff88;
+            --orange: #ffaa00;
+            --red: #ff4444;
+            --purple: #c084fc;
+            --blue-bg: rgba(0, 212, 255, 0.12);
+            --green-bg: rgba(0, 255, 136, 0.12);
+            --orange-bg: rgba(255, 170, 0, 0.12);
+            --red-bg: rgba(255, 68, 68, 0.12);
+            --purple-bg: rgba(192, 132, 252, 0.12);
         }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
-        
+        body { background: var(--bg); color: var(--text); font-family: var(--font-ui); }
+
         header {
-            background: var(--surface);
+            background: var(--bg-card);
             border-bottom: 1px solid var(--border);
             padding: 1rem 2rem;
             display: flex;
@@ -40,187 +45,73 @@
             align-items: center;
         }
         
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--accent);
-        }
+        h1 { font-size: 1.5rem; font-weight: 600; color: var(--accent); }
         
         .badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            background: var(--accent-dim);
-            border-radius: 4px;
-            color: var(--accent);
+            font-size: 0.75rem; padding: 0.25rem 0.5rem;
+            background: var(--blue-bg); border-radius: 4px; color: var(--accent);
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
         
         .drop-zone {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 4rem 2rem;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            margin-bottom: 2rem;
+            border: 2px dashed var(--border); border-radius: var(--radius-lg);
+            padding: 4rem 2rem; text-align: center; transition: all 0.3s;
+            cursor: pointer; margin-bottom: 2rem;
         }
-        
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-        }
-        
-        .drop-zone h2 {
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-        }
-        
-        .drop-zone p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        input[type="file"] {
-            display: none;
-        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--blue-bg); }
+        .drop-zone h2 { color: var(--muted); margin-bottom: 1rem; }
+        .drop-zone p { color: var(--muted); font-size: 0.9rem; }
+        input[type="file"] { display: none; }
         
         .session-info {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
         }
+        .session-info h3 { color: var(--accent); margin-bottom: 1rem; }
         
-        .session-info h3 {
-            color: var(--accent);
-            margin-bottom: 1rem;
-        }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .info-item label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 0.25rem; }
+        .info-item span { font-weight: 500; }
         
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        
-        .info-item label {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .info-item span {
-            font-weight: 500;
-        }
-        
-        .search-box {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
+        .search-box { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
         .search-box input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 1rem;
+            flex: 1; padding: 0.75rem 1rem; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 1rem;
         }
-        
-        .search-box input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        .search-box input:focus { outline: none; border-color: var(--accent); }
         
         .entries {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden;
         }
-        
-        .entry {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .entry:last-child {
-            border-bottom: none;
-        }
+        .entry { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .entry:last-child { border-bottom: none; }
         
         .entry-type {
-            display: inline-block;
-            font-size: 0.75rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            text-transform: uppercase;
+            display: inline-block; font-size: 0.75rem; padding: 0.2rem 0.5rem;
+            border-radius: 4px; margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase;
         }
+        .entry-type.user-query { background: var(--blue-bg); color: var(--accent); }
+        .entry-type.answer { background: var(--green-bg); color: var(--green); }
+        .entry-type.thought { background: var(--orange-bg); color: var(--orange); }
+        .entry-type.action { background: var(--purple-bg); color: var(--purple); }
+        .entry-type.side-effect { background: var(--red-bg); color: var(--red); }
         
-        .entry-type.user-query { background: #4a9eff33; color: #4a9eff; }
-        .entry-type.answer { background: #00ff8833; color: #00ff88; }
-        .entry-type.thought { background: #ffaa0033; color: #ffaa00; }
-        .entry-type.action { background: #ff44ff33; color: #ff44ff; }
-        .entry-type.side-effect { background: #ff444433; color: #ff4444; }
-        
-        .entry-text {
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        
+        .entry-text { white-space: pre-wrap; word-break: break-word; }
         .entry-code {
-            background: var(--bg);
-            padding: 0.75rem;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
+            background: var(--bg-code); padding: 0.75rem; border-radius: 4px;
+            overflow-x: auto; font-family: var(--font-code); font-size: 0.9rem; margin-top: 0.5rem;
         }
         
         .hidden { display: none; }
         
         .install-btn {
-            background: var(--accent);
-            color: var(--bg);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
+            background: var(--accent); color: var(--bg); border: none;
+            padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;
         }
-        
-        .install-btn:hover {
-            opacity: 0.9;
-        }
-        
-        .install-btn:disabled {
-            background: var(--border);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-        
-        .highlight {
-            background: var(--accent-dim);
-            padding: 0 2px;
-            border-radius: 2px;
-        }
+        .install-btn:hover { opacity: 0.9; }
+        .install-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
     </style>
 </head>
 <body>

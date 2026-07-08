@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Adapters — AgentSON" description="Import from any tool. Export to any format. AgentSON is the hub.">
+  <section class="section hero" style="padding-bottom:var(--space-2xl);">
+    <div class="container">
+      <h1>Protocol Adapters</h1>
+      <p class="hero-subtitle">AgentSON is the hub. Every tool produces AgentSON; every tool consumes AgentSON.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-2">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3 class="text-blue">Importers</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">External formats &rarr; AgentSON primitives</p>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-blue">MCP</span> Model Context Protocol — Anthropic
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-green">A2A</span> Agent-to-Agent — Google
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-amber">AGNTCY</span> Agent Protocol — Community
+            </li>
+            <li style="padding:var(--space-sm) 0;display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-red">ChatGPT</span> Conversation Export — OpenAI
+            </li>
+          </ul>
+        </div>
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 class="text-green">Readers</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">Native databases &rarr; AgentSON export</p>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-blue">OpenCode</span> OpenCode SQLite
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-amber">MiniMax</span> MiniMax SQLite
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-red">Antigravity</span> Antigravity IDE
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-purple">Chrome</span> Chrome DevTools Protocol
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-green">Claude</span> Claude Code SQLite
+            </li>
+            <li style="padding:var(--space-sm) 0;display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-red">Libre</span> FreeStyle Libre 2 CSV
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:var(--space-lg);">
+        <div class="card" style="border-left:4px solid var(--amber);">
+          <h3 class="text-amber">Exporters</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">AgentSON &rarr; downstream formats</p>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-green">Excel</span> Spreadsheet with charts
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-red">PDF</span> Printable report
+            </li>
+            <li style="padding:var(--space-sm) 0;display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-amber">Fine-Tune</span> Unsloth / Olive ML format
+            </li>
+          </ul>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3 class="text-purple">CLI Commands</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">Everything you can do via terminal</p>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-amber">export</span> Export sessions from readers
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-green">import</span> Import from MCP / A2A / AGNTCY / ChatGPT
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-blue">validate</span> Validate against v1.2 schema
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-red">redact</span> Strip PII before sharing
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-purple">publish</span> Docker Hub / LXD Hub
+            </li>
+            <li style="padding:var(--space-sm) 0;display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-amber">runbook</span> Replay session as workflow
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">How Adapters Work</h2>
+      <pre>AgentSON &rarr; Adapter &rarr; Target Format
+
+Importer:  Target Format &rarr; Adapter &rarr; AgentSON
+Exporter:  AgentSON &rarr; Adapter &rarr; Target Format
+
+Loss recording: Adapters log what doesn't map
+  e.g., AgentSON multi-agent primitives have no
+  equivalent in capi &rarr; recorded as losses</pre>
+      <div class="callout callout-blue" style="margin-top:var(--space-lg);">
+        <div>Every adapter records losses transparently. No silent data loss.</div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

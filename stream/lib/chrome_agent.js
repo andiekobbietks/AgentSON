@@ -117,15 +117,9 @@ async function getCDP() {
   }
 
   async function evalJS(expr) {
-    const response = await send('Runtime.evaluate', { expression: expr, awaitPromise: true });
-    // CDP's Runtime.evaluate response shape is:
-    //   { id, result: { result: RemoteObject, exceptionDetails? } }
-    // `send()` resolves with the whole `response`, so the actual
-    // evaluate payload (and exceptionDetails) live at response.result,
-    // not at the top level.
-    const cdpResult = response.result;
-    if (cdpResult.exceptionDetails) throw new Error(cdpResult.exceptionDetails.text || 'Eval error');
-    const val = cdpResult.result;
+    const result = await send('Runtime.evaluate', { expression: expr, awaitPromise: true });
+    if (result.exceptionDetails) throw new Error(result.exceptionDetails.text || 'Eval error');
+    const val = result.result;
     if (val?.type === 'string') return val.value;
     return val?.value ?? JSON.stringify(val);
   }
@@ -236,45 +230,36 @@ async function pollStream() {
           const entry = JSON.parse(line);
           if (entry.type === 'handoff' && entry.to === AGENT_ID && entry.conch === AGENT_ID) {
             isProcessing = true;
+            console.log(`\n=== HANDOFF from ${entry.from}: ${entry.reason || 'no reason'} ===`);
+            emit({ type: 'presence', status: 'busy', message: `Processing: ${entry.reason || 'task'}` });
+            const task = parseTask(entry.context);
+            // Merge entry.args into task.args (for JSON-structured handoffs)
+            if (entry.args && task) task.args = { ...task.args, ...entry.args };
             try {
-              console.log(`\n=== HANDOFF from ${entry.from}: ${entry.reason || 'no reason'} ===`);
-              emit({ type: 'presence', status: 'busy', message: `Processing: ${entry.reason || 'task'}` });
-              const task = parseTask(entry.context);
-              // Merge entry.args into task.args (for JSON-structured handoffs)
-              if (entry.args && task) task.args = { ...task.args, ...entry.args };
-              try {
-                if (entry.context === 'capabilities') {
-                  emit({ type: 'thought', text: 'Returning capabilities manifest' });
-                  emit({ type: 'observation', source: 'agent', text: JSON.stringify(CAPABILITIES_MANIFEST).slice(0, 3000) });
-                  emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'capabilities manifest', context: 'capabilities' });
-                } else if (task && TASKS[task.name]) {
-                  emit({ type: 'thought', text: `Executing: ${task.name}` });
-                  const result = await TASKS[task.name](task.args || {});
-                  emit({ type: 'observation', source: 'tool', text: JSON.stringify(result).slice(0, 3000) });
-                  emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'complete', context: JSON.stringify(result).slice(0, 1000) });
-                } else {
-                  emit({ type: 'thought', text: `Evaluating expression in Chrome` });
-                  const cdp = await getCDP();
-                  const result = await cdp.evalJS(entry.context);
-                  cdp.close();
-                  emit({ type: 'observation', source: 'tool', text: (result?.toString() || '(empty)').slice(0, 3000) });
-                  emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'eval complete' });
-                }
-              } catch (e) {
-                emit({ type: 'observation', source: 'tool', text: `Error: ${e.message}`, status: 'error' });
-                emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'error', context: `Error: ${e.message}` });
+              if (entry.context === 'capabilities') {
+                emit({ type: 'thought', text: 'Returning capabilities manifest' });
+                emit({ type: 'observation', source: 'agent', text: JSON.stringify(CAPABILITIES_MANIFEST).slice(0, 3000) });
+                emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'capabilities manifest', context: 'capabilities' });
+              } else if (task && TASKS[task.name]) {
+                emit({ type: 'thought', text: `Executing: ${task.name}` });
+                const result = await TASKS[task.name](task.args || {});
+                emit({ type: 'observation', source: 'tool', text: JSON.stringify(result).slice(0, 3000) });
+                emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'complete', context: JSON.stringify(result).slice(0, 1000) });
+              } else {
+                emit({ type: 'thought', text: `Evaluating expression in Chrome` });
+                const cdp = await getCDP();
+                const result = await cdp.evalJS(entry.context);
+                cdp.close();
+                emit({ type: 'observation', source: 'tool', text: (result?.toString() || '(empty)').slice(0, 3000) });
+                emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'eval complete' });
               }
-            } catch (outerError) {
-              // parseTask or the args merge threw before the inner try
-              // block -- still surface it and still fall through to the
-              // finally below so isProcessing is reset either way.
-              emit({ type: 'observation', source: 'tool', text: `Handoff setup error: ${outerError.message}`, status: 'error' });
-              emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'error', context: `Handoff setup error: ${outerError.message}` });
-            } finally {
-              emit({ type: 'presence', status: 'idle' });
-              isProcessing = false;
-              console.log(`=== HANDOFF COMPLETE → ${entry.from || 'opencode'} ===\n`);
+            } catch (e) {
+              emit({ type: 'observation', source: 'tool', text: `Error: ${e.message}`, status: 'error' });
+              emit({ type: 'handoff', from: AGENT_ID, to: entry.from || 'opencode', conch: entry.from || 'opencode', reason: 'error', context: `Error: ${e.message}` });
             }
+            emit({ type: 'presence', status: 'idle' });
+            isProcessing = false;
+            console.log(`=== HANDOFF COMPLETE → ${entry.from || 'opencode'} ===\n`);
           }
         } catch { }
       }

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://agentsong.dev/schema/v1.json",
+  "id": "example-antigravity-session",
+  "tool": {
+    "name": "antigravity",
+    "version": "1.0.0",
+    "session_id": "anti_example_789"
+  },
+  "agent": {
+    "name": "gemini-2.5-flash",
+    "provider": "antigravity",
+    "variant": "high"
+  },
+  "started_at": "2026-07-05T03:00:00Z",
+  "ended_at": "2026-07-05T03:45:00Z",
+  "context": {
+    "working_directory": "C:\\Users\\LLM-Test\\Documents\\dataproject",
+    "platform": "win32",
+    "shell": "powershell"
+  },
+  "entries": [
+    {
+      "type": "user-query",
+      "text": "Analyze this CSV file and create a visualization of the sales data",
+      "timestamp": 1783108800000
+    },
+    {
+      "type": "thought",
+      "text": "I need to read the CSV file first, then analyze the data structure, and finally create a visualization.",
+      "model": "gemini-2.5-flash"
+    },
+    {
+      "type": "action",
+      "tool": "read_file",
+      "code": "sales_data.csv",
+      "output": "date,product,amount\\n2026-01-01,Widget A,100\\n2026-01-02,Widget B,150\\n...",
+      "status": "success"
+    },
+    {
+      "type": "thought",
+      "text": "The CSV has date, product, and amount columns. I'll create a bar chart showing sales by product.",
+      "model": "gemini-2.5-flash"
+    },
+    {
+      "type": "action",
+      "tool": "write_file",
+      "code": "import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\ndf = pd.read_csv('sales_data.csv')\\nproduct_sales = df.groupby('product')['amount'].sum()\\nproduct_sales.plot(kind='bar')\\nplt.savefig('sales_chart.png')",
+      "output": "Script created",
+      "status": "success"
+    },
+    {
+      "type": "action",
+      "tool": "execute",
+      "code": "python visualize_sales.py",
+      "output": "Chart saved to sales_chart.png",
+      "status": "success"
+    },
+    {
+      "type": "answer",
+      "text": "I've analyzed the CSV file and created a bar chart visualization. The chart shows total sales by product. You can find the visualization at `sales_chart.png`.",
+      "format": "markdown"
+    },
+    {
+      "type": "side-effect",
+      "action": "file_write",
+      "path": "C:\\Users\\LLM-Test\\Documents\\dataproject\\visualize_sales.py",
+      "diff": "+8 lines"
+    },
+    {
+      "type": "side-effect",
+      "action": "file_write",
+      "path": "C:\\Users\\LLM-Test\\Documents\\dataproject\\sales_chart.png",
+      "diff": "Binary file created"
+    }
+  ],
+  "metadata": {
+    "total_tokens": 1200,
+    "cost": 0.005,
+    "messages": 1,
+    "parts": 7,
+    "exported_at": "2026-07-05T12:45:00Z"
+  }
+}

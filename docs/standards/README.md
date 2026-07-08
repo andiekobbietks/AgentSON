@@ -67,6 +67,10 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-008](adrs/adr-008-trace-data-interchange.md) | AgentSON as the open interchange layer for AI workflow traces |
 | [ADR-009](adrs/adr-009-osi-open-interchange.md) | AgentSON as Open Interchange Format for OSI Open Source AI definition |
 | [ADR-010](adrs/adr-010-gdpr-data-liberation.md) | AgentSON as GDPR/EU AI Act data liberation tool (the Unsloth analogy) |
+| [ADR-018](adrs/adr-018-managed-service-architecture.md) | Data Rights Intelligence Platform — managed service separation from core AgentSON |
+| [ADR-019](adrs/adr-019-llm-analysis-privacy-model.md) | LLM Analysis Layer — three-tier privacy model for truth-telling |
+| [ADR-020](adrs/adr-020-data-rights-enforcement.md) | Data Rights Enforcement — opt-out injection scope & legal boundary |
+| [ADR-021](adrs/adr-021-business-model-self-sustainability.md) | Business model & tiered pricing for self-sustainability |
 
 → [Read ADRs](adrs/)
 

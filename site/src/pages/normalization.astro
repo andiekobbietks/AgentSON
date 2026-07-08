@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Normalization — AgentSON" description="Why 12 primitives? How AgentSON normalizes provenance from six protocols into one universal format.">
+
+  <section class="section hero" style="padding-bottom:var(--space-2xl);">
+    <div class="container">
+      <div class="hero-eyebrow">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber);"></span>
+        Architecture &bull; ADR-015/016/017
+      </div>
+      <h1>Normalization</h1>
+      <p class="hero-subtitle">Why 12 primitives? How does AgentSON map every protocol to one format?</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div style="max-width:var(--max-prose);margin:0 auto;">
+        <div class="callout callout-amber" style="margin-bottom:var(--space-2xl);">
+          <div>
+            <strong>The problem:</strong> Every agent protocol records provenance differently. Without normalization, cross-protocol analysis is impossible.
+          </div>
+        </div>
+
+        <h2 class="section-title">The 12-Primitive Ontology</h2>
+        <p class="section-subtitle">Three categories: Coordination, Execution, Input.</p>
+
+        <h3 style="margin-bottom:var(--space-md);margin-top:var(--space-2xl);">Coordination (4)</h3>
+        <div class="grid-2" style="margin-bottom:var(--space-xl);">
+          <div class="card"><code>stream-meta</code> &mdash; Streaming connection metadata (model, provider, status). From MCP, A2A.</div>
+          <div class="card"><code>handoff</code> &mdash; Transfer of control between agents or tools. From A2A, AGNTCY.</div>
+          <div class="card"><code>presence</code> &mdash; Agent availability, heartbeat, capability announcement. From capi, MCP.</div>
+          <div class="card"><code>capabilities</code> &mdash; Declared tools, resources, or skills. From MCP, capi, T3 Code.</div>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-md);">Execution (5)</h3>
+        <div class="grid-2" style="margin-bottom:var(--space-xl);">
+          <div class="card"><code>action</code> &mdash; Agent took an action (tool call, API request, code execution). From all protocols.</div>
+          <div class="card"><code>observation</code> &mdash; Result or output of an action. From AGNTCY, MCP, T3 Code.</div>
+          <div class="card"><code>thought</code> &mdash; Internal reasoning, planning, chain-of-thought. From A2A, AGNTCY.</div>
+          <div class="card"><code>side-effect</code> &mdash; External impact not directly requested. From capi, TOAST.</div>
+          <div class="card"><code>answer</code> &mdash; Final response delivered to the user. From A2A, MCP.</div>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-md);">Input (3)</h3>
+        <div class="grid-2" style="margin-bottom:var(--space-2xl);">
+          <div class="card"><code>user-query</code> &mdash; Initial or follow-up user question. From MCP, A2A, ChatGPT.</div>
+          <div class="card"><code>user-feedback</code> &mdash; Thumbs up/down, rating, correction. From ChatGPT, A2A.</div>
+          <div class="card"><code>system-event</code> &mdash; Timeout, error, config change, interruption. From MCP, A2A, AGNTCY.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">Why Not Use Protocol Schemas Directly?</h2>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        <div class="card">
+          <h3>MCP</h3>
+          <p>Focused on tool execution and resource access. Provenance is a side effect. No concept of "thought" or "handoff."</p>
+        </div>
+        <div class="card">
+          <h3>A2A</h3>
+          <p>Agent-to-agent task delegation. Assumes bilateral trust. No system-level events or user intent capture.</p>
+        </div>
+        <div class="card">
+          <h3>AGNTCY</h3>
+          <p>Execution traces for debugging. No user intent or feedback primitives.</p>
+        </div>
+        <div class="card">
+          <h3>capi / TOAST / T3 Code</h3>
+          <p>Capability advertising, test oracles, code sandboxing — each solves one problem but misses the full session picture.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">Loss Recording</h2>
+      <p class="section-subtitle">No adapter is lossless. Every adapter records what it couldn't map.</p>
+      <pre>&lcub;
+  "type": "action",
+  "from": "mcp",
+  "_loss": [
+    &lcub;
+      "field": "sampling.temperature",
+      "reason": "No AgentSON primitive for sampling parameters",
+      "original": &lcub; "temperature": 0.7 &rcub;
+    &rcub;
+  ]
+&rcub;</pre>
+      <div class="callout callout-green">
+        <div>No silent data loss. Any information that doesn't fit the 12 primitives is preserved in <code>_loss</code> arrays.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">ADR References</h2>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        <div class="card" style="border-left:4px solid var(--amber);">
+          <h3 class="text-amber">ADR-012</h3>
+          <p>12-primitive ontology definition. Three categories (Coordination, Execution, Input) and why.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 class="text-green">ADR-013</h3>
+          <p>Session tree model — parent/child for branching workflows across sub-agents.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3 class="text-blue">ADR-014</h3>
+          <p>Loss recording mechanism — <code>_loss</code> arrays and what they preserve.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--red);">
+          <h3 class="text-red">ADR-015</h3>
+          <p>Why JSONL is canonical, not JSON arrays or protobuf. The oneOf discriminated union.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3 class="text-purple">ADR-016</h3>
+          <p>Adapter architecture — each protocol gets its own symmetric import/export adapter.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--amber);">
+          <h3 class="text-amber">ADR-017</h3>
+          <p>Design token standardization — shared CSS across all viewers and the Afra brand system.</p>
+        </div>
+      </div>
+      <p style="margin-top:var(--space-lg);text-align:center;">Full ADR documents available in <code>docs/adr/</code> and the <a href="https://github.com/andiekobbietks/AgentSON">GitHub repository</a>.</p>
+    </div>
+  </section>
+</BaseLayout>

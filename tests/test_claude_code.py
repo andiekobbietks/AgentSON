@@ -111,7 +111,7 @@ def claude_dir(tmp_path):
             "type": "summary",
             "timestamp": "2026-07-05T10:00:05.000Z",
             "sessionId": "test-session-001",
-            "summary": "Fixed authentication issue",
+            "summary": "Fixed the authentication issue by updating the null check.",
         },
     ]
 
