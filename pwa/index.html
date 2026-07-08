@@ -12,6 +12,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../shared/design-tokens.css">
     <style>
+        :root {
+            --bg: #0f0f23;
+            --bg-card: #1a1a2e;
+            --bg-code: #16162a;
+            --bg-header: #22223a;
+            --border: #2d2d44;
+            --border-mid: #3a3a55;
+            --text: #e0e0e0;
+            --text-dim: #c0c0d0;
+            --muted: #8888aa;
+            --accent: #00d4ff;
+            --blue: #00d4ff;
+            --green: #00ff88;
+            --orange: #ffaa00;
+            --red: #ff4444;
+            --purple: #c084fc;
+            --blue-bg: rgba(0, 212, 255, 0.12);
+            --green-bg: rgba(0, 255, 136, 0.12);
+            --orange-bg: rgba(255, 170, 0, 0.12);
+            --red-bg: rgba(255, 68, 68, 0.12);
+            --purple-bg: rgba(192, 132, 252, 0.12);
+        }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-ui); }
+
         header {
             background: var(--bg-card);
             border-bottom: 1px solid var(--border);
@@ -21,11 +45,11 @@
             align-items: center;
         }
         
-        h1 { font-size: 1.5rem; font-weight: 600; color: var(--blue); }
+        h1 { font-size: 1.5rem; font-weight: 600; color: var(--accent); }
         
         .badge {
             font-size: 0.75rem; padding: 0.25rem 0.5rem;
-            background: var(--blue-bg); border-radius: 4px; color: var(--blue);
+            background: var(--blue-bg); border-radius: 4px; color: var(--accent);
         }
         
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
@@ -35,7 +59,7 @@
             padding: 4rem 2rem; text-align: center; transition: all 0.3s;
             cursor: pointer; margin-bottom: 2rem;
         }
-        .drop-zone:hover, .drop-zone.dragover { border-color: var(--blue); background: var(--blue-bg); }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--blue-bg); }
         .drop-zone h2 { color: var(--muted); margin-bottom: 1rem; }
         .drop-zone p { color: var(--muted); font-size: 0.9rem; }
         input[type="file"] { display: none; }
@@ -44,7 +68,7 @@
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
         }
-        .session-info h3 { color: var(--blue); margin-bottom: 1rem; }
+        .session-info h3 { color: var(--accent); margin-bottom: 1rem; }
         
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
         .info-item label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 0.25rem; }
@@ -55,7 +79,7 @@
             flex: 1; padding: 0.75rem 1rem; background: var(--bg-card);
             border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 1rem;
         }
-        .search-box input:focus { outline: none; border-color: var(--blue); }
+        .search-box input:focus { outline: none; border-color: var(--accent); }
         
         .entries {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -68,7 +92,7 @@
             display: inline-block; font-size: 0.75rem; padding: 0.2rem 0.5rem;
             border-radius: 4px; margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase;
         }
-        .entry-type.user-query { background: var(--blue-bg); color: var(--blue); }
+        .entry-type.user-query { background: var(--blue-bg); color: var(--accent); }
         .entry-type.answer { background: var(--green-bg); color: var(--green); }
         .entry-type.thought { background: var(--orange-bg); color: var(--orange); }
         .entry-type.action { background: var(--purple-bg); color: var(--purple); }
@@ -83,7 +107,7 @@
         .hidden { display: none; }
         
         .install-btn {
-            background: var(--blue); color: #fff; border: none;
+            background: var(--accent); color: var(--bg); border: none;
             padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;
         }
         .install-btn:hover { opacity: 0.9; }
