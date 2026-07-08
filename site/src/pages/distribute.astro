@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Distribution — AgentSON" description="Distribute AgentSON via Docker Hub, LXD Hub, PyPI, npm.">
+  <section class="section hero" style="padding-bottom:var(--space-2xl);">
+    <div class="container">
+      <h1>Distribution</h1>
+      <p class="hero-subtitle">AgentSON is distributed through every channel. Pick your runtime.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-2">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3 class="text-blue">Docker Hub</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">OCI Artifacts for agent sessions.</p>
+          <pre style="margin:0;">docker pull agentson/cli
+docker run agentson/cli export opencode
+
+docker pull agentson/session:bug-fix-42
+# .agentson file + provenance SBOM</pre>
+        </div>
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 class="text-green">LXD Hub</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">System containers for agent daemons.</p>
+          <pre style="margin:0;">lxc image copy agentson/server:1.0
+
+lxc launch agentson/server
+# Persistent agent runtime
+# with built-in provenance</pre>
+        </div>
+        <div class="card" style="border-left:4px solid var(--orange);">
+          <h3 class="text-orange">PyPI</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">Python CLI and library.</p>
+          <pre style="margin:0;">pip install agentson
+
+agentson export opencode --all
+agentson validate session.agentson
+agentson render session.agentson</pre>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3 class="text-purple">npm</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">JavaScript/TypeScript library (planned).</p>
+          <pre style="margin:0;">npm install @agentson/cli
+
+agentson stream start
+# JSONL blackboard for
+# real-time collaboration</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">Cross-Registry Compatibility</h2>
+      <p class="section-subtitle">AgentSON sessions are portable across registries.</p>
+      
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        <div class="card">
+          <h3>Docker Hub 2.0 &rarr; LXD Hub</h3>
+          <p>Pull an AgentSON session from Docker Hub as an OCI artifact. Re-publish as an LXD image for system-level agent runtime. No conversion needed — the .agentson file is the same.</p>
+        </div>
+        <div class="card">
+          <h3>OCI Artifact Compatibility</h3>
+          <p>Docker Hub 2.0 supports OCI Artifacts. AgentSON sessions are packaged as OCI layers with model-SBOM-style provenance metadata. LXD Hub pulls the same OCI layers and runs them as system containers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:var(--max-prose);text-align:center;margin:0 auto;">
+      <h2 class="section-title">AgentSON + Docker Agent = Full Stack</h2>
+      <p class="section-subtitle">Docker runs it. AgentSON records it.</p>
+      <div class="card" style="text-align:left;">
+        <pre style="margin:0;"># Define an agent
+docker agent run andie/bug-fixer
+
+# AgentSON captures everything:
+#   action, thought, observation, 
+#   tool-call, system-event, ...
+
+# Distribute the session
+docker push agentson/session:bug-fix-42
+
+# Replay on any machine
+docker run agentson/cli replay \
+  agentson/session:bug-fix-42</pre>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

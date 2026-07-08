@@ -413,23 +413,44 @@ def render_html(data: dict) -> str:
 
 def cmd_import(args):
     """Import sessions from external formats."""
+    from pathlib import Path
+    
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     if args.format == "chatgpt":
         from importers.chatgpt import import_chatgpt
-        
-        output_dir = Path(args.output)
-        output_dir.mkdir(parents=True, exist_ok=True)
         
         result = import_chatgpt(
             args.input,
             output_path=str(output_dir / f"chatgpt_{Path(args.input).stem}.agentson"),
             all_branches=args.all_branches
         )
-        print(f"Imported: {result.get('id', 'unknown')}")
-        print(f"  Tool: {result.get('tool', {}).get('name', 'unknown')}")
-        print(f"  Entries: {len(result.get('entries', []))}")
+    elif args.format == "mcp":
+        from importers.mcp import import_mcp
+        result = import_mcp(
+            args.input,
+            output_path=str(output_dir / f"mcp_{Path(args.input).stem}.agentson"),
+        )
+    elif args.format == "a2a":
+        from importers.a2a import import_a2a
+        result = import_a2a(
+            args.input,
+            output_path=str(output_dir / f"a2a_{Path(args.input).stem}.agentson"),
+        )
+    elif args.format == "agntcy":
+        from importers.agntcy import import_agntcy
+        result = import_agntcy(
+            args.input,
+            output_path=str(output_dir / f"agntcy_{Path(args.input).stem}.agentson"),
+        )
     else:
         print(f"Error: Unknown import format '{args.format}'", file=sys.stderr)
         sys.exit(1)
+
+    print(f"Imported: {result.get('id', 'unknown')}")
+    print(f"  Tool: {result.get('tool', {}).get('name', 'unknown')}")
+    print(f"  Entries: {len(result.get('entries', []))}")
 
 
 def cmd_finetune(args):
@@ -693,7 +714,7 @@ COMMON SCENARIOS:
     
     # import command
     import_parser = subparsers.add_parser("import", help="Import from external formats")
-    import_parser.add_argument("format", choices=["chatgpt"], help="Import format")
+    import_parser.add_argument("format", choices=["chatgpt", "mcp", "a2a", "agntcy"], help="Import format")
     import_parser.add_argument("input", help="Input file path")
     import_parser.add_argument("--output", default=".", help="Output directory")
     import_parser.add_argument("--all-branches", action="store_true", help="Include all conversation branches")
@@ -739,6 +760,35 @@ COMMON SCENARIOS:
     redact_parser.add_argument("--output", help="Output .agentson file or directory")
     redact_parser.add_argument("--all", action="store_true", help="Process all .agentson files in directory")
 
+    # publish command
+    publish_parser = subparsers.add_parser("publish", help="Publish AgentSON session to Docker Hub or LXD Hub")
+    publish_parser.add_argument("input", help="Input .agentson file")
+    publish_parser.add_argument("--registry", choices=["docker", "lxd"], default="docker", help="Target registry")
+    publish_parser.add_argument("--tag", help="Image tag or alias (auto-generated if omitted)")
+    publish_parser.add_argument("--push", action="store_true", help="Push to remote registry after building")
+
+def cmd_publish(args):
+    """Publish AgentSON session to Docker Hub or LXD Hub."""
+    from tools.distribute import publish
+
+    result = publish(
+        session_path=args.input,
+        registry=args.registry,
+        tag=args.tag,
+        push=args.push,
+    )
+
+    if result.get("success"):
+        print(f"Published: {result.get('tag') or result.get('alias', 'unknown')}")
+        print(f"  Session: {result.get('session_id', 'unknown')}")
+        if result.get("pushed"):
+            print(f"  Pushed: yes")
+    else:
+        print(f"Error: {result.get('error', 'unknown')}")
+        if result.get("step"):
+            print(f"  Step: {result['step']}")
+        sys.exit(1)
+
     args = parser.parse_args()
     
     if args.command == "export":
@@ -759,6 +809,8 @@ COMMON SCENARIOS:
         cmd_validate(args)
     elif args.command == "redact":
         cmd_redact(args)
+    elif args.command == "publish":
+        cmd_publish(args)
     else:
         parser.print_help()
 

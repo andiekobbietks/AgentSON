@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Adapters — AgentSON" description="Import from any tool. Export to any format. AgentSON is the hub.">
+  <section class="section hero" style="padding-bottom:var(--space-2xl);">
+    <div class="container">
+      <h1>Protocol Adapters</h1>
+      <p class="hero-subtitle">AgentSON is the hub. Every tool produces AgentSON; every tool consumes AgentSON.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-2">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3 class="text-blue">Importers</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">Normalize into AgentSON primitives</p>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-blue">MCP</span> Model Context Protocol
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-green">A2A</span> Agent-to-Agent
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-orange">AGNTCY</span> Agent Protocol
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-purple">capi</span> kevin-dp Session Protocol
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-blue">TOAST</span> bivalve-ai Format
+            </li>
+          </ul>
+        </div>
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 class="text-green">Exporters</h3>
+          <p style="color:var(--text-dim);margin-bottom:var(--space-md);">Produce downstream formats</p>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-green">capi</span> Normalized JSONL
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-orange">TOAST</span> JSON with loss recording
+            </li>
+            <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--border);display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-purple">T3 Code</span> ProviderSession format
+            </li>
+            <li style="padding:var(--space-sm) 0;display:flex;gap:var(--space-sm);align-items:center;">
+              <span class="badge badge-blue">OpenCode</span> Native SQLite &rArr; AgentSON
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container" style="max-width:var(--max-prose);margin:0 auto;">
+      <h2 class="section-title">How Adapters Work</h2>
+      <pre>AgentSON &rarr; Adapter &rarr; Target Format
+
+Importer:  Target Format &rarr; Adapter &rarr; AgentSON
+Exporter:  AgentSON &rarr; Adapter &rarr; Target Format
+
+Loss recording: Adapters log what doesn't map
+  e.g., AgentSON multi-agent primitives have no
+  equivalent in capi &rarr; recorded as losses</pre>
+      <div class="callout callout-blue" style="margin-top:var(--space-lg);">
+        <div>Every adapter records losses transparently. No silent data loss.</div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

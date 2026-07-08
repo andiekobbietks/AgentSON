@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="The Stack — AgentSON" description="Four layers of the agentic internet stack: Identity, Execution, Knowledge, Display.">
+  <section class="section hero" style="padding-bottom:var(--space-2xl);">
+    <div class="container">
+      <h1>The Agentic Internet Stack</h1>
+      <p class="hero-subtitle">L0 Identity &rarr; L1 Execution &rarr; L2 Knowledge &rarr; L3 Display</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-2" style="gap:var(--space-2xl);">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h2 class="text-blue" style="margin-bottom:var(--space-sm);">L0 &mdash; Identity</h2>
+          <p style="color:var(--muted);margin-bottom:var(--space-md);">Who ran the agent. Verifiable credentials, signing, DID.</p>
+          <pre style="margin:0;">DID:key:z6MkhaXgBZDv...
+JWK: &#123; crv: "Ed25519", ... &#125;
+VC: &#123; type: "AgentCredential", ... &#125;</pre>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h2 class="text-green" style="margin-bottom:var(--space-sm);">L1 &mdash; Execution</h2>
+          <p style="color:var(--muted);margin-bottom:var(--space-md);"><strong>AgentSON.</strong> Temporal trace. 12 primitives. JSONL stream.</p>
+          <pre style="margin:0;">&#123;"type":"thought","text":"..."&#125;
+&#123;"type":"action","tool":"read"&#125;
+&#123;"type":"observation","output":"..."&#125;</pre>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--orange);">
+          <h2 class="text-orange" style="margin-bottom:var(--space-sm);">L2 &mdash; Knowledge</h2>
+          <p style="color:var(--muted);margin-bottom:var(--space-md);">Open Knowledge Format (OKF). What the agent learned.</p>
+          <pre style="margin:0;">---
+title: "Architecture Decision"
+---
+## Context
+We chose AgentSON because...</pre>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h2 class="text-purple" style="margin-bottom:var(--space-sm);">L3 &mdash; Display</h2>
+          <p style="color:var(--muted);margin-bottom:var(--space-md);">Viewers, dashboards, reports. PWA, Excel, PDF.</p>
+          <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+            <span class="badge badge-blue">PWA Viewer</span>
+            <span class="badge badge-green">Excel Export</span>
+            <span class="badge badge-orange">PDF Report</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container">
+      <h2 class="section-title">Why Four Layers?</h2>
+      <p class="section-subtitle">Each layer has a single responsibility. No layer depends on the one above it.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Separation of Concerns</h3>
+          <p>Identity doesn't care about execution format. Knowledge doesn't care about identity. Display renders whatever provenance it receives.</p>
+        </div>
+        <div class="card">
+          <h3>Independent Evolution</h3>
+          <p>Add a new display format (e.g., HTML, PDF, Excel) without touching L1. Change execution protocol (MCP &#8594; A2A) without touching L2.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
