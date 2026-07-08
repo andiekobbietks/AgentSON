@@ -63,6 +63,11 @@
       "format": "date-time",
       "description": "Session end timestamp (ISO 8601)"
     },
+    "heartbeat": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last known activity timestamp (ISO 8601). Derived from max(entry.timestamp). If heartbeat stops, agent is idle or crashed."
+    },
     "context": {
       "type": "object",
       "description": "Session context information",

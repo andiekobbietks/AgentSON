@@ -13,7 +13,7 @@ if (Test-Path 'C:\Python312\Scripts\agentson.exe.deleteme') {
 python -m pip install -e . --no-deps
 
 # Create a simple CLI access script
-$cliScriptPath = 'C:\Users\LLM-Test\Documents\agentsong\agentson_cli.py'
+$cliScriptPath = 'C:\Users\LLM-Test\Documents\AgentSON\agentson_cli.py'
 if (Test-Path $cliScriptPath -PathType Leaf) {
     Write-Host "AgentSON installation complete!" -ForegroundColor Green
     Write-Host "You can now run: python agentson_cli.py [command]" -ForegroundColor Yellow

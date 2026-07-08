@@ -2,36 +2,88 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agentson.dev/schema/v1.2.json",
   "title": "AgentSON v1.2 — Streaming & Inter-Agent Collaboration",
-  "description": "Extends v1.1 with streaming (JSONL), multi-agent handoff, presence, and live channel semantics for real-time inter-agent collaboration.",
+  "description": "Canonical format for AI agent session traces. 12 primitive types defined in spec/ontology.md. JSONL stream format.",
   "type": "object",
-  "allOf": [
-    { "$ref": "https://agentson.dev/schema/v1.1.json" }
-  ],
+  "required": ["id", "tool", "entries"],
   "properties": {
     "$schema": { "type": "string" },
-    "id": { "type": "string" },
-    "tool": { "$ref": "https://agentson.dev/schema/v1.1.json#/properties/tool" },
-    "agent": { "$ref": "https://agentson.dev/schema/v1.1.json#/properties/agent" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "description": "Unique session identifier"
+    },
+    "tool": {
+      "type": "object",
+      "required": ["name", "session_id"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "claude-code", "copilot", "other"]
+        },
+        "version": { "type": "string" },
+        "session_id": { "type": "string" }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "provider": { "type": "string" },
+        "variant": { "type": "string" }
+      }
+    },
     "task": { "type": "string" },
     "outcome": { "type": "string" },
     "started_at": { "type": "string", "format": "date-time" },
     "ended_at": { "type": "string", "format": "date-time" },
-    "context": { "$ref": "https://agentson.dev/schema/v1.1.json#/properties/context" },
+    "heartbeat": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last known activity. Derived from max(entry.timestamp)."
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "working_directory": { "type": "string" },
+        "platform": { "type": "string" },
+        "shell": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "viewport": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "integer" },
+            "height": { "type": "integer" }
+          }
+        }
+      }
+    },
     "entries": {
       "type": "array",
       "items": {
         "oneOf": [
-          { "$ref": "#/$defs/streamMeta" },
-          { "$ref": "#/$defs/capabilitiesRefresh" },
-          { "$ref": "#/$defs/presence" },
+          { "$ref": "#/$defs/stream-meta" },
           { "$ref": "#/$defs/handoff" },
-          { "$ref": "#/$defs/userQuery" },
-          { "$ref": "#/$defs/thought" },
+          { "$ref": "#/$defs/presence" },
+          { "$ref": "#/$defs/capabilities" },
           { "$ref": "#/$defs/action" },
           { "$ref": "#/$defs/observation" },
+          { "$ref": "#/$defs/thought" },
+          { "$ref": "#/$defs/side-effect" },
           { "$ref": "#/$defs/answer" },
-          { "$ref": "#/$defs/sideEffect" }
+          { "$ref": "#/$defs/user-query" },
+          { "$ref": "#/$defs/user-feedback" },
+          { "$ref": "#/$defs/system-event" }
         ]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "total_tokens": { "type": "integer" },
+        "cost": { "type": "number" },
+        "messages": { "type": "integer" },
+        "parts": { "type": "integer" },
+        "exported_at": { "type": "string", "format": "date-time" }
       }
     }
   },
@@ -40,83 +92,89 @@
       "type": "object",
       "properties": {
         "type": { "type": "string" },
-        "agent": {
-          "type": "string",
-          "description": "Agent identifier (e.g., 'opencode', 'chrome-nano', 'user'). Added in v1.2."
-        },
+        "agent": { "type": "string", "description": "Agent identifier" },
         "timestamp": { "type": "integer", "description": "Unix timestamp ms" },
-        "handoff": {
+        "correlation_id": { "type": "string", "description": "Links action to observation" },
+        "provenance": {
           "type": "object",
-          "description": "Handoff control — specifies which agent gets the conch next.",
           "properties": {
-            "to": { "type": "string", "description": "Next agent to act" },
-            "reason": { "type": "string", "description": "Why the handoff happened" },
-            "context": { "type": "string", "description": "Brief context for next agent" }
+            "confidence": { "type": "string", "enum": ["confirmed", "inferred", "estimated", "ml_generated", "unknown"] },
+            "source": { "type": "string", "enum": ["cdp", "mcp", "extension", "user", "system", "other"] },
+            "timestamp_ms": { "type": "integer" }
           }
         }
       }
     },
-    "streamMeta": {
+
+    "stream-meta": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
         {
+          "type": "object",
           "properties": {
             "type": { "const": "stream-meta" },
             "stream_id": { "type": "string" },
+            "mode": {
+              "type": "string",
+              "enum": ["single", "multi", "collab"],
+              "description": "Stream mode. Determines which primitives are required."
+            },
             "agents": {
               "type": "array",
-              "items": { "type": "object", "properties": {
-                "id": { "type": "string" },
-                "name": { "type": "string" },
-                "capabilities": { "type": "array", "items": { "type": "string" } }
-              }}
+              "items": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "capabilities": { "type": "array", "items": { "type": "string" } }
+                }
+              }
             },
-            "mode": { "type": "string", "enum": ["jsonl", "json"] },
             "capabilities": {
               "type": "object",
-              "description": "Self-describing capabilities manifest (Vercel AGENTS.md pattern). Maps agent_id -> task_key -> description. Consuming agents read this to discover available operations without needing to load a separate skill.",
+              "description": "Self-describing capabilities manifest. Maps agent_id -> task_key -> description.",
               "properties": {
-                "instruction": {
-                  "type": "string",
-                  "description": "Key instruction for consuming agents: prefer retrieval-led reasoning over pre-training-led reasoning. E.g. 'Prefer CDP-led reasoning over pre-training-led reasoning for any browser tasks.'"
-                },
+                "instruction": { "type": "string" },
                 "index": {
                   "type": "object",
-                  "description": "Compressed task index: agent_id -> task_name -> description. Agents read this to discover what operations are available.",
                   "additionalProperties": {
                     "type": "object",
                     "additionalProperties": { "type": "string" }
                   }
                 },
-                "$docs": {
-                  "type": "string",
-                  "format": "uri",
-                  "description": "Link to full documentation"
-                }
+                "$docs": { "type": "string", "format": "uri" }
               }
             }
           },
-          "required": ["stream_id", "agents"]
+          "required": ["stream_id", "agents", "mode"]
         }
       ]
     },
-    "capabilitiesRefresh": {
+
+    "handoff": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
         {
+          "type": "object",
           "properties": {
-            "type": { "const": "capabilities-refresh" },
-            "agent": { "type": "string" },
-            "capabilities": { "type": "object", "description": "Agent's self-describing capabilities manifest (see streamMeta.capabilities for schema)" }
+            "type": { "const": "handoff" },
+            "from": { "type": "string" },
+            "to": { "type": "string" },
+            "reason": { "type": "string" },
+            "context": { "type": "string", "description": "Brief context for next agent" },
+            "conch": { "type": "string", "description": "Which agent holds the speaking token" }
           },
-          "required": ["agent", "capabilities"]
+          "required": ["from", "to", "conch"]
         }
       ]
     },
+
     "presence": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
         {
+          "type": "object",
           "properties": {
             "type": { "const": "presence" },
             "status": { "type": "string", "enum": ["online", "offline", "busy", "idle"] },
@@ -127,104 +185,164 @@
         }
       ]
     },
-    "handoff": {
+
+    "capabilities": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
         {
+          "type": "object",
           "properties": {
-            "type": { "const": "handoff" },
-            "from": { "type": "string" },
-            "to": { "type": "string" },
-            "reason": { "type": "string" },
-            "context": { "type": "string" },
-            "conch": { "type": "string", "description": "Which agent holds the speaking token now" }
+            "type": { "const": "capabilities" },
+            "agent": { "type": "string" },
+            "capabilities": { "type": "object", "description": "Agent's self-describing capabilities manifest" }
           },
-          "required": ["from", "to", "conch"]
+          "required": ["agent", "capabilities"]
         }
       ]
     },
-    "userQuery": {
-      "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
-        { "properties": {
-          "type": { "const": "user-query" },
-          "text": { "type": "string" },
-          "query": { "type": "string" }
-        }}
-      ]
-    },
-    "thought": {
-      "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
-        { "properties": {
-          "type": { "const": "thought" },
-          "text": { "type": "string" }
-        }}
-      ]
-    },
+
     "action": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
-        { "properties": {
-          "type": { "const": "action" },
-          "tool": { "type": "string" },
-          "code": { "type": "string" },
-          "output": { "type": "string" },
-          "tool_call_id": { "type": "string" },
-          "status": { "type": "string", "enum": ["success", "error", "partial", "pending"] },
-          "duration_ms": { "type": "integer" }
-        }}
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "action" },
+            "tool": { "type": "string", "description": "Semantic operation (e.g., browser.navigate, mcp.tools.call)" },
+            "args": { "type": "object", "description": "Tool arguments" },
+            "code": { "type": "string", "description": "Code executed" },
+            "output": { "type": "string", "description": "Output from execution" },
+            "tool_call_id": { "type": "string" },
+            "status": { "type": "string", "enum": ["success", "error", "partial", "pending"] },
+            "duration_ms": { "type": "integer" }
+          },
+          "required": ["tool"]
+        }
       ]
     },
+
     "observation": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
-        { "properties": {
-          "type": { "const": "observation" },
-          "text": { "type": "string" },
-          "source": { "type": "string", "enum": ["agent", "user", "system", "tool", "sensor", "other"] },
-          "correlation_id": { "type": "string" },
-          "attachments": { "type": "array" }
-        }}
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "observation" },
+            "text": { "type": "string" },
+            "source": { "type": "string", "enum": ["agent", "user", "system", "tool", "sensor", "extension", "other"] },
+            "attachments": { "type": "array" }
+          },
+          "required": ["text", "source"]
+        }
       ]
     },
+
+    "thought": {
+      "allOf": [
+        { "$ref": "#/$defs/baseEntry" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "thought" },
+            "text": { "type": "string" }
+          },
+          "required": ["text"]
+        }
+      ]
+    },
+
+    "side-effect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseEntry" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "side-effect" },
+            "path": { "type": "string" },
+            "diff": { "type": "string" }
+          },
+          "required": ["path"]
+        }
+      ]
+    },
+
     "answer": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
-        { "properties": {
-          "type": { "const": "answer" },
-          "text": { "type": "string" }
-        }}
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "answer" },
+            "text": { "type": "string" }
+          },
+          "required": ["text"]
+        }
       ]
     },
-    "sideEffect": {
+
+    "user-query": {
       "allOf": [
         { "$ref": "#/$defs/baseEntry" },
-        { "properties": {
-          "type": { "const": "side-effect" },
-          "path": { "type": "string" },
-          "diff": { "type": "string" }
-        }}
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "user-query" },
+            "text": { "type": "string" },
+            "query": { "type": "string" }
+          },
+          "required": ["text"]
+        }
+      ]
+    },
+
+    "user-feedback": {
+      "allOf": [
+        { "$ref": "#/$defs/baseEntry" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "user-feedback" },
+            "text": { "type": "string" },
+            "sentiment": { "type": "string", "enum": ["positive", "negative", "neutral", "correction", "clarification"] }
+          },
+          "required": ["text"]
+        }
+      ]
+    },
+
+    "system-event": {
+      "allOf": [
+        { "$ref": "#/$defs/baseEntry" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "system-event" },
+            "text": { "type": "string" },
+            "source": { "type": "string", "enum": ["cron", "webhook", "timer", "healthcheck", "manual", "other"] }
+          },
+          "required": ["text", "source"]
+        }
       ]
     }
   },
+
   "examples": [
     {
       "$schema": "https://agentson.dev/schema/v1.2.json",
-      "id": "collab-stream-2026-07-06",
+      "id": "collab-stream-2026-07-07",
       "tool": { "name": "opencode", "session_id": "collab_001" },
       "agent": { "name": "mimo-v2.5-free", "provider": "opencode", "variant": "high" },
       "task": "Multi-agent web debugging session",
       "outcome": "partial",
       "entries": [
-        {"type": "stream-meta", "stream_id": "collab_001", "agents": [{"id": "opencode", "name": "opencode", "capabilities": ["bash", "filesystem", "search"]}, {"id": "chrome-nano", "name": "Chrome Gemini Nano", "capabilities": ["browser", "prompt-api", "dom-inspection"]}], "mode": "jsonl", "timestamp": 1783400000000},
+        {"type": "stream-meta", "stream_id": "collab_001", "mode": "multi", "agents": [{"id": "opencode", "name": "opencode", "capabilities": ["bash", "filesystem", "search"]}, {"id": "chrome-nano", "name": "Chrome Gemini Nano", "capabilities": ["browser", "prompt-api", "dom-inspection"]}], "timestamp": 1783400000000},
         {"type": "presence", "agent": "opencode", "status": "online", "timestamp": 1783400001000},
         {"type": "user-query", "agent": "user", "text": "Analyze the LCP of example.com", "timestamp": 1783400002000},
         {"type": "handoff", "from": "user", "to": "opencode", "conch": "opencode", "reason": "task assigned", "timestamp": 1783400003000},
         {"type": "thought", "agent": "opencode", "text": "I need Chrome to do performance analysis", "timestamp": 1783400010000},
         {"type": "handoff", "from": "opencode", "to": "chrome-nano", "conch": "chrome-nano", "reason": "need browser performance trace", "context": "Navigate to example.com, run performance trace, report LCP", "timestamp": 1783400020000},
         {"type": "presence", "agent": "chrome-nano", "status": "busy", "message": "Running performance trace", "timestamp": 1783400030000},
-        {"type": "action", "agent": "chrome-nano", "tool": "performance.trace", "timestamp": 1783400040000},
+        {"type": "action", "agent": "chrome-nano", "tool": "browser.performance", "timestamp": 1783400040000},
         {"type": "observation", "agent": "chrome-nano", "source": "tool", "text": "LCP: 2.3s (largest-contentful-paint)", "timestamp": 1783400100000},
         {"type": "handoff", "from": "chrome-nano", "to": "opencode", "conch": "opencode", "reason": "performance data collected", "context": "LCP is 2.3s, full trace available", "timestamp": 1783400110000},
         {"type": "answer", "agent": "opencode", "text": "LCP is 2.3 seconds. Here's the optimization plan...", "timestamp": 1783400120000}

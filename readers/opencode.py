@@ -203,7 +203,12 @@ class OpencodeReader:
         
         # Sort entries by timestamp
         entries.sort(key=lambda x: x.get("timestamp") or 0)
-        
+
+        # Compute heartbeat: max(entry.timestamp) — the last known activity
+        heartbeats = [e["timestamp"] for e in entries if e.get("timestamp")]
+        last_heartbeat = max(heartbeats) if heartbeats else session["time_updated"]
+        heartbeat_iso = self._timestamp_to_iso(last_heartbeat)
+
         # Build AgentSON document
         agentson = {
             "$schema": "https://agentson.dev/schema/v1.json",
@@ -220,6 +225,7 @@ class OpencodeReader:
             },
             "started_at": self._timestamp_to_iso(session["time_created"]),
             "ended_at": self._timestamp_to_iso(session["time_updated"]),
+            "heartbeat": heartbeat_iso,
             "context": {
                 "working_directory": session["directory"] if session["directory"] else "",
                 "platform": "win32",

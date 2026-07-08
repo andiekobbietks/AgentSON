@@ -128,6 +128,36 @@ def cmd_export(args):
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
                 print(f"Exported to {output_path}")
+    elif args.tool == "chrome-devtools":
+        from readers.chrome_devtools import read as read_chrome, list_exports as list_chrome
+        
+        if not args.input:
+            print("Error: --input required for chrome-devtools tool (path to directory with devtools_*.md files)", file=sys.stderr)
+            sys.exit(1)
+        
+        input_dir = Path(args.input)
+        if not input_dir.exists():
+            print(f"Error: Directory not found at {input_dir}", file=sys.stderr)
+            sys.exit(1)
+        
+        if args.all:
+            sessions = list_chrome(input_dir)
+            for session in sessions:
+                print(f"Exporting: {session['id']}")
+                data = read_chrome(session['path'])
+                output_path = Path(args.output) / f"chrome_{session['id']}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_chrome(args.session)
+            output_path = Path(args.output) / f"chrome_{args.session}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
     elif args.tool == "libre":
         if not args.input:
             print("Error: --input required for libre tool (path to CSV file)", file=sys.stderr)
@@ -180,6 +210,19 @@ def cmd_list(args):
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
+    elif args.tool == "chrome-devtools":
+        from readers.chrome_devtools import list_exports as list_chrome
+        
+        if not args.input:
+            print("Error: --input required for chrome-devtools tool (path to directory)", file=sys.stderr)
+            sys.exit(1)
+        
+        input_dir = Path(args.input)
+        if not input_dir.exists():
+            print(f"Error: Directory not found at {input_dir}", file=sys.stderr)
+            sys.exit(1)
+        
+        sessions = list_chrome(input_dir)
     else:
         print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
@@ -203,62 +246,8 @@ def cmd_list(args):
         print()
 
 
-def cmd_push(args):
-    """Push an AgentSON session to Supabase."""
-    from cli.supabase_client import AgentSONSupabase
-
-    try:
-        client = AgentSONSupabase()
-    except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    with open(args.input, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    print(f"Pushing {args.input} to Supabase...")
-    result = client.push(data)
-    print(f"Pushed! Session ID: {result.get('id', 'unknown')}")
-
-
-def cmd_pull(args):
-    """Pull sessions from Supabase."""
-    from cli.supabase_client import AgentSONSupabase
-
-    try:
-        client = AgentSONSupabase()
-    except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    sessions = client.pull(
-        search=args.search,
-        tool=args.tool,
-        limit=args.limit
-    )
-
-    print(f"\nFound {len(sessions)} session(s)\n")
-
-    for session in sessions:
-        session_id = session.get("id", "unknown")
-        tool = session.get("tool", {}).get("id", "unknown")
-        agent = session.get("agent", {}).get("name", "unknown")
-
-        print(f"ID:    {session_id}")
-        print(f"Tool:  {tool}")
-        print(f"Agent: {agent}")
-        print()
-
-        if args.output:
-            output_path = Path(args.output) / f"{tool}_{session_id}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(session, f, indent=2, ensure_ascii=False, default=str)
-            print(f"Saved to {output_path}")
-
-
 def cmd_search(args):
-    """Search sessions for a term."""
-    print(f"Search not yet implemented. Use: agentson export --all and grep locally.")
+    """Search AgentSON files for a term."""
 
 
 def cmd_render(args):
@@ -470,6 +459,135 @@ def cmd_finetune(args):
         print("Compatible with: Microsoft Olive, ONNX Runtime")
 
 
+def cmd_validate(args):
+    """Validate AgentSON file(s) against v1.2 schema."""
+    import glob as globmod
+    from jsonschema import Draft202012Validator
+    
+    schema_path = Path(__file__).parent.parent / "spec" / "v1.2.json"
+    entries_path = Path(__file__).parent.parent / "spec" / "v1.2-entries.json"
+    
+    with open(entries_path, "r", encoding="utf-8") as f:
+        entry_schema = json.load(f)
+    
+    entry_validator = Draft202012Validator(entry_schema)
+    
+    search_dir = Path(args.input)
+    
+    if search_dir.is_file():
+        files = [search_dir]
+    else:
+        files = []
+        for ext in ["*.agentson", "*.AgentSON"]:
+            pattern = str(search_dir / "**" / ext)
+            files += [Path(p) for p in globmod.glob(pattern, recursive=True)]
+    
+    if not files:
+        print(f"No .agentson files found in {search_dir}")
+        return
+    
+    total = 0
+    passed = 0
+    failed = 0
+    errors_by_type = {}
+    
+    def validate_entry(entry):
+        """Validate a single entry against the flattened entry schema."""
+        errors = list(entry_validator.iter_errors(entry))
+        return [e.message for e in errors]
+    
+    for filepath in files:
+        total += 1
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+            
+            lines = [l.strip() for l in content.split("\n") if l.strip()]
+            
+            # Detect format
+            is_jsonl = False
+            if len(lines) > 1:
+                try:
+                    json.loads(lines[0])
+                    json.loads(lines[1])
+                    is_jsonl = True
+                except json.JSONDecodeError:
+                    pass
+            
+            if is_jsonl:
+                entries = [json.loads(l) for l in lines]
+                
+                if entries[0].get("type") != "stream-meta":
+                    print(f"  WARN {filepath.name}: First entry is not stream-meta")
+                
+                entry_errors = []
+                for i, entry in enumerate(entries):
+                    errors = validate_entry(entry)
+                    for msg in errors:
+                        entry_errors.append((i + 1, msg))
+                
+                if entry_errors:
+                    print(f"  FAIL {filepath.name}: {len(entry_errors)} validation error(s)")
+                    for line_num, msg in entry_errors[:3]:
+                        print(f"    Entry {line_num}: {msg[:100]}")
+                    if len(entry_errors) > 3:
+                        print(f"    ... and {len(entry_errors) - 3} more")
+                    failed += 1
+                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
+                else:
+                    print(f"  PASS {filepath.name} ({len(entries)} entries, JSONL)")
+                    passed += 1
+            else:
+                data = json.loads(content)
+                
+                top_errors = []
+                for field in ["id", "tool", "entries"]:
+                    if field not in data:
+                        top_errors.append(f"Missing required field: {field}")
+                
+                if top_errors:
+                    print(f"  FAIL {filepath.name}: {'; '.join(top_errors)}")
+                    failed += 1
+                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
+                    continue
+                
+                entries = data.get("entries", [])
+                entry_errors = []
+                for i, entry in enumerate(entries):
+                    errors = validate_entry(entry)
+                    for msg in errors:
+                        entry_errors.append((i + 1, msg))
+                
+                if entry_errors:
+                    print(f"  FAIL {filepath.name}: {len(entry_errors)} validation error(s)")
+                    for line_num, msg in entry_errors[:3]:
+                        print(f"    Entry {line_num}: {msg[:100]}")
+                    if len(entry_errors) > 3:
+                        print(f"    ... and {len(entry_errors) - 3} more")
+                    failed += 1
+                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
+                else:
+                    print(f"  PASS {filepath.name} ({len(entries)} entries, JSON)")
+                    passed += 1
+                    
+        except json.JSONDecodeError as e:
+            print(f"  FAIL {filepath.name}: Invalid JSON — {e}")
+            failed += 1
+            errors_by_type["json_parse"] = errors_by_type.get("json_parse", 0) + 1
+        except Exception as e:
+            print(f"  FAIL {filepath.name}: {e}")
+            failed += 1
+            errors_by_type["other"] = errors_by_type.get("other", 0) + 1
+    
+    print(f"\n{'='*60}")
+    print(f"Results: {passed}/{total} passed, {failed} failed")
+    if errors_by_type:
+        print(f"Errors by type: {errors_by_type}")
+    
+    if failed > 0:
+        sys.exit(1)
+
+
 def cmd_search(args):
     """Search AgentSON files for a term."""
     import glob as globmod
@@ -592,23 +710,16 @@ def main():
     excel_parser.add_argument("--all", action="store_true", help="Export all .agentson files in directory")
     excel_parser.add_argument("--redact", action="store_true", help="Redact PII before export")
     
+    # validate command
+    validate_parser = subparsers.add_parser("validate", help="Validate .agentson file(s) against v1.2 schema")
+    validate_parser.add_argument("input", help="Input .agentson file or directory")
+
     # redact command
     redact_parser = subparsers.add_parser("redact", help="Redact PII from AgentSON files")
     redact_parser.add_argument("input", help="Input .agentson file or directory")
     redact_parser.add_argument("--output", help="Output .agentson file or directory")
     redact_parser.add_argument("--all", action="store_true", help="Process all .agentson files in directory")
 
-    # push command
-    push_parser = subparsers.add_parser("push", help="Push session to Supabase")
-    push_parser.add_argument("input", help="Input AgentSON JSON file")
-
-    # pull command
-    pull_parser = subparsers.add_parser("pull", help="Pull sessions from Supabase")
-    pull_parser.add_argument("--search", help="Full-text search query")
-    pull_parser.add_argument("--tool", help="Filter by tool")
-    pull_parser.add_argument("--limit", type=int, default=50, help="Max sessions to return")
-    pull_parser.add_argument("--output", help="Output directory")
-    
     args = parser.parse_args()
     
     if args.command == "export":
@@ -625,12 +736,10 @@ def main():
         cmd_render(args)
     elif args.command == "excel":
         cmd_excel(args)
+    elif args.command == "validate":
+        cmd_validate(args)
     elif args.command == "redact":
         cmd_redact(args)
-    elif args.command == "push":
-        cmd_push(args)
-    elif args.command == "pull":
-        cmd_pull(args)
     else:
         parser.print_help()
 
