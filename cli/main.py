@@ -174,8 +174,35 @@ def cmd_export(args):
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"Exported to {output_path}")
+    elif args.tool == "claude-code":
+        from readers.claude_code import ClaudeCodeReader
+
+        reader = ClaudeCodeReader()
+
+        if args.all:
+            sessions = reader.list_sessions()
+            for session in sessions:
+                sid = session.get("sessionId", session.get("id", "unknown"))
+                print(f"Exporting: {sid}")
+                data = reader.read_session(sid)
+                if data:
+                    output_path = Path(args.output) / f"claude-code_{sid}.agentson"
+                    with open(output_path, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = reader.read_session(args.session)
+            if not data:
+                print(f"Error: Session {args.session} not found", file=sys.stderr)
+                sys.exit(1)
+            output_path = Path(args.output) / f"claude-code_{args.session}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
     else:
-        print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
 
 
@@ -224,6 +251,11 @@ def cmd_list(args):
             sys.exit(1)
         
         sessions = list_chrome(input_dir)
+    elif args.tool == "claude-code":
+        from readers.claude_code import ClaudeCodeReader
+
+        reader = ClaudeCodeReader()
+        sessions = reader.list_sessions()
     else:
         print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
@@ -238,6 +270,12 @@ def cmd_list(args):
             print(f"Cascade: {s.get('cascade_id', 'N/A')}")
             print(f"Type:    {s.get('trajectory_type', 'N/A')}")
             print(f"Steps:   {s.get('total_steps', 'N/A')}")
+        elif args.tool == "claude-code":
+            sid = s.get("sessionId", s.get("id", "unknown"))
+            print(f"ID:      {sid}")
+            print(f"Project: {s.get('project_hash', 'N/A')}")
+            print(f"Path:    {s.get('fullPath', s.get('project_path', 'N/A'))}")
+            print(f"Msgs:    {s.get('messageCount', 'N/A')}")
         else:
             print(f"ID:      {s['id']}")
             print(f"Title:   {s.get('title', 'N/A')}")
@@ -713,7 +751,7 @@ TOPICS:
     
     # export command
     export_parser = subparsers.add_parser("export", help="Export sessions to AgentSON format")
-    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre"])
+    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code"])
     export_parser.add_argument("--session", help="Session ID to export")
     export_parser.add_argument("--all", action="store_true", help="Export all sessions")
     export_parser.add_argument("--output", default=".", help="Output directory")
@@ -728,7 +766,7 @@ TOPICS:
     
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
-    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity"])
+    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
     
     # search command
@@ -774,6 +812,49 @@ TOPICS:
     publish_parser.add_argument("--tag", help="Image tag or alias (auto-generated if omitted)")
     publish_parser.add_argument("--push", action="store_true", help="Push to remote registry after building")
 
+    # reconstruct command
+    recon_parser = subparsers.add_parser("reconstruct", help="Reconstruct session from partial sources with provenance & compliance")
+    recon_parser.add_argument("--input", help="Input .agentson file")
+    recon_parser.add_argument("--source", dest="sources", action="append", default=[], help="Source file or directory (repeatable)")
+    recon_parser.add_argument("--mode", choices=["forensic", "narrative", "live"], default="forensic", help="Reconstruction mode")
+    recon_parser.add_argument("--jurisdiction", choices=["eu", "uk", "dual"], default="dual", help="Compliance jurisdiction")
+    recon_parser.add_argument("--output", help="Output file")
+    recon_parser.add_argument("--format", choices=["json", "jsonl", "summary"], default="json", help="Output format")
+    recon_parser.add_argument("--model", help="SLM model for narrative gap-filling")
+    recon_parser.add_argument("--temperature", type=float, default=0.3, help="Generation temperature (narrative mode)")
+    recon_parser.add_argument("--budget", type=float, default=1.0, help="Epistemic budget (narrative mode)")
+    recon_parser.add_argument("--max-gap-ms", type=int, default=300000, help="Max gap before marker (ms)")
+    recon_parser.add_argument("--no-ai-act-marks", action="store_true", help="Skip EU AI Act Art. 50(2) marking")
+    recon_parser.add_argument("--strict", action="store_true", help="Fail on zero entries or missing sources")
+
+    # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
+    browser_parser = subparsers.add_parser(
+        "browser", help="Drive a live browser via MCP (capture Google AI Mode, Chrome DevTools AI)"
+    )
+    browser_sub = browser_parser.add_subparsers(dest="browser_command", help="Browser sub-command")
+    grab_p = browser_sub.add_parser("grab", help="Navigate to a URL and capture the page state")
+    grab_p.add_argument("--url", required=True, help="URL to navigate to")
+    grab_p.add_argument("--out", help="Output .md path (default: ./devtools_<slug>.md)")
+    grab_p.add_argument("--attach", help="Attach to existing Chrome at this URL (e.g. http://127.0.0.1:9222)")
+    grab_p.add_argument("--raw", action="store_true", help="Save raw markdown, do not normalise to .agentson")
+    grab_p.add_argument("--out-agentson", help="Also write a v1.2 .agentson to this path")
+    grab_p.add_argument("--no-ai-mode", action="store_true", help="Skip the AI Mode WIZ/SFC analysis")
+    grab_p.add_argument("--no-headless", action="store_true", help="Run Chrome with a visible window")
+    tabs_p = browser_sub.add_parser("tabs", help="List open browser tabs")
+    tabs_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
+    tools_p = browser_sub.add_parser("list-tools", help="List tools exposed by the MCP server")
+    tools_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
+
+    # platform command (Data Rights Intelligence Platform)
+    platform_parser = subparsers.add_parser("platform", help="Data Rights Intelligence Platform — scan, analyze, report")
+    platform_sub = platform_parser.add_subparsers(dest="platform_command", help="Platform sub-command")
+    scan_p = platform_sub.add_parser("scan", help="Detect tools, crawl sessions, analyze, write report")
+    scan_p.add_argument("--output", help="Base output directory")
+    scan_p.add_argument("--tool", action="append", dest="tools", help="Only scan this tool (repeatable)")
+    scan_p.add_argument("--slm", action="store_true", help="Try to use a local SLM for classification")
+    scan_p.add_argument("--model", help="SLM model name")
+    detect_p = platform_sub.add_parser("detect", help="List installed AI tools and their data locations")
+
     # help / guide command (encyclopedia)
     for name in ("help", "guide"):
         hp = subparsers.add_parser(name, help="Show interactive encyclopedia or topic deep-dive")
@@ -802,6 +883,26 @@ TOPICS:
         cmd_redact(args)
     elif args.command == "publish":
         cmd_publish(args)
+    elif args.command == "reconstruct":
+        from cli.reconstruct import cmd_reconstruct
+        cmd_reconstruct(args)
+    elif args.command == "browser":
+        cmd_browser(args)
+    elif args.command == "platform":
+        if args.platform_command == "scan":
+            from agentson_platform.scan import run_scan
+            run_scan(
+                output_dir=args.output,
+                tool_filter=args.tools,
+                use_slm=args.slm,
+                slm_model=args.model,
+            )
+        elif args.platform_command == "detect":
+            from agentson_platform.tool_registry import detect_all
+            import json as _json
+            print(_json.dumps(detect_all(), indent=2))
+        else:
+            print("Usage: agentson platform <scan|detect>")
     elif args.command in ("help", "guide"):
         from cli.help_system import show_help_page, show_encyclopedia, show_onboarding, mark_onboarded
         if args.onboard:
@@ -817,6 +918,65 @@ TOPICS:
             show_encyclopedia()
         except ImportError:
             parser.print_help()
+
+
+def cmd_browser(args):
+    """Drive a live browser via chrome-devtools-mcp + mcp-use."""
+    from agentson_mcp.client import MCPBrowser
+    from agentson_mcp.exporters.ai_mode import AIModeExporter
+
+    attach_url = getattr(args, "attach", None)
+    browser = MCPBrowser(attach_url=attach_url) if attach_url else MCPBrowser()
+
+    if args.browser_command == "list-tools":
+        browser.connect()
+        try:
+            tools = browser.list_tools()
+            for t in tools:
+                name = getattr(t, "name", None) or (t.get("name") if isinstance(t, dict) else None)
+                desc = getattr(t, "description", "") or (t.get("description", "") if isinstance(t, dict) else "")
+                print(f"  {name}: {desc[:80] if desc else ''}")
+        finally:
+            browser.close()
+        return
+
+    if args.browser_command == "tabs":
+        browser.connect()
+        try:
+            tabs = browser.list_tabs()
+            print(tabs)
+        finally:
+            browser.close()
+        return
+
+    if args.browser_command == "grab":
+        if not args.url:
+            print("Error: --url required", file=sys.stderr)
+            sys.exit(1)
+        out_path = Path(args.out) if args.out else Path(f"devtools_{Path(args.url).stem[:50]}.md")
+        browser.connect()
+        try:
+            saved = browser.grab(args.url, out_path)
+            print(f"Captured: {saved}")
+            if args.raw:
+                print(f"(raw mode — .agentson not written. Re-run without --raw to normalise.)")
+                return
+            exporter = AIModeExporter()
+            doc = exporter.normalise(saved, source_url=args.url)
+            if args.out_agentson:
+                target = Path(args.out_agentson)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
+                print(f"Normalised: {target}")
+            else:
+                tag = Path(args.url).stem[:50] or "ai_mode"
+                out = exporter.write(doc, session_tag=tag)
+                print(f"Normalised: {out}")
+        finally:
+            browser.close()
+        return
+
+    print("Usage: agentson browser <grab|tabs|list-tools>")
 
 
 def cmd_publish(args):

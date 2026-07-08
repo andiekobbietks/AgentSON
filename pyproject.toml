@@ -28,6 +28,7 @@ dependencies = [
     "jsonschema>=4.17",
     "openpyxl>=3.1",
     "pylatex>=1.4",
+    "mcp-use==1.7.0",
 ]
 
 [project.optional-dependencies]
@@ -52,7 +53,7 @@ agentson = "cli.main:main"
 "pwa" = ["manifest.json", "sw.js", "*.html", "*.png", "*.ico"]
 
 [tool.setuptools.packages.find]
-include = ["readers*", "exporters*", "importers*", "cli*"]
+include = ["readers*", "exporters*", "importers*", "cli*", "agentson_platform*", "agentson_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
