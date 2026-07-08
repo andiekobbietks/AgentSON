@@ -3,6 +3,7 @@ AgentSON CLI — Export, search, and render agent sessions.
 """
 
 import argparse
+from argparse import RawDescriptionHelpFormatter
 import json
 import os
 import sys
@@ -659,8 +660,30 @@ def _search_session(data: dict, term: str) -> List[dict]:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="agentson",
-        description="AgentSON — Export, search, and render agent sessions"
+        description="""
+================================================================================
+    ___                      __  _____  ____  _   __   ______    ____
+   /   |  ____  ___  ____   / /_/ ___/ / __ \/ | / /  / ____/   /  _/
+  / /| | / __ / _ \/ __ \ / __/\__ \ / / / /  |/ /  / /        / /  
+ / ___ |/ /_/ /  __/ / / // /_ ___/ // /_/ / /|  /  / /___    _/ /   
+/_/  |_|\__, /\___/_/ /_/ \__//____/ \____/_/ |_/   \____/   /___/   
+       /____/                                                        
+================================================================================
+Universal cross-vendor observation, provenance, and replay format for 
+agent sessions sitting above MCP, CDP, and browser protocols.
+""",
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog="""
+COMMON SCENARIOS:
+  1. Validate log streams against canonical v1.2 schema:
+     $ agentson validate examples/
+
+  2. Redact PII (emails, API keys) from a directory of logs before sharing:
+     $ agentson redact examples/ --output redacted_exports/ --all
+
+  3. Convert structured formats (like Excel) or generate reports:
+     $ agentson excel examples/
+"""
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
     
@@ -711,7 +734,26 @@ def main():
     excel_parser.add_argument("--redact", action="store_true", help="Redact PII before export")
     
     # validate command
-    validate_parser = subparsers.add_parser("validate", help="Validate .agentson file(s) against v1.2 schema")
+    validate_parser = subparsers.add_parser(
+        "validate",
+        help="Validate .agentson file(s) against v1.2 schema",
+        formatter_class=RawDescriptionHelpFormatter,
+        description="""
+Validate AgentSON files or directories against the canonical v1.2 schema.
+Supports single-file JSON, append-only JSONL streams, and recursive directory scanning.
+
+SCENARIOS & EXAMPLES:
+  1. Validate a single JSONL stream file:
+     $ agentson validate examples/my_stream.agentson
+     
+  2. Batch-validate an entire directory of logs (searches recursively):
+     $ agentson validate examples/
+     
+  3. Validate a legacy v1.1 array-based JSON file:
+     $ agentson validate examples/legacy_session.agentson
+""",
+        epilog="Note: Invalid files will exit with exit code 1 and output errors grouped by type."
+    )
     validate_parser.add_argument("input", help="Input .agentson file or directory")
 
     # redact command
