@@ -1,0 +1,858 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+        <title>ADR Viewer - AgentSON — Architecture Decision Records</title>
+
+        <style type="text/css">
+            body {
+                display: grid;
+                width: auto;
+                height: auto;
+                align-items: center;
+                justify-items: center;
+                grid-template-rows: 2fr minmax(80%, auto) 2fr;
+            }
+
+            @media only screen and (min-width: 1025px) {
+                body {
+                    grid-template-columns: 1fr 3fr 1fr;
+                }
+
+                header, .panel-group, footer {
+                    grid-column: 2;
+                }
+            }
+
+            .panel-group {
+                width: 100%
+            }
+
+            .panel-heading.adr-accepted {
+                background-color: lightgreen;
+            }
+
+            .panel-heading.adr-superseded {
+                background-color: lightgrey;
+            }
+
+            .panel-heading.adr-amended {
+                background-color: yellow;
+            }
+
+            .panel-heading.adr-unknown {
+                background-color: white;
+            }
+
+            .panel-heading.adr-pending {
+                background-color: lightblue;
+            }
+
+            .adr-superseded > .panel-title > a {
+                text-decoration: line-through;
+            }
+
+            .adr-icon {
+                float: right;
+            }
+        </style>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+        <style type="text/css">
+            /*
+             * Amber-phosphor theme override (ADR-004 tokens), layered on top
+             * of the default adr-viewer/Bootstrap output. Loaded after
+             * bootstrap.min.css in <head> so these rules win the cascade.
+             * The panel/accordion structure and Bootstrap collapse behavior
+             * are untouched -- this file only recolors and refonts it to
+             * match docs/standards/index.html and render.html.
+             */
+            :root {
+                --bg: #0a0a08;
+                --surface: #141410;
+                --border: #2a2a1e;
+                --text: #e8e0c8;
+                --text-muted: #9a9070;
+                --accent: #ffb000;
+            }
+
+            body {
+                background: var(--bg) !important;
+                color: var(--text) !important;
+                font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            }
+
+            header h1 {
+                font-family: 'Space Mono', monospace !important;
+                color: var(--text) !important;
+            }
+
+            .panel-group {
+                background: transparent !important;
+            }
+
+            .panel-default {
+                background: var(--surface) !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 8px !important;
+                box-shadow: none !important;
+            }
+
+            .panel-heading {
+                background: var(--surface) !important;
+                border-bottom: 1px solid var(--border) !important;
+                border-radius: 8px 8px 0 0 !important;
+            }
+
+            /* Status colors kept distinguishable but recast in the amber
+               palette rather than the default lightgreen/lightgrey/yellow/
+               lightblue, which clashed badly against a dark background. */
+            .panel-heading.adr-accepted { background: #1a2e1a !important; border-left: 3px solid #4caf50 !important; }
+            .panel-heading.adr-superseded { background: var(--surface) !important; border-left: 3px solid var(--text-muted) !important; }
+            .panel-heading.adr-amended { background: #2e2a12 !important; border-left: 3px solid var(--accent) !important; }
+            .panel-heading.adr-unknown { background: var(--surface) !important; border-left: 3px solid var(--border) !important; }
+            .panel-heading.adr-pending { background: #12222e !important; border-left: 3px solid #4a90d9 !important; }
+
+            .panel-title, .panel-title a {
+                color: var(--text) !important;
+                font-family: 'Space Mono', monospace !important;
+            }
+
+            .panel-title a:hover, .panel-title a:focus {
+                color: var(--accent) !important;
+                text-decoration: none !important;
+            }
+
+            .adr-superseded > .panel-title > a {
+                text-decoration: line-through !important;
+            }
+
+            .panel-body {
+                background: var(--surface) !important;
+                color: var(--text) !important;
+                border-top: 1px solid var(--border) !important;
+            }
+
+            .panel-body h1, .panel-body h2, .panel-body h3 {
+                color: var(--accent) !important;
+                font-family: 'Space Mono', monospace !important;
+            }
+
+            .panel-body a {
+                color: var(--accent) !important;
+            }
+
+            .panel-body code, .panel-body pre {
+                background: var(--bg) !important;
+                color: var(--text) !important;
+                border: 1px solid var(--border) !important;
+            }
+        </style>
+    </head>
+
+    <body>
+        <header>
+            <h1>ADR Viewer - AgentSON — Architecture Decision Records</h1>
+        </header>
+        <div class="panel-group">
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse0">ADR-001: Why AgentSON Exists as a Format</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse0" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-001: Why AgentSON Exists as a Format</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 04 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>Every AI coding agent stores session data in its own proprietary SQLite database. OpenAI has one schema, MiniMax has another, Chrome DevTools has a completely different structure. There is no standard format for exporting, sharing, or analyzing AI agent sessions.</p>
+<p>When I switched from one tool to another, I lost all my context. When I wanted to compare how different agents handled the same problem, I couldn't. When I wanted to fine-tune a model on my own sessions, I had to write a different parser for every tool.</p>
+<h2>Decision</h2>
+<p>Create a single, vendor-neutral JSON format (.AgentSON) that captures the full structure of an AI agent session: who said what, what was thought, what actions were taken, what results were observed.</p>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Sessions are portable between tools</li>
+<li>One parser works for all sessions</li>
+<li>Fine-tuning pipelines can target a single format</li>
+<li>Sessions can be searched, sorted, and analyzed uniformly</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>Every tool needs a reader/converter</li>
+<li>The format must accommodate the lowest common denominator</li>
+<li>Some tool-specific features may not map cleanly</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>The format will evolve (v1.0 → v1.1 → ...) as new tools emerge</li>
+<li>Backward compatibility is mandatory — old files must always work</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse1">ADR-002: Why JSON Files Over SQLite Databases</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse1" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-002: Why JSON Files Over SQLite Databases</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 04 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>Most AI coding agents store sessions in SQLite databases. SQLite is fast, reliable, and embedded. But it has problems for session portability:</p>
+<ul>
+<li>You can't email a SQLite database easily</li>
+<li>You can't diff it in git</li>
+<li>You can't drag-and-drop it into a viewer</li>
+<li>Different databases have different schemas</li>
+</ul>
+<h2>Decision</h2>
+<p>Use plain JSON files (.AgentSON) instead of SQLite.</p>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Files are human-readable</li>
+<li>Files can be emailed, shared, version-controlled</li>
+<li>A single <code>json.loads()</code> call parses the entire session</li>
+<li>Works in any language, any platform, any tool</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>No indexing (search requires loading the whole file)</li>
+<li>Large sessions produce large files</li>
+<li>No built-in concurrent access</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>For large-scale search, the CLI can build indexes from files</li>
+<li>Supabase provides the indexed/cloud layer when needed</li>
+<li>The file format is the interchange layer; the database is the scale layer</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse2">ADR-003: Why Vendor Neutrality Matters</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse2" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-003: Why Vendor Neutrality Matters</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 04 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>Every AI platform wants you to stay in their ecosystem. OpenAI wants you to use their API. GitHub wants you to use Copilot. Google wants you to use Gemini. Each provides session history in their own format, with their own export tools, with their own limitations.</p>
+<p>This creates lock-in. If you build workflows around one vendor's format, switching costs become prohibitive.</p>
+<h2>Decision</h2>
+<p>AgentSON must be vendor-neutral. Every external service is optional. Every core feature works offline.</p>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Users can switch tools without losing context</li>
+<li>The format survives vendor shutdowns</li>
+<li>No single company controls the standard</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>Must maintain readers for every tool</li>
+<li>Some vendor-specific features won't map cleanly</li>
+<li>No integration partnerships (yet)</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>The format starts with Chrome DevTools, opencode, MiniMax, Antigravity</li>
+<li>More readers = more value, but each reader is optional</li>
+<li>The spec can be extended without breaking old files</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse3">ADR-004: Why Amber Phosphor Design Tokens</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse3" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-004: Why Amber Phosphor Design Tokens</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 05 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>The original <code>.ailog</code> page used a cyan/blue theme (<code>#58a6ff</code>). When rebranding to AgentSON, the design tokens needed to change to differentiate the new identity while maintaining readability.</p>
+<h2>Decision</h2>
+<p>Use amber phosphor design tokens:</p>
+<ul>
+<li>Accent: <code>#ffb000</code> (amber)</li>
+<li>Background: <code>#0a0a08</code> (warm dark)</li>
+<li>Text: <code>#e8e0c8</code> (warm ivory)</li>
+<li>Success: <code>#a0d060</code></li>
+<li>Error: <code>#e05040</code></li>
+<li>Fonts: Space Mono (headings/code) + IBM Plex Sans (body)</li>
+</ul>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Warm, distinctive look that stands out from GitHub's default blue</li>
+<li>High contrast for readability</li>
+<li>Consistent across all pages (landing, viewer, SOPs, 404)</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>Not a standard palette — harder to find matching UI components</li>
+<li>Amber on dark can be fatiguing in large blocks</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>The design is ours — not borrowed from any framework</li>
+<li>Easy to change via CSS variables if needed later</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse4">ADR-005: Why Nightscout Over Proprietary CGM Systems</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse4" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-005: Why Nightscout Over Proprietary CGM Systems</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 04 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>My mother uses a FreeStyle Libre 2 continuous glucose monitor. Abbott's proprietary system stores data in their cloud, requires their app, and charges subscription fees. For a carer on Universal Credit, this is not sustainable.</p>
+<h2>Decision</h2>
+<p>Self-host Nightscout as the glucose data platform.</p>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Free (runs on a £35 Raspberry Pi)</li>
+<li>Data stays on our hardware</li>
+<li>No subscription fees</li>
+<li>Custom alerts (WhatsApp, SMS, voice)</li>
+<li>Works with multiple sensors and apps (Juggluco, xDrip+)</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>Requires initial setup and maintenance</li>
+<li>No official support from Abbott</li>
+<li>Self-hosted = we handle outages</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>Nightscout is the standard in the DIY CGM community</li>
+<li>Data can be exported to AgentSON for analysis</li>
+<li>NHS FHIR integration possible through Nightscout API</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse5">ADR-006: Why GitHub Pages Over Vercel/Netlify</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse5" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-006: Why GitHub Pages Over Vercel/Netlify</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 05 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>The project needs a way to host the landing page, viewer, SOPs, and documentation. Vercel and Netlify are popular choices, but they add another account, another billing surface, another dependency.</p>
+<h2>Decision</h2>
+<p>Use GitHub Pages (free, built into the repo).</p>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Free — no additional cost</li>
+<li>No additional account setup</li>
+<li>Deploys automatically on push to master</li>
+<li>Custom domain support if needed later</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>No server-side rendering (static files only)</li>
+<li>Limited build minutes</li>
+<li><code>.nojekyll</code> workaround needed for Google Fonts URLs</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>All pages are static HTML/CSS/JS — no SSR needed</li>
+<li>The SOP renderer uses client-side markdown parsing</li>
+<li>If the project outgrows GitHub Pages, migration to Cloudflare Pages is straightforward</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse6">ADR-007: Why CodeRabbit for Reviews (and Why Not Required)</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse6" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-007: Why CodeRabbit for Reviews (and Why Not Required)</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 05 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>Solo projects benefit from code review, but there's no team to do it. CodeRabbit provides automated AI code review for free on open-source projects. But it has rate limits on the free tier.</p>
+<h2>Decision</h2>
+<p>Use CodeRabbit for PR reviews, but do NOT make it a required status check.</p>
+<h2>Consequences</h2>
+<h3>Positive</h3>
+<ul>
+<li>Free code review on every PR</li>
+<li>Catches issues before manual review</li>
+<li>No cost</li>
+</ul>
+<h3>Negative</h3>
+<ul>
+<li>Free tier has rate limits that vary by project popularity</li>
+<li>If rate limited, a required check would block all merges</li>
+<li>Not as thorough as human review</li>
+</ul>
+<h3>Neutral</h3>
+<ul>
+<li>CodeRabbit reviews when it can, never blocks</li>
+<li>The 4 branch protection rules (PR required, no force push, no deletion, linear history) work independently</li>
+<li>Can upgrade to paid tier later if needed</li>
+</ul>
+<h2>Why Not Required</h2>
+<p>For a solo project, making CodeRabbit required means:</p>
+<ul>
+<li>If it's rate limited → PRs stuck forever</li>
+<li>If it's down → PRs stuck forever</li>
+<li>If the service shuts down → PRs stuck forever</li>
+</ul>
+<p>The owner can always review their own PRs. CodeRabbit is a helpful assistant, not a gatekeeper.</p>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse7">ADR-008: AgentSON as the Open Interchange Layer for AI Workflow Traces</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse7" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-008: AgentSON as the Open Interchange Layer for AI Workflow Traces</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 05 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>Cursor was acquired for $60B. The IDE market was worth $2.5B. The reporting is clear about what drives the price: $4B in annualized revenue at a ~15x multiple, 70% of the Fortune 1000 as paying customers, the fastest B2B software company to reach that ARR scale, a proprietary Composer model, and strategic fit with SpaceX/xAI's compute and chip supply chain.</p>
+<p>Workflow-trace data is a legitimate, documented part of why AI-coding companies are valued highly. Eric Paulsen's comment that trace data is &quot;quite valuable for training reinforcement learning models&quot; is a genuine and reasonable claim about one input among many. But it is not the same as &quot;that's the whole valuation.&quot; The $60B reflects revenue, customers, model, infrastructure, team, and strategic positioning — not just the dataset.</p>
+<p>Every AI coding tool is accumulating session traces: OpenAI (Codex), Anthropic (Claude Code), Google (Gemini Code Assist), MiniMax, Antigravity IDE, Chrome DevTools AI. Each stores it in their own proprietary format. None of them export it. None of it is portable.</p>
+<p>The data exists. The format doesn't — until now.</p>
+<h2>Decision</h2>
+<p>AgentSON is the open interchange layer for AI agent workflow traces. Every <code>.AgentSON</code> file captures the full trace of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes.</p>
+<p>AgentSON does not compete with Cursor's valuation. It solves the adjacent, real problem of vendor lock-in for individual users' own session data.</p>
+<h2>Consequences</h2>
+<h3>What This Means</h3>
+<ol>
+<li><p><strong>The format is the product.</strong> Not the viewer, not the CLI, not the cloud service. The JSON schema is what makes traces portable.</p>
+</li>
+<li><p><strong>Every reader is a data pipeline.</strong> The opencode reader, the MiniMax reader, the Chrome DevTools reader — each one is a pipeline that converts proprietary trace data into an open format.</p>
+</li>
+<li><p><strong>Every exporter is a training pipeline.</strong> The <code>finetune.py</code> exporter converts AgentSON traces into Unsloth/Olive training format. The data that tools keep captive, AgentSON makes trainable.</p>
+</li>
+<li><p><strong>Portability breaks lock-in.</strong> If you capture your sessions in AgentSON, you can switch tools without losing context. If you train on AgentSON data, you're not dependent on one vendor's dataset.</p>
+</li>
+</ol>
+<h3>The Market Reality</h3>
+<p>| Who | Has trace data | Exports it | Lets you train on it |
+|---|---|---|---|
+| Cursor | Yes (70% Fortune 1000) | No | No |
+| OpenAI | Yes | Partial (API only) | No |
+| Anthropic | Yes | No | No |
+| Chrome DevTools | Yes | MD export (unstructured) | No |
+| <strong>AgentSON</strong> | <strong>You own it</strong> | <strong>Yes (JSON)</strong> | <strong>Yes (finetune.py)</strong> |</p>
+<h3>Why Open Wins</h3>
+<ul>
+<li><strong>Network effects:</strong> Every new reader makes the format more valuable. Every new exporter makes the format more useful.</li>
+<li><strong>Community:</strong> Open formats attract contributors. Proprietary formats attract lawyers.</li>
+<li><strong>Trust:</strong> Users trust an open format they can inspect. They don't trust a black box.</li>
+<li><strong>Longevity:</strong> Open formats survive company shutdowns. Proprietary formats die with the company.</li>
+</ul>
+<h3>Risk</h3>
+<p>The risk is that a major player (OpenAI, Google, Microsoft) creates their own &quot;open&quot; format that becomes the de facto standard through distribution. AgentSON's defense is that it's already working, already tested, already has readers for multiple tools, and isn't controlled by any single company.</p>
+<h2>The Thesis</h2>
+<p>AI coding assistants keep session data captive. Every tool stores traces in proprietary databases with no export API. Users lose their context when they switch tools. Researchers can't train on cross-tool data.</p>
+<p>AgentSON provides a portable, user-owned alternative to proprietary session-trace lock-in. Not because AgentSON competes with or replaces the value Cursor's acquisition reflects — but because the problem of data portability is real, unsolved, and worth building for its own sake.</p>
+<p>The value isn't &quot;giving away a $60B thing for free.&quot; The value is solving a real problem that nobody else has solved: making your AI session data yours.</p>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse8">ADR-009: AgentSON as Open Interchange Format for OSI Open Source AI</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse8" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-009: AgentSON as Open Interchange Format for OSI Open Source AI</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 05 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>The Open Source Initiative (OSI) has spent over a year debating the Open Source AI Definition (OSAID). The debate centers on what &quot;open source&quot; means for AI systems:</p>
+<ul>
+<li><strong>Source code</strong> — model architecture, training scripts</li>
+<li><strong>Model weights</strong> — trained parameters</li>
+<li><strong>Training data</strong> — the prompts, responses, code, and observations used to train</li>
+<li><strong>Inference pipeline</strong> — how the model produces outputs</li>
+</ul>
+<p>The OSAID focuses heavily on code and weights. But the training data component has no open standard. Every AI company stores session traces in proprietary formats:</p>
+<ul>
+<li>Cursor: proprietary SQLite</li>
+<li>OpenAI: internal API-only format</li>
+<li>Anthropic: closed</li>
+<li>Google: closed</li>
+</ul>
+<p>The format doesn't exist — until now.</p>
+<h2>Decision</h2>
+<p>AgentSON is the Open Interchange Format (OIF) for AI agent session traces. It provides:</p>
+<ol>
+<li><strong>Open schema</strong> — JSON Schema v1.1 with trajectory semantics</li>
+<li><strong>Cross-tool readers</strong> — opencode, MiniMax, Antigravity, Chrome DevTools, ChatGPT</li>
+<li><strong>Training exporters</strong> — Unsloth (ShareGPT), Olive (chat-messages)</li>
+<li><strong>User ownership</strong> — no telemetry, no vendor lock-in, no cloud dependency</li>
+</ol>
+<h2>The OSI Gap</h2>
+<p>| OSI OSAID Component | Status | AgentSON Coverage |
+|---|---|---|
+| Source code (model architecture) | Defined | Not in scope |
+| Model weights | Defined | Not in scope |
+| Training data format | <strong>Undefined</strong> | <strong>AgentSON is this</strong> |
+| Inference pipeline | Partially defined | Not in scope |</p>
+<p>The OSI has no standard for &quot;what does open training data look like?&quot; AgentSON answers that question — specifically for AI agent session traces, which are the most valuable and least portable type of training data.</p>
+<h2>Consequences</h2>
+<h3>Why This Matters</h3>
+<ol>
+<li><p><strong>OSI has a gap, we fill it.</strong> The OSAID defines what &quot;open source AI&quot; means but doesn't specify the data format. AgentSON is the missing piece — the open interchange format for session traces that power AI training.</p>
+</li>
+<li><p><strong>Fine-tuning is the pipeline.</strong> <code>agentson finetune --format unsloth</code> converts AgentSON traces directly into training data. The format isn't just storage — it's the pipeline from session to training.</p>
+</li>
+<li><p><strong>Pioneering position.</strong> While the OSI debates definitions, we built infrastructure. The first open format for AI agent session traces is already working, tested across 5 tools, with 2 training exporters.</p>
+</li>
+<li><p><strong>Real problem, real solution.</strong> AI coding tools keep session data captive. Users lose context when switching tools. Researchers can't train on cross-tool data. AgentSON solves this — not by competing with any company's valuation, but by making individual users' data portable.</p>
+</li>
+</ol>
+<h3>The Market Reality</h3>
+<p>| Who | Has session traces | Exports it | Lets you train on it |
+|---|---|---|---|
+| Cursor | Yes (70% Fortune 1000) | No | No |
+| OpenAI | Yes | Partial (API only) | No |
+| Anthropic | Yes | No | No |
+| Chrome DevTools | Yes | MD export (unstructured) | No |
+| <strong>AgentSON</strong> | <strong>You own it</strong> | <strong>Yes (JSON)</strong> | <strong>Yes (finetune.py)</strong> |</p>
+<h3>Risk</h3>
+<p>The risk is that a major player (OpenAI, Google, Microsoft) creates their own &quot;open&quot; training data format and uses distribution to make it the standard. AgentSON's defense: it's already working, already has readers for multiple tools, and isn't controlled by any single company.</p>
+<h2>The Thesis</h2>
+<p>AI's biggest debate is about openness. The OSI is defining it. Companies are fighting over it. But nobody has built the actual infrastructure for open training data.</p>
+<p>AgentSON is that infrastructure. Not a definition — a working format. Not a policy — a tool. The Open Interchange Format for session traces that power AI.</p>
+<p>The value isn't competing with any company's valuation. It's solving a real problem that nobody else has solved: making your AI session data yours.</p>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse9">ADR-010: AgentSON as GDPR/EU AI Act Data Liberation Tool</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse9" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-010: AgentSON as GDPR/EU AI Act Data Liberation Tool</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 05 July 2026
+<strong>Author:</strong> Andrea Enning</p>
+<hr />
+<h2>Context</h2>
+<p>The parallels are exact:</p>
+<p><strong>Unsloth</strong> made fine-tuning accessible to everyone. Before Unsloth, you needed a GPU cluster and a PhD. After Unsloth, you could fine-tune a 7B model on a single GPU in hours. Unsloth didn't create new capability — it democratized existing capability.</p>
+<p><strong>AgentSON</strong> makes session data export accessible to everyone. Before AgentSON, your AI coding sessions were locked in proprietary databases with no export API. After AgentSON, you can export, search, replay, and fine-tune on your own data. AgentSON doesn't create new capability — it democratizes existing capability.</p>
+<p>The difference: Unsloth democratized model training. AgentSON democratizes data ownership.</p>
+<h2>The Legal Right</h2>
+<p>Users already have the legal right to their data. AgentSON makes it exercisable.</p>
+<h3>GDPR Article 20 — Right to Data Portability</h3>
+<blockquote>
+<p>&quot;The data subject shall have the right to receive the personal data concerning him or her, which he or she has provided to a controller, in a structured, commonly used and machine-readable format.&quot;</p>
+</blockquote>
+<p>Every AI coding tool stores your prompts, code, and session data. Under GDPR, you have the right to receive that data in a machine-readable format. Most tools don't provide this. AgentSON does.</p>
+<h3>EU AI Act — Transparency Requirements</h3>
+<blockquote>
+<p>&quot;Providers of AI systems shall ensure that the system is designed and developed in such a way that natural persons are informed that they are interacting with an AI system.&quot;</p>
+</blockquote>
+<blockquote>
+<p>&quot;Users of AI systems that generate synthetic text... shall ensure that the outputs of the AI system are marked in a machine-readable format.&quot;</p>
+</blockquote>
+<p>The EU AI Act requires transparency about AI-generated content. AgentSON captures the full trace — what the AI did, what it generated, what tools it used — in a machine-readable format that satisfies transparency requirements.</p>
+<h3>What This Means</h3>
+<p>| Right | Legal basis | Tool status | AgentSON solution |
+|-------|-------------|-------------|-------------------|
+| Access your data | GDPR Art. 15 | Most tools: no export | AgentSON exports everything |
+| Export your data | GDPR Art. 20 | Most tools: no portable format | AgentSON is the portable format |
+| Transparency | EU AI Act Art. 52 | Most tools: opaque | AgentSON captures full trace |
+| Right to explanation | GDPR Art. 22 | Most tools: no audit trail | AgentSON has every thought + action |</p>
+<h2>The Unsloth Analogy</h2>
+<p>| Aspect | Unsloth | AgentSON |
+|--------|---------|----------|
+| What it democratized | Model fine-tuning | Session data export |
+| Before | GPU cluster + PhD needed | No export API, vendor lock-in |
+| After | Single GPU, hours | One CLI command, portable JSON |
+| Who benefits | Individual developers, small teams | Individual developers, small teams |
+| Legal basis | N/A | GDPR Art. 20, EU AI Act Art. 52 |
+| Business model | Open source, freemium | Open source, Apache 2.0 |</p>
+<h2>Decision</h2>
+<p>AgentSON is the Unsloth of session data. Not because it's technically similar — but because it serves the same role in the ecosystem:</p>
+<ol>
+<li><strong>Democratizes access</strong> — makes something previously only available to big players accessible to everyone</li>
+<li><strong>Legal backing</strong> — GDPR and EU AI Act give users the right; AgentSON makes it exercisable</li>
+<li><strong>Open source</strong> — Apache 2.0, no telemetry, no vendor lock-in</li>
+<li><strong>Community-driven</strong> — every new reader makes the format more valuable</li>
+</ol>
+<h2>Consequences</h2>
+<h3>The Positioning</h3>
+<p>AgentSON isn't competing with Cursor, Claude Code, or Copilot. It's the tool that lets users exercise their legal rights over the data those tools generate.</p>
+<ul>
+<li>Cursor keeps your data captive → AgentSON exports it</li>
+<li>Claude Code embeds spyware → AgentSON gives you ownership</li>
+<li>Copilot stores traces in Microsoft servers → AgentSON makes them portable</li>
+</ul>
+<h3>The Value Proposition</h3>
+<blockquote>
+<p>&quot;You have the legal right to your data. AgentSON is how you exercise it.&quot;</p>
+</blockquote>
+<p>This is stronger than &quot;open format for session traces&quot; because:</p>
+<ul>
+<li>It's legally grounded (GDPR + EU AI Act)</li>
+<li>It's emotionally resonant (data ownership, privacy, sovereignty)</li>
+<li>It's practically useful (export, search, fine-tune)</li>
+<li>It's defensible (legal right, not just nice-to-have)</li>
+</ul>
+<h3>The Market</h3>
+<p>Every developer using AI coding tools has this right. Most don't know how to exercise it. AgentSON teaches them.</p>
+<ul>
+<li>5M+ Cline users (BYOK = they care about data)</li>
+<li>6.5M opencode monthly devs (open source = they care about ownership)</li>
+<li>147K GitHub stars on opencode (community = advocacy)</li>
+<li>Every Cursor user locked in (frustration = demand)</li>
+</ul>
+<h2>The Thesis</h2>
+<p>Unsloth democratized model training. AgentSON democratizes data ownership.</p>
+<p>Both serve the same constituency: individual developers and small teams who want the capabilities that were previously only available to big labs. Both are open source. Both are backed by legal rights (Unsloth by open research norms, AgentSON by GDPR and the EU AI Act).</p>
+<p>The $60B question isn't whether this data is valuable. It's who gets to use it.</p>
+<p>AgentSON's answer: you do. It's your legal right. Here's how to exercise it.</p>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse10">ADR-011: Project name &#34;AgentSON&#34; kept, &#34;.ason&#34; file extension rejected</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse10" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-011: Project name &quot;AgentSON&quot; kept, &quot;.ason&quot; file extension rejected</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2026-07-04</p>
+<h2>Context</h2>
+<p>Early in the project, &quot;.ason&quot; was considered as the literal file extension
+(paired with the &quot;AgentSON&quot; project/brand name), on the assumption that a
+short extension would be cleaner for tooling and file associations.</p>
+<p>A naming-clearance search turned up two existing, unrelated projects
+already using &quot;.ason&quot;:</p>
+<ol>
+<li><strong><code>hemashushu/ason</code></strong> — an established general-purpose data
+serialization format, with its own binary variant and a Rust reference
+implementation, registered as MIME type <code>application/ason</code>.</li>
+<li><strong><code>ason-format/ason</code></strong> — &quot;Aliased Serialization Object Notation,&quot; a
+JSON-compression format built specifically for reducing LLM prompt
+token costs (npm package <code>@ason-format/ason</code>, CLI <code>npx ason</code>).</li>
+</ol>
+<p>The second collision is a direct hit on AgentSON's own niche (AI +
+structured data tooling). Anyone with LLM-tooling experience would
+reasonably expect a <code>.ason</code> file to be a token-compressed JSON blob, not
+an agent session transcript. This is a real MIME-type and expectation
+collision, not a cosmetic naming coincidence.</p>
+<p>A separate check on &quot;AgentSON&quot; as a standalone project/brand name found
+no conflicts — the only adjacent hit was the unrelated <code>AGENTS.md</code>
+convention (a markdown file convention, not a serialization format).</p>
+<h2>Decision</h2>
+<ul>
+<li>Keep <strong>&quot;AgentSON&quot;</strong> as the project, brand, and package name.</li>
+<li>Do <strong>not</strong> use <code>.ason</code> as a file extension.</li>
+<li>Files use <code>.agentson</code> as the extension, or plain <code>.json</code> with an
+internal <code>&quot;$schema&quot;: &quot;agentson-v1&quot;</code> field where a distinct extension
+isn't needed (following the precedent of formats like
+<code>.devcontainer.json</code>, which don't require their own extension to be
+identifiable).</li>
+</ul>
+<h2>Consequences</h2>
+<ul>
+<li>No collision risk with either existing <code>.ason</code> ecosystem.</li>
+<li>Slightly longer extension (<code>.agentson</code> vs <code>.ason</code>), traded deliberately
+for unambiguous identification.</li>
+<li>The naming/trademark check performed was a manual, point-in-time
+search (UK/EU/US trademark databases, PyPI, npm, GitHub org
+availability, UK Companies House) — not a paid legal clearance search.
+Should be re-verified before any serious commercial commitment (see
+PRD.md, Risks).</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading adr-unknown">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse11">ADR-012: AgentSON&#39;s relationship to academic trace-provenance literature</a>
+
+                        
+                        <i class="adr-icon fas fa-fw fa-question"></i>
+                        
+
+                    </h4>
+                </div>
+                <div id="collapse11" class="panel-collapse collapse">
+                    <div class="panel-body"><h1>ADR-012: AgentSON's relationship to academic trace-provenance literature</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2026-07-05</p>
+<h2>Context</h2>
+<p>During development, academic literature surfaced covering agent
+execution traces, evidence tracing, and provenance — including taxonomies
+of trace sources, trust functions, and frameworks like W3C PROV and
+OpenTelemetry integration for AI agents. The overlap in subject matter
+(agent traces, provenance, tool use, memory, cross-platform support)
+raised the question of whether AgentSON was duplicating existing work.</p>
+<h2>Decision</h2>
+<p>AgentSON and this academic literature are treated as <strong>complementary, not
+duplicative</strong>, based on a clear difference in what each actually is:</p>
+<p>| Aspect | AgentSON | Academic literature |
+|---|---|---|
+| Stage | Deployed, working system | Survey / conceptual analysis |
+| Output | <code>.agentson</code> files, working CLI, PWA viewer | Papers, taxonomies |
+| Contribution | Concrete readers/importers, export to Unsloth/Olive, search/replay | Frameworks, gap analysis, research directions |
+| Audience | Developers building real tools | Researchers, academics |
+| Verification | Tested against real exports, working code | Citation analysis, literature review |</p>
+<p>AgentSON is the practical, implemented answer to &quot;I need a working system
+to capture/replay/search/fine-tune on agent sessions today.&quot; The academic
+work is the theoretical answer to &quot;how should the field think about trace
+provenance.&quot; Neither substitutes for the other.</p>
+<h2>Consequences</h2>
+<ul>
+<li>No need to reposition, rename, or reframe AgentSON in response to
+adjacent academic publications in this space.</li>
+<li>Where useful, AgentSON's spec can reference relevant academic framing
+(e.g. W3C PROV concepts) as design input, without treating the
+literature as prior art that blocks the project.</li>
+<li>Future contributors/reviewers who raise &quot;isn't this already covered by
+[paper]?&quot; should be pointed to this ADR rather than re-litigating the
+comparison from scratch.</li>
+</ul>
+</div>
+                </div>
+            </div>
+            
+        </div>
+        <footer>
+            Generated with &lt;3 using ADR Viewer
+        </footer>
+        
+    </body>
+</html>

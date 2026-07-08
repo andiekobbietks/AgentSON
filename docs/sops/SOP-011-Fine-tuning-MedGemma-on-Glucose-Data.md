@@ -17,7 +17,7 @@ This SOP describes how to fine-tune MedGemma on glucose data to create a custom 
 | Item | Requirement |
 |------|-------------|
 | **Software** | Python 3.12.3, MedGemma (SOP-010) |
-| **Data** | `libre_data.csv` or `.AgentSON` glucose files |
+| **Data** | `libre_data.csv` or `.agentson` glucose files |
 | **Hardware** | GPU recommended (or Google Colab free tier) |
 
 ---
@@ -34,7 +34,7 @@ import json
 training_data = []
 
 # Read AgentSON glucose file
-with open("libre_libre_data.AgentSON", "r") as f:
+with open("libre_libre_data.agentson", "r") as f:
     data = json.load(f)
 
 # Convert to training format
