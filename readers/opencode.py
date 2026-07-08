@@ -171,11 +171,12 @@ class OpencodeReader:
                         # input/output/status nested under "state".
                         state = part_data.get("state", {}) or {}
                         status_raw = state.get("status", "")
+                        raw_output = str(state.get("output", ""))
                         entries.append({
                             "type": "action",
                             "tool": part_data.get("tool", "unknown"),
                             "code": json.dumps(state.get("input", {})),
-                            "output": str(state.get("output", "")),
+                            "output": self._resolve_truncated_output(raw_output),
                             "status": "success" if status_raw == "completed" else (status_raw or "unknown"),
                             "timestamp": (state.get("time") or {}).get("start", msg["time_created"])
                         })
