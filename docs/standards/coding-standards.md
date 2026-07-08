@@ -42,7 +42,7 @@ If OpenAI shuts down tomorrow, AgentSON still works. If GitHub goes down, the CL
 
 ## Single File Output
 
-**One .AgentSON file = one complete session.**
+**One .agentson file = one complete session.**
 
 No sidecar files, no database entries, no config dependencies. One file has everything: schema, entries, metadata, context.
 
@@ -61,6 +61,26 @@ Every dependency is a liability. It can be abandoned, hacked, or become incompat
 **Rule:** Check if `json`, `sqlite3`, `pathlib`, `hashlib`, `re`, `datetime` can solve the problem before reaching for `pip install`.
 
 **Why:** Dependencies are trust. Every `pip install` is trusting a stranger with your code.
+
+---
+
+## Bug Response Procedure
+
+**Finding a bug is not the same as fixing a bug. Do both, in this order, every time.**
+
+1. **Prove it's real before saying it's real.** Reproduce it — run the failing case, don't just read the code and infer. A claim like "this looks like it could crash" is not a bug report until you've actually crashed it.
+2. **Check if it's pre-existing.** `git stash` (or check `master` directly) and rerun. Matters for how it gets reported and whether it's something to just fix quietly or flag as a regression.
+3. **Decide scope before touching code.** Is this a mechanical one-line fix, or does it reveal a design question (a missing spec field, a missing core command, a litmus-test violation)? Fix the former. Flag the latter and stop — don't unilaterally decide a spec change or scope call belongs to you.
+4. **Fix it, then re-run the exact reproduction that found it.** "The code looks right now" is not verification. The same failing case from step 1 must now pass.
+5. **Write or extend a real test**, using real data where available. If only synthetic data is available, say so explicitly rather than implying it's been verified against something real.
+6. **Run pyrefly** on every file touched.
+7. **State exactly what was tested vs. assumed.** No "should work now."
+8. **CHANGELOG entry** naming the root cause, not just "fixed bug."
+9. **Branch → PR.** Never push a fix directly to `master`, no matter how small.
+
+**Rule:** If you can't point to the command that reproduced the bug and the command that proved the fix, you haven't finished — you've guessed.
+
+**Why:** A bug "fixed" without reproduction is a bug hidden, not solved. This is the same discipline as "Test Against Real Data," applied to the moment a problem is found rather than only to the moment new code is written.
 
 ---
 
