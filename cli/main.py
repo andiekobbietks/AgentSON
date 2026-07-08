@@ -682,16 +682,19 @@ def _search_session(data: dict, term: str) -> List[dict]:
 def main():
     parser = argparse.ArgumentParser(
         description="""
-  ┌─┐┌─┐┌─┐┌┐┌┌┬┐┌─┐┌─┐┌┐┌   ┌─┐┬  ┬
-  ├─┤│ ┬├┤ │││ │ └─┐│ ││││   │  │  │
-  ┴ ┴└─┘└─┘┘└┘ ┴ └─┘└─┘┘└┘   └─┘┴─┘┴
+AgentSON — Universal provenance for agent sessions.
 
-Universal cross-vendor observation, provenance, and replay format for 
-agent sessions sitting above MCP, CDP, and browser protocols.
+Run 'agentson guide' for the interactive encyclopedia.
+Run 'agentson help <topic>' for deep dives on any adapter, reader, or command.
 """,
         formatter_class=RawDescriptionHelpFormatter,
         epilog="""
-COMMON SCENARIOS:
+EXPLORE:
+  agentson guide             Interactive encyclopedia (TUI)
+  agentson help <topic>      Deep dive on any topic (e.g. mcp, a2a, agntcy)
+  agentson help --onboard    Re-run first-run onboarding
+
+SCENARIOS:
   1. Validate log streams against canonical v1.2 schema:
      $ agentson validate examples/
 
@@ -700,6 +703,10 @@ COMMON SCENARIOS:
 
   3. Convert structured formats (like Excel) or generate reports:
      $ agentson excel examples/
+
+TOPICS:
+  agentson  mcp  a2a  agntcy  chatgpt  opencode
+  chrome-devtools  claude-code  libre  validate  redact  publish  runbook
 """
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
@@ -714,7 +721,7 @@ COMMON SCENARIOS:
     
     # import command
     import_parser = subparsers.add_parser("import", help="Import from external formats")
-    import_parser.add_argument("format", choices=["chatgpt", "mcp", "a2a", "agntcy"], help="Import format")
+    import_parser.add_argument("format", choices=["chatgpt", "mcp", "a2a", "agntcy"], help="Import format. See 'agentson help <format>' for background.")
     import_parser.add_argument("input", help="Input file path")
     import_parser.add_argument("--output", default=".", help="Output directory")
     import_parser.add_argument("--all-branches", action="store_true", help="Include all conversation branches")
@@ -767,27 +774,11 @@ COMMON SCENARIOS:
     publish_parser.add_argument("--tag", help="Image tag or alias (auto-generated if omitted)")
     publish_parser.add_argument("--push", action="store_true", help="Push to remote registry after building")
 
-def cmd_publish(args):
-    """Publish AgentSON session to Docker Hub or LXD Hub."""
-    from tools.distribute import publish
-
-    result = publish(
-        session_path=args.input,
-        registry=args.registry,
-        tag=args.tag,
-        push=args.push,
-    )
-
-    if result.get("success"):
-        print(f"Published: {result.get('tag') or result.get('alias', 'unknown')}")
-        print(f"  Session: {result.get('session_id', 'unknown')}")
-        if result.get("pushed"):
-            print(f"  Pushed: yes")
-    else:
-        print(f"Error: {result.get('error', 'unknown')}")
-        if result.get("step"):
-            print(f"  Step: {result['step']}")
-        sys.exit(1)
+    # help / guide command (encyclopedia)
+    for name in ("help", "guide"):
+        hp = subparsers.add_parser(name, help="Show interactive encyclopedia or topic deep-dive")
+        hp.add_argument("topic", nargs="?", default=None, help="Topic to explore (e.g. mcp, a2a, validate)")
+        hp.add_argument("--onboard", action="store_true", help="Re-run first-run onboarding")
 
     args = parser.parse_args()
     
@@ -811,8 +802,44 @@ def cmd_publish(args):
         cmd_redact(args)
     elif args.command == "publish":
         cmd_publish(args)
+    elif args.command in ("help", "guide"):
+        from cli.help_system import show_help_page, show_encyclopedia, show_onboarding, mark_onboarded
+        if args.onboard:
+            show_onboarding()
+            mark_onboarded()
+        elif args.topic:
+            show_help_page(args.topic)
+        else:
+            show_encyclopedia()
     else:
-        parser.print_help()
+        try:
+            from cli.help_system import show_encyclopedia
+            show_encyclopedia()
+        except ImportError:
+            parser.print_help()
+
+
+def cmd_publish(args):
+    """Publish AgentSON session to Docker Hub or LXD Hub."""
+    from tools.distribute import publish
+
+    result = publish(
+        session_path=args.input,
+        registry=args.registry,
+        tag=args.tag,
+        push=args.push,
+    )
+
+    if result.get("success"):
+        print(f"Published: {result.get('tag') or result.get('alias', 'unknown')}")
+        print(f"  Session: {result.get('session_id', 'unknown')}")
+        if result.get("pushed"):
+            print(f"  Pushed: yes")
+    else:
+        print(f"Error: {result.get('error', 'unknown')}")
+        if result.get("step"):
+            print(f"  Step: {result['step']}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
