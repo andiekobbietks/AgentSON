@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="AgentSON — The Agentic Internet Stack" description="AgentSON is the universal provenance format for agent sessions. The PDF of the agentic era.">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);"></span>
+        Universal Provenance Format &bull; Open Source
+      </div>
+      <h1>The Agentic Internet Stack</h1>
+      <p class="hero-subtitle">
+        AgentSON is the <strong>provenance format</strong> for agent sessions — the PDF of what agents do.<br>
+        Normalize every agent trace into one portable format. Export to any tool. Distribute via any registry.
+      </p>
+      <div class="hero-actions">
+        <a href="/stack" class="btn btn-primary">Explore the Stack</a>
+        <a href="/docs/viewer/" class="btn btn-secondary">Launch Viewer</a>
+        <a href="https://github.com/andiekobbietks/AgentSON" class="btn btn-secondary">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="what">
+    <div class="container">
+      <h2 class="section-title">What is AgentSON?</h2>
+      <p class="section-subtitle">A vendor-neutral, portable format for recording what agents did — not just what they said.</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon text-blue">&#9776; Schema</div>
+          <h3>12-Primitive Ontology</h3>
+          <p>Every agent action normalizes into one of 12 semantic primitives. JSONL stream with discriminated unions.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon text-green">&#8644; Adapters</div>
+          <h3>Protocol Adapters</h3>
+          <p>Import from MCP, A2A, AGNTCY. Export to capi, TOAST, T3 Code. AgentSON is the hub.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon text-orange">&#9733; Distribution</div>
+          <h3>LXD + Docker Hub</h3>
+          <p>Distribute as OCI artifacts on Docker Hub, or as system containers on LXD Hub. Pick your runtime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);" id="stack">
+    <div class="container">
+      <h2 class="section-title">The Stack</h2>
+      <p class="section-subtitle">Four layers from identity to display. AgentSON lives at L1 (Execution).</p>
+      <div class="grid-2">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3 class="text-blue">L0 &mdash; Identity</h3>
+          <p>Agent identity, credentials, signing. DID, JWK, verifiable credentials. Who ran the agent.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 class="text-green">L1 &mdash; Execution</h3>
+          <p><strong>AgentSON.</strong> Temporal trace of every action, thought, observation. The provenance layer.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--orange);">
+          <h3 class="text-orange">L2 &mdash; Knowledge</h3>
+          <p>Open Knowledge Format (OKF). What the agent learned. Wiki, markdown + YAML, static.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3 class="text-purple">L3 &mdash; Display</h3>
+          <p>Viewers, dashboards, reports. PWA, static site, Excel, PDF. Render provenance for humans.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="adapter">
+    <div class="container">
+      <h2 class="section-title">Protocol Hub</h2>
+      <p class="section-subtitle">AgentSON normalizes every execution protocol into one provenance format.</p>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value blue">MCP</div>
+          <div class="stat-label">Model Context Protocol</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green">A2A</div>
+          <div class="stat-label">Agent-to-Agent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value orange">AGNTCY</div>
+          <div class="stat-label">Agent Protocol</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value purple">capi</div>
+          <div class="stat-label">Session Protocol</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="text-align:center;padding:var(--space-4xl) 0;" id="cta">
+    <div class="container">
+      <h2 style="font-size:clamp(1.5rem,3vw,2rem);font-weight:700;margin-bottom:var(--space-md);">One Format. Every Tool. Any Registry.</h2>
+      <p style="color:var(--muted);margin-bottom:var(--space-xl);max-width:600px;margin-left:auto;margin-right:auto;">
+        AgentSON is the missing provenance layer. Not a protocol, not a runtime — a record.
+      </p>
+      <a href="https://github.com/andiekobbietks/AgentSON" class="btn btn-primary">Get Started</a>
+    </div>
+  </section>
+</BaseLayout>
