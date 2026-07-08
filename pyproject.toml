@@ -25,7 +25,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "requests>=2.28",
+    "jsonschema>=4.17",
+    "openpyxl>=3.1",
+    "pylatex>=1.4",
 ]
 
 [project.optional-dependencies]

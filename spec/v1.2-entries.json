@@ -1,0 +1,821 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentSON v1.2 Entry Validator",
+  "type": "object",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "stream-meta"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "stream_id": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "single",
+            "multi",
+            "collab"
+          ],
+          "description": "Stream mode. Determines which primitives are required."
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "Self-describing capabilities manifest. Maps agent_id -> task_key -> description.",
+          "properties": {
+            "instruction": {
+              "type": "string"
+            },
+            "index": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "$docs": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "required": [
+        "stream_id",
+        "agents",
+        "mode"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "handoff"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string",
+          "description": "Brief context for next agent"
+        },
+        "conch": {
+          "type": "string",
+          "description": "Which agent holds the speaking token"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "conch"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "presence"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "online",
+            "offline",
+            "busy",
+            "idle"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "agent"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "capabilities"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "Agent's self-describing capabilities manifest"
+        }
+      },
+      "required": [
+        "agent",
+        "capabilities"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "action"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "tool": {
+          "type": "string",
+          "description": "Semantic operation (e.g., browser.navigate, mcp.tools.call)"
+        },
+        "args": {
+          "type": "object",
+          "description": "Tool arguments"
+        },
+        "code": {
+          "type": "string",
+          "description": "Code executed"
+        },
+        "output": {
+          "type": "string",
+          "description": "Output from execution"
+        },
+        "tool_call_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "error",
+            "partial",
+            "pending"
+          ]
+        },
+        "duration_ms": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "tool"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "observation"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "agent",
+            "user",
+            "system",
+            "tool",
+            "sensor",
+            "extension",
+            "other"
+          ]
+        },
+        "attachments": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "source"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "thought"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "side-effect"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "diff": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "answer"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "user-query"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "user-feedback"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "sentiment": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "neutral",
+            "correction",
+            "clarification"
+          ]
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "system-event"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "cron",
+            "webhook",
+            "timer",
+            "healthcheck",
+            "manual",
+            "other"
+          ]
+        }
+      },
+      "required": [
+        "text",
+        "source"
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ This bypasses the Windows executable installation issue.
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "agentsong")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "AgentSON")))
 
 from cli.main import main
 

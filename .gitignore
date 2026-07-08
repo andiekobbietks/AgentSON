@@ -42,3 +42,9 @@ training/
 # Exports
 exports/
 *.xlsx
+
+# Local virtual environments
+mcp_env/
+
+# Build artifacts
+auto_test.pdf

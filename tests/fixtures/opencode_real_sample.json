@@ -30,7 +30,7 @@
       "callID": "call_4df10994d7274b9e956072ca",
       "state": {
         "status": "completed",
-        "input": {"command": "python tests/test_claude_code_run.py", "description": "Run Claude Code reader test", "workdir": "C:\\Users\\LLM-Test\\Documents\\agentsong"},
+        "input": {"command": "python tests/test_claude_code_run.py", "description": "Run Claude Code reader test", "workdir": "C:\\Users\\LLM-Test\\Documents\\AgentSON"},
         "output": "Sessions found: 1\r\nSession ID: claude-code-test-001\r\nTool: claude-code\r\nAgent: claude-sonnet-4-20250514\r\nTask: Fix the auth bug\r\nEntries: 5\r\nEntry types: ['user-query', 'thought', 'action', 'observation', 'thought']\r\nExported to: C:\\Users\\LLM-Test\\AppData\\Local\\Temp\\tmpc6wyx_r1\\output\\claude-code-test-001.AgentSON\r\n\r\nALL TESTS PASSED\r\n",
         "metadata": {"exit": 0, "description": "Run Claude Code reader test", "truncated": false},
         "title": "Run Claude Code reader test",
