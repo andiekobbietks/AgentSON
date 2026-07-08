@@ -48,3 +48,7 @@ mcp_env/
 
 # Build artifacts
 auto_test.pdf
+
+# Astro
+site/node_modules/
+site/.astro/
