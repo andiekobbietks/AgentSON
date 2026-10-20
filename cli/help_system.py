@@ -63,7 +63,7 @@ def show_onboarding():
         width=60,
     ))
     c.print()
-    c.print("  [dim]AgentSON normalises agent traces from every major protocol[/]")
+    c.print("  [dim]AgentSON canonicalises agent traces from every major protocol[/]")
     c.print("  [dim]into one portable JSONL format. Export to any tool.[/]")
     c.print("  [dim]Distribute via Docker Hub or LXD Hub.[/]")
     c.print()
@@ -90,7 +90,7 @@ def show_tour():
          "  [blue]coordination[/] · [green]execution[/] · [amber]input[/]"),
         ("[bold #a0d060]Protocol Adapters[/]",
          "MCP · A2A · AGNTCY · ChatGPT\n"
-         "Each adapter normalises a protocol's traces into AgentSON's\n"
+         "Each adapter canonicalises a protocol's traces into AgentSON's\n"
          "12 primitives. No silent data loss — every unmapped field\n"
          "is recorded in a [i]_loss[/] array."),
         ("[bold #ffb000]Export & Read[/]",
@@ -163,7 +163,7 @@ TOPICS = {
         "and quickly became the de facto standard for tool-enabled agents.\n\n"
         "[bold]Why it matters[/]\n"
         "MCP is the most widely deployed agent protocol. If your agent calls\n"
-        "tools, it almost certainly speaks MCP. AgentSON normalises MCP's\n"
+        "tools, it almost certainly speaks MCP. AgentSON canonicalises MCP's\n"
         "tool_call/tool_result pattern into action/observation primitives,\n"
         "capturing the provenance MCP itself doesn't store.\n\n"
         "[bold]AgentSON mapping[/]\n"

@@ -1,6 +1,6 @@
-# Normalization: Why 12 Primitives?
+# Canonicalisation: Why 12 Primitives?
 
-*How and why AgentSON normalizes provenance from six agent protocols into a single 12-primitive format.*
+*How and why AgentSON canonicalises provenance from six agent protocols into a single 12-primitive format.*
 
 ## The Problem
 
@@ -13,7 +13,7 @@ Every agent framework and protocol records provenance differently:
 - **TOAST** has hierarchical test oracles and assertions — but prioritizes pass/fail over process
 - **T3 Code** has code execution traces — but no awareness of side-effects outside the sandbox
 
-Without normalization, provenance is locked into each protocol's ontology. Cross-protocol analysis, composability, and auditing require a **universal intermediate format** — AgentSON.
+Without canonicalisation, provenance is locked into each protocol's ontology. Cross-protocol analysis, composability, and auditing require a **universal intermediate format** — AgentSON.
 
 ## The 12-Primitive Ontology
 
@@ -95,9 +95,9 @@ No adapter is lossless. Every adapter records what it couldn't map in a `_loss` 
 
 This ensures **no silent data loss**. Any information that doesn't fit the 12 primitives is preserved in `_loss` and can be recovered by downstream processes.
 
-## Session-to-Session Normalization
+## Session-to-Session Canonicalisation
 
-AgentSON normalizes across sessions — not just within a session. The `session` block tracks:
+AgentSON canonicalises across sessions — not just within a session. The `session` block tracks:
 
 - `id` — globally unique session identifier
 - `parentId` — for branching/forking sessions
@@ -108,7 +108,7 @@ AgentSON normalizes across sessions — not just within a session. The `session`
 This enables:
 - **Session trees** — one user query can spawn multiple agent sub-sessions
 - **Cross-session aggregation** — collect all sessions that used a specific tool
-- **Auditability** — replay any session from its normalized trace
+- **Auditability** — replay any session from its canonicalised trace
 
 ## ADR References
 

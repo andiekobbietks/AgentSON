@@ -198,7 +198,7 @@ class OpencodeReader:
             # the session, not of an instant. So there is no timestamp, and
             # the key is OMITTED rather than set to null: an absent field
             # and a field holding null are different facts, and the format
-            # says to normalise the structure. See ADR-022.
+            # says to canonicalise the structure. See ADR-022.
             entry = {
                 "type": "side-effect",
                 "action": "todo_update",

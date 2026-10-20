@@ -117,7 +117,7 @@ def _extract_json_from_payload(payload: bytes) -> Optional[Dict]:
 
 
 def read_antigravity_session(session: Dict) -> Dict:
-    """Read an Antigravity IDE session and return normalized data."""
+    """Read an Antigravity IDE session and return canonicalised data."""
     db_path = session["db_path"]
 
     conn = sqlite3.connect(db_path)

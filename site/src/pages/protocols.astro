@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Protocols — AgentSON" description="MCP, A2A, AGNTCY — every execution protocol normalizes into AgentSON provenance.">
+<BaseLayout title="Protocols — AgentSON" description="MCP, A2A, AGNTCY — every execution protocol canonicalises into AgentSON provenance.">
   <section class="section hero" style="padding-bottom:var(--space-2xl);">
     <div class="container">
       <h1>Execution Protocols</h1>
@@ -24,7 +24,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="card" style="border-left:4px solid var(--blue);">
           <h3 class="text-blue">MCP</h3>
           <p style="color:var(--text-dim);margin-bottom:var(--space-sm);">Model Context Protocol</p>
-          <p>Tool execution protocol. AgentSON normalizes MCP tool calls into <code>action</code>, <code>observation</code>, and <code>thought</code> primitives.</p>
+          <p>Tool execution protocol. AgentSON canonicalises MCP tool calls into <code>action</code>, <code>observation</code>, and <code>thought</code> primitives.</p>
           <pre style="margin:var(--space-md) 0 0;">tool_call &rarr; action + observation
 tool_result &rarr; observation
 error &rarr; system-event</pre>
@@ -59,7 +59,7 @@ artifact &rarr; observation</pre>
         <p>Every execution protocol produces traces. But traces are ephemeral — stored in proprietary SQLite databases, protobuf blobs, or lost when the session ends.</p>
       </div>
       <div class="card">
-        <p>AgentSON normalizes all traces into one format. When the protocol changes (MCP v2, A2A v3), only the adapter changes. Downstream tools never notice.</p>
+        <p>AgentSON canonicalises all traces into one format. When the protocol changes (MCP v2, A2A v3), only the adapter changes. Downstream tools never notice.</p>
       </div>
     </div>
   </section>

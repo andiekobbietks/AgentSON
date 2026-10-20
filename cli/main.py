@@ -836,7 +836,7 @@ TOPICS:
     grab_p.add_argument("--url", required=True, help="URL to navigate to")
     grab_p.add_argument("--out", help="Output .md path (default: ./devtools_<slug>.md)")
     grab_p.add_argument("--attach", help="Attach to existing Chrome at this URL (e.g. http://127.0.0.1:9222)")
-    grab_p.add_argument("--raw", action="store_true", help="Save raw markdown, do not normalise to .agentson")
+    grab_p.add_argument("--raw", action="store_true", help="Save raw markdown, do not canonicalise to .agentson")
     grab_p.add_argument("--out-agentson", help="Also write a v1.2 .agentson to this path")
     grab_p.add_argument("--no-ai-mode", action="store_true", help="Skip the AI Mode WIZ/SFC analysis")
     grab_p.add_argument("--no-headless", action="store_true", help="Run Chrome with a visible window")
@@ -959,7 +959,7 @@ def cmd_browser(args):
             saved = browser.grab(args.url, out_path)
             print(f"Captured: {saved}")
             if args.raw:
-                print(f"(raw mode — .agentson not written. Re-run without --raw to normalise.)")
+                print(f"(raw mode — .agentson not written. Re-run without --raw to canonicalise.)")
                 return
             exporter = AIModeExporter()
             doc = exporter.normalise(saved, source_url=args.url)
@@ -967,11 +967,11 @@ def cmd_browser(args):
                 target = Path(args.out_agentson)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
-                print(f"Normalised: {target}")
+                print(f"Canonicalised: {target}")
             else:
                 tag = Path(args.url).stem[:50] or "ai_mode"
                 out = exporter.write(doc, session_tag=tag)
-                print(f"Normalised: {out}")
+                print(f"Canonicalised: {out}")
         finally:
             browser.close()
         return

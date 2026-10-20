@@ -7,7 +7,7 @@
 
 ## Core Primitives (12 max)
 
-AgentSON defines exactly 12 event types. All agent execution traces normalize to these primitives.
+AgentSON defines exactly 12 event types. All agent execution traces canonicalise to these primitives.
 
 ### Coordination Layer (4 primitives)
 
@@ -38,7 +38,7 @@ AgentSON defines exactly 12 event types. All agent execution traces normalize to
 
 ---
 
-## Normalization Rules
+## Canonicalisation Rules
 
 ### Rule 1: Every execution event maps to exactly one primitive
 
@@ -232,7 +232,7 @@ AgentSON is a provenance format. It defines what agents actually did. **No other
 
 ### The PDF analogy
 
-PDF got ISO 32000 because it was the only format normalizing document layout across vendors. AgentSON normalizes agent session traces across vendors. Same pattern. Same gap. Same opportunity.
+PDF got ISO 32000 because it was the only format canonicalising document layout across vendors. AgentSON canonicalises agent session traces across vendors. Same pattern. Same gap. Same opportunity.
 
 ---
 
