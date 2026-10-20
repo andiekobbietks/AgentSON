@@ -18,8 +18,10 @@
       "text": "download this video in the scene."
     },
     {
-      "type": "context",
-      "details": [
+      "type": "observation",
+      "source": "system",
+      "text": "Data used: Element's uid is 305.; Its selector is `.x78zum5.xdt5ytf.x6ikm8r.x1odjw0f.x1iyjqo2.xv54qhq.xf7dkkf.__web-inspector-hide-shortcut__`; It only has 1 child element node: `.x78zum5.x13a6bvl.xdj266r.x1ys307a.xat24cr.xyqm7xq`; It doesn't have any child text nodes; It has a previous sibling and it is an element (uid=650) node; Its parent's selector is `.x1jx94hy.x78zum5.xdt5ytf.x1iyjqo2.x1ja2u2z.x6ikm8r.x10wlt62` (uid=226); Its parent is an element node; Its parent has 3 child element nodes: `h2.html-h2.xdj266r.x14z9mp.xat24cr.x1lziwak.xexx8yu.xyri2b.x18d9i69.x1c1uobl.x1vvkbs.x1heor9g.x1qlqyl8.x1pd3egz.x1a2a7pz.xzpqnlu.x1hyvwdk.xjm9jq1.x6ikm8r.x10wlt62.x10l6tqk.x1i1rx1s` (uid=648), `.x78zum5.x13a6bvl.xdj266r.x1ys307a.xat24cr.xyqm7xq` (uid=650), `.x78zum5.xdt5ytf.x6ikm8r.x1odjw0f.x1iyjqo2.xv54qhq.xf7dkkf.__web-inspector-hide-shortcut__` (uid=305)",
+      "attachments": [
         {
           "text": "Element's uid is 305."
         },
