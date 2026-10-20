@@ -42,11 +42,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -106,6 +129,47 @@
               "format": "uri"
             }
           }
+        },
+        "compliance": {
+          "type": "object",
+          "description": "GDPR + EU AI Act compliance manifest for this reconstructed stream.",
+          "properties": {
+            "jurisdiction": {
+              "type": "string",
+              "enum": [
+                "eu",
+                "uk",
+                "dual"
+              ]
+            },
+            "bases": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "generated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "schema_version": {
+              "type": "string"
+            },
+            "provenance_bounds": {
+              "type": "array"
+            },
+            "precedent_citations": {
+              "type": "object"
+            }
+          }
+        },
+        "reconstruct_mode": {
+          "type": "string",
+          "enum": [
+            "forensic",
+            "narrative",
+            "live"
+          ]
         }
       },
       "required": [
@@ -153,11 +217,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -223,11 +310,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -287,11 +397,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -344,11 +477,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -427,11 +583,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -498,11 +677,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -553,11 +755,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -611,11 +836,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -666,11 +914,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -724,11 +995,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -789,11 +1083,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -808,8 +1125,13 @@
             "timer",
             "healthcheck",
             "manual",
-            "other"
+            "other",
+            "reconstructor"
           ]
+        },
+        "gap_ms": {
+          "type": "integer",
+          "description": "Duration of gap if this marks a missing segment"
         }
       },
       "required": [

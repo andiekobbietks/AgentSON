@@ -70,11 +70,28 @@ Each event can include:
 {
   "provenance": {
     "confidence": "confirmed|inferred|estimated|ml_generated|unknown",
-    "source": "cdp|mcp|extension|user|system",
+    "source": "cdp|mcp|extension|user|system|other|export|reconstructor",
     "timestamp_ms": 1234567890
   }
 }
 ```
+
+The `source` values mean:
+- `cdp` — captured from a Chrome DevTools Protocol session
+- `mcp` — captured from a Model Context Protocol server
+- `extension` — captured from a browser extension
+- `user` — supplied by the human directly
+- `system` — supplied by the harness or platform
+- `other` — a source this version does not name
+- `export` — imported from a vendor's own export, not captured live
+- `reconstructor` — inferred by the reconstructor rather than observed
+
+**Note:** `provenance.source` is not the same field as the `source` on
+`observation` and `system-event`. Those name *what* was observed; this names
+*how the entry was obtained*. `observation.source` is
+`agent|user|system|tool|sensor|extension|other`, and `system-event.source` is
+`cron|webhook|timer|healthcheck|manual|other|reconstructor`. The three enums
+overlap only partly, and a value valid in one is not valid in the others.
 
 ---
 
