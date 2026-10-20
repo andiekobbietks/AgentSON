@@ -1,18 +1,18 @@
-"""Validate every committed example against the schema, and report the debt.
+"""Validate every committed example against the schema, and hold the line.
 
 WHY: ADR-014 found that a reader emitted a type the schema did not have,
-and the reason it went unnoticed is that 'neither reader's own test suite
-catches this, since neither runs its output through jsonschema against the
-real spec'. The same is true of the committed examples: nothing validates
-them, so 17 of them do not validate, and nobody knows which 17.
+and the reason it went unnoticed is worth repeating: 'neither reader's own
+test suite catches this, since neither runs its output through jsonschema
+against the real spec'.
 
-This test documents the current state exactly. It is marked xfail because
-the failures are real and known, and each one is named. The moment a reader
-is fixed, its example starts passing and the xfail turns into a PASS - which
-is the signal to remove the marker for that case.
+The same was true of the committed examples. Nothing validated them, so 17
+of 68 did not validate, and nobody knew which 17 or why. ADR-022 decided
+the three causes - a side-effect that could not exist without a fabricated
+path, a mode that named the file format instead of the stream shape, and a
+'context' entry that was not a primitive.
 
-It is deliberately not a plain assert: a test that fails tells you
-something broke, and this is a statement of standing debt.
+The debt is now paid, and these tests hold the line: every example
+validates, and a new one that does not is a regression.
 """
 import json
 from pathlib import Path
@@ -33,20 +33,17 @@ def example_entries(path):
     """The entries of an example, the way the CLI's validate reads them.
 
     A JSONL file is one entry per line. A single-document JSON file has an
-    'entries' array. A whole-session document in the v1 shape has neither,
-    and is not entry-shaped - it is not validated against the entry schema.
+    'entries' array. A one-entry file is still an entry.
 
-    The order matters: try JSONL first (every line parses as JSON), then
-    fall back to the whole file as one JSON document. A pretty-printed
-    document must not be mistaken for JSONL, and a JSONL file must not be
-    mistaken for a document.
+    A file that is NOT an AgentSON document returns None and is skipped.
+    examples/chatgpt_all_sessions.json is a raw ChatGPT export - it is the
+    IMPORTER's input, not a format example, and it is not required to
+    validate against the format it is an input to.
     """
     text = path.read_text(encoding="utf-8", errors="replace")
     lines = [l for l in text.splitlines() if l.strip()]
     if not lines:
         return None
-
-    # JSONL: every line parses, and there is more than one.
     if len(lines) > 1:
         try:
             objs = [json.loads(l) for l in lines]
@@ -54,17 +51,16 @@ def example_entries(path):
             objs = None
         if objs and all(isinstance(o, dict) and "type" in o for o in objs):
             return objs
-
-    # A single JSON document.
     try:
         doc = json.loads(text)
     except json.JSONDecodeError:
         return None
     if isinstance(doc, dict) and isinstance(doc.get("entries"), list):
         return doc["entries"]
-    # A one-entry JSONL stream is still a stream: a single line that is an
-    # entry. Treating it as a document would skip it, and a skipped file is
-    # an unvalidated file.
+    # A bare list of entries.
+    if isinstance(doc, list) and doc and all(
+            isinstance(o, dict) and "type" in o for o in doc):
+        return doc
     if isinstance(doc, dict) and "type" in doc:
         return [doc]
     return None
@@ -87,101 +83,79 @@ def collect_failures():
 
 
 class TestCommittedExamplesValidate:
-    """The standing debt, stated so it cannot grow unnoticed."""
+    """Every committed example must validate against the format's schema."""
 
-    def test_no_example_validates_worse_than_the_known_set(self):
-        """A new failure is a regression even while the old ones stand."""
-        known = {
-            "agentson_discussion.agentson",
-            "all_sessions.agentson",
-            "chatgpt_export.agentson",
-            "cursor-cline-aider-readers-session.agentson",
-            "devtools_download_this_video_in_the_scene.agentson",
-            "dogfood-session-2026-07-06.agentson",
-            "mcp_demo.agentson",
-            "opencode_ses_0d4353448ffeDBNFtOt7z7aLX1.agentson",
-            "opencode_ses_0d4353d85ffeT1ToT6xZ2EVGHz.agentson",
-            "opencode_ses_0d4353dabffeNmaCxop6RmH4Ij.agentson",
-            "opencode_ses_0d4353dd1ffelvqC3iqvDzf5WB.agentson",
-            "opencode_ses_0d4356d58ffe6WA0D4tWZ5oZRG.agentson",
-            "opencode_ses_0d4356d67ffe540oAPmGMH4G6c.agentson",
-            "opencode_ses_0d43bc3efffeznwLmVK2asGUGB.agentson",
-            "opencode_ses_101f8ef45ffeF0WIZRMuVigCA0.agentson",
-            "opencode_ses_1338ee51effejvBlWyDNW4CHW5.agentson",
-            "opencode_ses_134764a37ffexh1CtQcREJqLds.agentson",
-        }
+    def test_every_committed_example_validates(self):
         failures = collect_failures()
-        unexpected = set(failures) - known
-        assert not unexpected, (
-            "new example(s) fail validation that did not before: "
-            f"{sorted(unexpected)}"
+        assert not failures, (
+            "these committed examples do not validate against the schema: "
+            + ", ".join(
+                f"{name} (entries {[e[0] for e in errs]})"
+                for name, errs in failures.items()
+            )
         )
 
-    def test_the_known_failures_are_still_the_known_failures(self):
-        """The known set must not shrink silently either.
+    def test_the_examples_are_actually_being_checked(self):
+        """A check that examines nothing is not a check."""
+        checked = 0
+        for path in EXAMPLES.iterdir():
+            if path.is_file() and example_entries(path) is not None:
+                checked += 1
+        assert checked >= 60, f"only {checked} examples are entry-shaped"
 
-        If a reader is fixed and its example starts passing, this fails -
-        which is the prompt to move it out of the known set and to the
-        passing set below.
-        """
-        known = {
-            "agentson_discussion.agentson",
-            "all_sessions.agentson",
-            "chatgpt_export.agentson",
-            "cursor-cline-aider-readers-session.agentson",
-            "devtools_download_this_video_in_the_scene.agentson",
-            "dogfood-session-2026-07-06.agentson",
-            "mcp_demo.agentson",
-            "opencode_ses_0d4353448ffeDBNFtOt7z7aLX1.agentson",
-            "opencode_ses_0d4353d85ffeT1ToT6xZ2EVGHz.agentson",
-            "opencode_ses_0d4353dabffeNmaCxop6RmH4Ij.agentson",
-            "opencode_ses_0d4353dd1ffelvqC3iqvDzf5WB.agentson",
-            "opencode_ses_0d4356d58ffe6WA0D4tWZ5oZRG.agentson",
-            "opencode_ses_0d4356d67ffe540oAPmGMH4G6c.agentson",
-            "opencode_ses_0d43bc3efffeznwLmVK2asGUGB.agentson",
-            "opencode_ses_101f8ef45ffeF0WIZRMuVigCA0.agentson",
-            "opencode_ses_1338ee51effejvBlWyDNW4CHW5.agentson",
-            "opencode_ses_134764a37ffexh1CtQcREJqLds.agentson",
-        }
-        failures = collect_failures()
-        fixed = known - set(failures)
-        assert not fixed, (
-            "these examples now validate - move them out of the known-failing "
-            f"set and into the passing set: {sorted(fixed)}"
+    def test_the_primitives_are_the_twelve(self):
+        """ADR-016: context was demoted, so the entry types are exactly 12."""
+        from .spec_types import CANONICAL_PRIMITIVES
+        assert len(CANONICAL_PRIMITIVES) == 12
+        assert "context" not in CANONICAL_PRIMITIVES
+
+
+class TestTheThreeCausesStayFixed:
+    """The three causes ADR-022 decided must not come back."""
+
+    def test_no_example_carries_a_context_entry(self):
+        offenders = []
+        for path in EXAMPLES.iterdir():
+            if not path.is_file():
+                continue
+            entries = example_entries(path)
+            for entry in entries or []:
+                if entry.get("type") == "context":
+                    offenders.append(path.name)
+        assert not offenders, f"context entries found in: {sorted(set(offenders))}"
+
+    def test_no_example_declares_a_mode_outside_the_enum(self):
+        offenders = []
+        for path in EXAMPLES.iterdir():
+            if not path.is_file():
+                continue
+            for entry in example_entries(path) or []:
+                if entry.get("type") == "stream-meta":
+                    mode = entry.get("mode")
+                    if mode not in ("single", "multi", "collab"):
+                        offenders.append(f"{path.name}:{mode!r}")
+        assert not offenders, f"bad stream-meta.mode: {offenders}"
+
+    def test_every_side_effect_identifies_its_change(self):
+        """ADR-022: a side-effect needs a path OR an action."""
+        offenders = []
+        for path in EXAMPLES.iterdir():
+            if not path.is_file():
+                continue
+            for entry in example_entries(path) or []:
+                if entry.get("type") == "side-effect":
+                    if "path" not in entry and "action" not in entry:
+                        offenders.append(path.name)
+        assert not offenders, (
+            "side-effects with neither path nor action: " f"{sorted(set(offenders))}"
         )
 
-    def test_the_documented_causes_still_apply(self):
-        """The three causes, by name. If a cause is fixed, this fails.
-
-        1. side-effect requires 'path' (ADR-016) but the readers write
-           'action' / 'text' / 'result' - a todo_update is a persistent
-           state change with no path.
-        2. stream-meta.mode is 'jsonl', but the enum is single|multi|collab.
-        3. 'context' was demoted to metadata by ADR-016 but one example
-           still carries it as an entry type.
-
-        The entry schema is a oneOf over the twelve primitives, so a
-        jsonschema error for a failing entry reads 'is not valid under any
-        of the given schemas' and does not say WHICH constraint failed. The
-        cause is therefore identified from the entry's own content, which is
-        the thing that has to change anyway.
-        """
-        failures = collect_failures()
-        causes = {
-            "side-effect without 'path'": [],
-            "stream-meta.mode == 'jsonl'": [],
-            "'context' as an entry type": [],
-        }
-        for name, entries in failures.items():
-            for _, entry_type, _ in entries:
-                if entry_type == "side-effect":
-                    causes["side-effect without 'path'"].append(name)
-                elif entry_type == "stream-meta":
-                    causes["stream-meta.mode == 'jsonl'"].append(name)
-                elif entry_type == "context":
-                    causes["'context' as an entry type"].append(name)
-        missing = {c: v for c, v in causes.items() if not v}
-        assert not missing, (
-            f"these failure causes no longer appear: {sorted(missing)} - "
-            "the readers or the schema were fixed; update this test"
-        )
+    def test_every_observation_declares_a_source(self):
+        offenders = []
+        for path in EXAMPLES.iterdir():
+            if not path.is_file():
+                continue
+            for entry in example_entries(path) or []:
+                if entry.get("type") == "observation" and "source" not in entry:
+                    offenders.append(path.name)
+        assert not offenders, f"observations without a source: {sorted(set(offenders))}"

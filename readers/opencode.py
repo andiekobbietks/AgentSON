@@ -194,13 +194,18 @@ class OpencodeReader:
                         
         # Add todos as side-effects
         for todo in todos:
-            entries.append({
+            # A todo update has no moment of its own - it is a property of
+            # the session, not of an instant. So there is no timestamp, and
+            # the key is OMITTED rather than set to null: an absent field
+            # and a field holding null are different facts, and the format
+            # says to normalise the structure. See ADR-022.
+            entry = {
                 "type": "side-effect",
                 "action": "todo_update",
                 "text": todo["content"],
                 "status": todo["status"],
-                "timestamp": None
-            })
+            }
+            entries.append(entry)
         
         # Sort entries by timestamp
         entries.sort(key=lambda x: x.get("timestamp") or 0)

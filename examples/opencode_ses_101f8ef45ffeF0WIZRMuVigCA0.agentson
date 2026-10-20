@@ -23,36 +23,31 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Verify system state after restart",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Remove FXVAD/FxSound phantom driver and device",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Clean up phantom Andrea USB headset",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Reinstall FxSound cleanly with proper config",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Verify audio works without crackling",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "user-query",

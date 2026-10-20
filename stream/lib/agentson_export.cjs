@@ -2,6 +2,21 @@ const fs = require('fs');
 const { appendFileSync, existsSync, readFileSync } = require('fs');
 const { resolve, basename } = require('path');
 
+// ADR-022 decision 2: mode is a STREAM mode (single|multi|collab), not the
+// name of the file format. JSONL is the only format (ADR-015), so "jsonl"
+// carried no information and broke ADR-017's detection rule. More than one
+// agent, excluding "user", means multi.
+function streamMode(agents) {
+  const peers = (agents || []).filter((a) => a && a.id !== 'user');
+  return peers.length > 1 ? 'multi' : 'single';
+}
+
+// The roster every ChatGPT-derived stream declares.
+const CHATGPT_STREAM_AGENTS = [
+  { id: 'chatgpt', capabilities: ['conversation'] },
+  { id: 'user', capabilities: ['query'] }
+];
+
 // AgentSON Export CLI
 // Usage: 
 //   node agentson_export.cjs convert <input.json> [output.agentson]
@@ -76,11 +91,8 @@ async function convert() {
         emit(outputFile, {
             type: 'stream-meta',
             stream_id: `chatgpt-export-${sessionId}`,
-            agents: [
-                { id: 'chatgpt', capabilities: ['conversation'] },
-                { id: 'user', capabilities: ['query'] }
-            ],
-            mode: 'jsonl',
+            agents: CHATGPT_STREAM_AGENTS,
+            mode: streamMode(CHATGPT_STREAM_AGENTS),
             source: {
                 platform: 'chatgpt',
                 sessionId: sessionId,
@@ -226,11 +238,8 @@ async function fetchFromCDP() {
     emit(outputFile, {
         type: 'stream-meta',
         stream_id: `chatgpt-export-${sessionId}`,
-        agents: [
-            { id: 'chatgpt', capabilities: ['conversation'] },
-            { id: 'user', capabilities: ['query'] }
-        ],
-        mode: 'jsonl',
+        agents: CHATGPT_STREAM_AGENTS,
+        mode: streamMode(CHATGPT_STREAM_AGENTS),
         source: {
             platform: 'chatgpt',
             sessionId: sessionId,

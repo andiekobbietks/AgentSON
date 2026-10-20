@@ -25,7 +25,7 @@ AgentSON defines exactly 12 event types. All agent execution traces normalize to
 | `action` | Tool invocation or operation | `tool`, `agent` |
 | `observation` | Result from action or external input | `text`, `source` |
 | `thought` | Agent reasoning or planning | `text`, `agent` |
-| `side-effect` | Persistent state change (file, DB, etc.) | `path`, `agent` |
+| `side-effect` | Persistent state change (file, DB, todo, etc.) | `agent`, plus `path` **or** `action` |
 | `answer` | Final response to user | `text`, `agent` |
 
 ### Input Layer (3 primitives)

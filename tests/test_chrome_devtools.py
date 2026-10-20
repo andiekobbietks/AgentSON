@@ -103,15 +103,30 @@ class TestChromeDevtoolsReader(unittest.TestCase):
         self.assertTrue(any(a.get("kind") == "image" for a in first.get("attachments", [])))
 
     def test_parses_context_data_used(self):
+        """A 'Data used:' block is an observation from the system.
+
+        ADR-022 decision 3: it used to be an entry of type "context", which
+        ADR-016 demoted to session metadata. Context describes state, not
+        an occurrence, so it cannot be replayed - and the format has a
+        replay contract. ADR-016 says exactly what to do instead: an
+        observation with source "system".
+        """
         doc = parse_markdown(SAMPLE_MD, source_filename="devtools_demo.md")
-        contexts = [e for e in doc["entries"] if e["type"] == "context"]
-        self.assertGreaterEqual(len(contexts), 1)
-        c = contexts[0]
-        self.assertIn("details", c)
-        self.assertGreaterEqual(len(c["details"]), 2)
+        observations = [e for e in doc["entries"] if e["type"] == "observation"]
+        self.assertGreaterEqual(len(observations), 1)
+        o = observations[0]
+        self.assertEqual(o["source"], "system")
+        self.assertIn("attachments", o)
+        self.assertGreaterEqual(len(o["attachments"]), 2)
         # Check a detail element
-        texts = [d.get("text", "") for d in c["details"]]
+        texts = [d.get("text", "") for d in o["attachments"]]
         self.assertTrue(any("uid is 4" in t for t in texts))
+
+    def test_emits_no_context_entries(self):
+        """ADR-016: context is not one of the 12 primitives."""
+        doc = parse_markdown(SAMPLE_MD, source_filename="devtools_demo.md")
+        types = {e["type"] for e in doc["entries"]}
+        self.assertNotIn("context", types)
 
     def test_parses_action_with_code_and_output(self):
         doc = parse_markdown(SAMPLE_MD, source_filename="devtools_demo.md")

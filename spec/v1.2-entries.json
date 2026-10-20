@@ -15,7 +15,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -190,7 +190,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -283,7 +283,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -370,7 +370,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -450,7 +450,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -533,8 +533,10 @@
             "success",
             "error",
             "partial",
-            "pending"
-          ]
+            "pending",
+            "running"
+          ],
+          "description": "success|error|partial|pending|running. 'running' is the state of a tool call that was still in flight when the session was exported."
         },
         "duration_ms": {
           "type": "integer"
@@ -556,7 +558,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -650,7 +652,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -728,7 +730,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -786,15 +788,39 @@
             }
           }
         },
+        "action": {
+          "type": "string",
+          "description": "What changed. Required when there is no path."
+        },
+        "text": {
+          "type": "string",
+          "description": "Description of the change, for changes with no path."
+        },
+        "status": {
+          "type": "string",
+          "description": "The new state of the change, where one applies."
+        },
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Locator of the change, where the change has one."
         },
         "diff": {
-          "type": "string"
+          "type": "string",
+          "description": "How the thing at path changed."
         }
       },
-      "required": [
-        "path"
+      "required": [],
+      "anyOf": [
+        {
+          "required": [
+            "path"
+          ]
+        },
+        {
+          "required": [
+            "action"
+          ]
+        }
       ]
     },
     {
@@ -809,7 +835,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -887,7 +913,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -968,7 +994,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -1056,7 +1082,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",

@@ -23,57 +23,49 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Add Simple Mode toggle to score.tsx (jargon → plain English labels)",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Create WalkthroughOverlay component for first-time users",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Fix PitchContour.tsx - increase all font sizes (7px→14px, 6px→12px, 9px→14px), bigger pitch dots, larger coarticulation badges",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Fix score.tsx legend - increase from 10px to 14px, larger icons",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Fix score.tsx controls - larger buttons, bigger slider labels, increase preset text",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Replace Unicode symbols in PitchContour with lucide-react icons (Volume2 for stress, Link for coarticulation, etc.)",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Add aria-labels and roles to PitchContour SVG and interactive elements",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Test dev server still runs after changes",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "user-query",

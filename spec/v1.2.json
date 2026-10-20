@@ -4,9 +4,15 @@
   "title": "AgentSON v1.2 — Streaming & Inter-Agent Collaboration",
   "description": "Canonical format for AI agent session traces. 12 primitive types defined in spec/ontology.md. JSONL stream format.",
   "type": "object",
-  "required": ["id", "tool", "entries"],
+  "required": [
+    "id",
+    "tool",
+    "entries"
+  ],
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9_-]+$",
@@ -14,28 +20,60 @@
     },
     "tool": {
       "type": "object",
-      "required": ["name", "session_id"],
+      "required": [
+        "name",
+        "session_id"
+      ],
       "properties": {
         "name": {
           "type": "string",
-          "enum": ["opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "claude-code", "copilot", "other"]
+          "enum": [
+            "opencode",
+            "minimax",
+            "antigravity",
+            "chrome-devtools",
+            "cursor",
+            "claude-code",
+            "copilot",
+            "other"
+          ]
         },
-        "version": { "type": "string" },
-        "session_id": { "type": "string" }
+        "version": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        }
       }
     },
     "agent": {
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "provider": { "type": "string" },
-        "variant": { "type": "string" }
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "variant": {
+          "type": "string"
+        }
       }
     },
-    "task": { "type": "string" },
-    "outcome": { "type": "string" },
-    "started_at": { "type": "string", "format": "date-time" },
-    "ended_at": { "type": "string", "format": "date-time" },
+    "task": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "heartbeat": {
       "type": "string",
       "format": "date-time",
@@ -44,15 +82,28 @@
     "context": {
       "type": "object",
       "properties": {
-        "working_directory": { "type": "string" },
-        "platform": { "type": "string" },
-        "shell": { "type": "string" },
-        "url": { "type": "string", "format": "uri" },
+        "working_directory": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "shell": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
         "viewport": {
           "type": "object",
           "properties": {
-            "width": { "type": "integer" },
-            "height": { "type": "integer" }
+            "width": {
+              "type": "integer"
+            },
+            "height": {
+              "type": "integer"
+            }
           }
         }
       }
@@ -61,51 +112,114 @@
       "type": "array",
       "items": {
         "oneOf": [
-          { "$ref": "#/$defs/stream-meta" },
-          { "$ref": "#/$defs/handoff" },
-          { "$ref": "#/$defs/presence" },
-          { "$ref": "#/$defs/capabilities" },
-          { "$ref": "#/$defs/action" },
-          { "$ref": "#/$defs/observation" },
-          { "$ref": "#/$defs/thought" },
-          { "$ref": "#/$defs/side-effect" },
-          { "$ref": "#/$defs/answer" },
-          { "$ref": "#/$defs/user-query" },
-          { "$ref": "#/$defs/user-feedback" },
-          { "$ref": "#/$defs/system-event" }
+          {
+            "$ref": "#/$defs/stream-meta"
+          },
+          {
+            "$ref": "#/$defs/handoff"
+          },
+          {
+            "$ref": "#/$defs/presence"
+          },
+          {
+            "$ref": "#/$defs/capabilities"
+          },
+          {
+            "$ref": "#/$defs/action"
+          },
+          {
+            "$ref": "#/$defs/observation"
+          },
+          {
+            "$ref": "#/$defs/thought"
+          },
+          {
+            "$ref": "#/$defs/side-effect"
+          },
+          {
+            "$ref": "#/$defs/answer"
+          },
+          {
+            "$ref": "#/$defs/user-query"
+          },
+          {
+            "$ref": "#/$defs/user-feedback"
+          },
+          {
+            "$ref": "#/$defs/system-event"
+          }
         ]
       }
     },
     "metadata": {
       "type": "object",
       "properties": {
-        "total_tokens": { "type": "integer" },
-        "cost": { "type": "number" },
-        "messages": { "type": "integer" },
-        "parts": { "type": "integer" },
-        "exported_at": { "type": "string", "format": "date-time" }
+        "total_tokens": {
+          "type": "integer"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "messages": {
+          "type": "integer"
+        },
+        "parts": {
+          "type": "integer"
+        },
+        "exported_at": {
+          "type": "string",
+          "format": "date-time"
+        }
       }
     },
     "compliance": {
       "type": "object",
       "description": "GDPR + EU AI Act compliance manifest. Bounds what AgentSON claims. See cli/compliance.py.",
       "properties": {
-        "jurisdiction": { "type": "string", "enum": ["eu", "uk", "dual"] },
+        "jurisdiction": {
+          "type": "string",
+          "enum": [
+            "eu",
+            "uk",
+            "dual"
+          ]
+        },
         "bases": {
           "type": "array",
-          "items": { "type": "string", "enum": ["gdpr_art_20_portability", "uk_gdpr_art_20_portability", "uk_duaa_recognised_legitimate_interests", "eu_ai_act_art_50_transparency"] }
+          "items": {
+            "type": "string",
+            "enum": [
+              "gdpr_art_20_portability",
+              "uk_gdpr_art_20_portability",
+              "uk_duaa_recognised_legitimate_interests",
+              "eu_ai_act_art_50_transparency"
+            ]
+          }
         },
-        "generated_at": { "type": "string", "format": "date-time" },
-        "schema_version": { "type": "string" },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "schema_version": {
+          "type": "string"
+        },
         "provenance_bounds": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "claim": { "type": "string" },
-              "scope": { "type": "string" },
-              "limitation": { "type": "string" },
-              "aer_reference": { "type": "string" }
+              "claim": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "string"
+              },
+              "limitation": {
+                "type": "string"
+              },
+              "aer_reference": {
+                "type": "string"
+              }
             }
           }
         },
@@ -117,17 +231,29 @@
     },
     "reconstruct_mode": {
       "type": "string",
-      "enum": ["forensic", "narrative", "live"],
+      "enum": [
+        "forensic",
+        "narrative",
+        "live"
+      ],
       "description": "Reconstruction mode used to produce this session."
     },
     "digest": {
       "type": "object",
       "description": "Entry type/confidence summary for the session.",
       "properties": {
-        "total_entries": { "type": "integer" },
-        "by_type": { "type": "object" },
-        "by_confidence": { "type": "object" },
-        "has_gaps": { "type": "boolean" }
+        "total_entries": {
+          "type": "integer"
+        },
+        "by_type": {
+          "type": "object"
+        },
+        "by_confidence": {
+          "type": "object"
+        },
+        "has_gaps": {
+          "type": "boolean"
+        }
       }
     }
   },
@@ -135,53 +261,118 @@
     "baseEntry": {
       "type": "object",
       "properties": {
-        "type": { "type": "string" },
-        "agent": { "type": "string", "description": "Agent identifier" },
-        "timestamp": { "type": "integer", "description": "Unix timestamp ms" },
-        "correlation_id": { "type": "string", "description": "Links action to observation" },
+        "type": {
+          "type": "string"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Links action to observation"
+        },
         "provenance": {
           "type": "object",
           "properties": {
-            "confidence": { "type": "string", "enum": ["confirmed", "inferred", "estimated", "ml_generated", "unknown"] },
-            "source": { "type": "string", "enum": ["cdp", "mcp", "extension", "user", "system", "other", "export", "reconstructor"] },
-            "timestamp_ms": { "type": "integer" }
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "inferred",
+                "estimated",
+                "ml_generated",
+                "unknown"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cdp",
+                "mcp",
+                "extension",
+                "user",
+                "system",
+                "other",
+                "export",
+                "reconstructor"
+              ]
+            },
+            "timestamp_ms": {
+              "type": "integer"
+            }
           }
         },
         "_transparency": {
           "type": "object",
           "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
           "properties": {
-            "ai_generated": { "type": "boolean" },
-            "marking_scheme": { "type": "string" },
-            "compliant_with": { "type": "array", "items": { "type": "string" } },
-            "detectable": { "type": "boolean" }
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
+            }
           }
         }
       }
     },
-
     "stream-meta": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "stream-meta" },
-            "stream_id": { "type": "string" },
+            "type": {
+              "const": "stream-meta"
+            },
+            "stream_id": {
+              "type": "string"
+            },
             "mode": {
               "type": "string",
-              "enum": ["single", "multi", "collab"],
+              "enum": [
+                "single",
+                "multi",
+                "collab"
+              ],
               "description": "Stream mode. Determines which primitives are required."
             },
             "agents": {
               "type": "array",
               "items": {
                 "type": "object",
-                "required": ["id"],
+                "required": [
+                  "id"
+                ],
                 "properties": {
-                  "id": { "type": "string" },
-                  "name": { "type": "string" },
-                  "capabilities": { "type": "array", "items": { "type": "string" } }
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "capabilities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             },
@@ -189,231 +380,555 @@
               "type": "object",
               "description": "Self-describing capabilities manifest. Maps agent_id -> task_key -> description.",
               "properties": {
-                "instruction": { "type": "string" },
+                "instruction": {
+                  "type": "string"
+                },
                 "index": {
                   "type": "object",
                   "additionalProperties": {
                     "type": "object",
-                    "additionalProperties": { "type": "string" }
+                    "additionalProperties": {
+                      "type": "string"
+                    }
                   }
                 },
-                "$docs": { "type": "string", "format": "uri" }
+                "$docs": {
+                  "type": "string",
+                  "format": "uri"
+                }
               }
             },
             "compliance": {
               "type": "object",
               "description": "GDPR + EU AI Act compliance manifest for this reconstructed stream.",
               "properties": {
-                "jurisdiction": { "type": "string", "enum": ["eu", "uk", "dual"] },
-                "bases": { "type": "array", "items": { "type": "string" } },
-                "generated_at": { "type": "string", "format": "date-time" },
-                "schema_version": { "type": "string" },
-                "provenance_bounds": { "type": "array" },
-                "precedent_citations": { "type": "object" }
+                "jurisdiction": {
+                  "type": "string",
+                  "enum": [
+                    "eu",
+                    "uk",
+                    "dual"
+                  ]
+                },
+                "bases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "generated_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "schema_version": {
+                  "type": "string"
+                },
+                "provenance_bounds": {
+                  "type": "array"
+                },
+                "precedent_citations": {
+                  "type": "object"
+                }
               }
             },
-            "reconstruct_mode": { "type": "string", "enum": ["forensic", "narrative", "live"] }
+            "reconstruct_mode": {
+              "type": "string",
+              "enum": [
+                "forensic",
+                "narrative",
+                "live"
+              ]
+            }
           },
-          "required": ["stream_id", "agents", "mode"]
+          "required": [
+            "stream_id",
+            "agents",
+            "mode"
+          ]
         }
       ]
     },
-
     "handoff": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "handoff" },
-            "from": { "type": "string" },
-            "to": { "type": "string" },
-            "reason": { "type": "string" },
-            "context": { "type": "string", "description": "Brief context for next agent" },
-            "conch": { "type": "string", "description": "Which agent holds the speaking token" }
+            "type": {
+              "const": "handoff"
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "context": {
+              "type": "string",
+              "description": "Brief context for next agent"
+            },
+            "conch": {
+              "type": "string",
+              "description": "Which agent holds the speaking token"
+            }
           },
-          "required": ["from", "to", "conch"]
+          "required": [
+            "from",
+            "to",
+            "conch"
+          ]
         }
       ]
     },
-
     "presence": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "presence" },
-            "status": { "type": "string", "enum": ["online", "offline", "busy", "idle"] },
-            "agent": { "type": "string" },
-            "message": { "type": "string" }
+            "type": {
+              "const": "presence"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "online",
+                "offline",
+                "busy",
+                "idle"
+              ]
+            },
+            "agent": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
           },
-          "required": ["status", "agent"]
+          "required": [
+            "status",
+            "agent"
+          ]
         }
       ]
     },
-
     "capabilities": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "capabilities" },
-            "agent": { "type": "string" },
-            "capabilities": { "type": "object", "description": "Agent's self-describing capabilities manifest" }
+            "type": {
+              "const": "capabilities"
+            },
+            "agent": {
+              "type": "string"
+            },
+            "capabilities": {
+              "type": "object",
+              "description": "Agent's self-describing capabilities manifest"
+            }
           },
-          "required": ["agent", "capabilities"]
+          "required": [
+            "agent",
+            "capabilities"
+          ]
         }
       ]
     },
-
     "action": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "action" },
-            "tool": { "type": "string", "description": "Semantic operation (e.g., browser.navigate, mcp.tools.call)" },
-            "args": { "type": "object", "description": "Tool arguments" },
-            "code": { "type": "string", "description": "Code executed" },
-            "output": { "type": "string", "description": "Output from execution" },
-            "tool_call_id": { "type": "string" },
-            "status": { "type": "string", "enum": ["success", "error", "partial", "pending"] },
-            "duration_ms": { "type": "integer" }
+            "type": {
+              "const": "action"
+            },
+            "tool": {
+              "type": "string",
+              "description": "Semantic operation (e.g., browser.navigate, mcp.tools.call)"
+            },
+            "args": {
+              "type": "object",
+              "description": "Tool arguments"
+            },
+            "code": {
+              "type": "string",
+              "description": "Code executed"
+            },
+            "output": {
+              "type": "string",
+              "description": "Output from execution"
+            },
+            "tool_call_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "success",
+                "error",
+                "partial",
+                "pending",
+                "running"
+              ],
+              "description": "success|error|partial|pending|running. 'running' is the state of a tool call that was still in flight when the session was exported."
+            },
+            "duration_ms": {
+              "type": "integer"
+            }
           },
-          "required": ["tool"]
+          "required": [
+            "tool"
+          ]
         }
       ]
     },
-
     "observation": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "observation" },
-            "text": { "type": "string" },
-            "source": { "type": "string", "enum": ["agent", "user", "system", "tool", "sensor", "extension", "other"] },
-            "attachments": { "type": "array" }
+            "type": {
+              "const": "observation"
+            },
+            "text": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "user",
+                "system",
+                "tool",
+                "sensor",
+                "extension",
+                "other"
+              ]
+            },
+            "attachments": {
+              "type": "array"
+            }
           },
-          "required": ["text", "source"]
+          "required": [
+            "text",
+            "source"
+          ]
         }
       ]
     },
-
     "thought": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "thought" },
-            "text": { "type": "string" }
+            "type": {
+              "const": "thought"
+            },
+            "text": {
+              "type": "string"
+            }
           },
-          "required": ["text"]
+          "required": [
+            "text"
+          ]
         }
       ]
     },
-
     "side-effect": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "side-effect" },
-            "path": { "type": "string" },
-            "diff": { "type": "string" }
+            "type": {
+              "const": "side-effect"
+            },
+            "action": {
+              "type": "string",
+              "description": "What changed. Required when there is no path."
+            },
+            "text": {
+              "type": "string",
+              "description": "Description of the change, for changes with no path."
+            },
+            "status": {
+              "type": "string",
+              "description": "The new state of the change, where one applies."
+            },
+            "path": {
+              "type": "string",
+              "description": "Locator of the change, where the change has one."
+            },
+            "diff": {
+              "type": "string",
+              "description": "How the thing at path changed."
+            }
           },
-          "required": ["path"]
+          "required": [],
+          "anyOf": [
+            {
+              "required": [
+                "path"
+              ]
+            },
+            {
+              "required": [
+                "action"
+              ]
+            }
+          ]
         }
       ]
     },
-
     "answer": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "answer" },
-            "text": { "type": "string" }
+            "type": {
+              "const": "answer"
+            },
+            "text": {
+              "type": "string"
+            }
           },
-          "required": ["text"]
+          "required": [
+            "text"
+          ]
         }
       ]
     },
-
     "user-query": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "user-query" },
-            "text": { "type": "string" },
-            "query": { "type": "string" }
+            "type": {
+              "const": "user-query"
+            },
+            "text": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string"
+            }
           },
-          "required": ["text"]
+          "required": [
+            "text"
+          ]
         }
       ]
     },
-
     "user-feedback": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "user-feedback" },
-            "text": { "type": "string" },
-            "sentiment": { "type": "string", "enum": ["positive", "negative", "neutral", "correction", "clarification"] }
+            "type": {
+              "const": "user-feedback"
+            },
+            "text": {
+              "type": "string"
+            },
+            "sentiment": {
+              "type": "string",
+              "enum": [
+                "positive",
+                "negative",
+                "neutral",
+                "correction",
+                "clarification"
+              ]
+            }
           },
-          "required": ["text"]
+          "required": [
+            "text"
+          ]
         }
       ]
     },
-
     "system-event": {
       "allOf": [
-        { "$ref": "#/$defs/baseEntry" },
+        {
+          "$ref": "#/$defs/baseEntry"
+        },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "system-event" },
-            "text": { "type": "string" },
-            "source": { "type": "string", "enum": ["cron", "webhook", "timer", "healthcheck", "manual", "other", "reconstructor"] },
-            "gap_ms": { "type": "integer", "description": "Duration of gap if this marks a missing segment" }
+            "type": {
+              "const": "system-event"
+            },
+            "text": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "cron",
+                "webhook",
+                "timer",
+                "healthcheck",
+                "manual",
+                "other",
+                "reconstructor"
+              ]
+            },
+            "gap_ms": {
+              "type": "integer",
+              "description": "Duration of gap if this marks a missing segment"
+            }
           },
-          "required": ["text", "source"]
+          "required": [
+            "text",
+            "source"
+          ]
         }
       ]
     }
   },
-
   "examples": [
     {
       "$schema": "https://agentson.dev/schema/v1.2.json",
       "id": "collab-stream-2026-07-07",
-      "tool": { "name": "opencode", "session_id": "collab_001" },
-      "agent": { "name": "mimo-v2.5-free", "provider": "opencode", "variant": "high" },
+      "tool": {
+        "name": "opencode",
+        "session_id": "collab_001"
+      },
+      "agent": {
+        "name": "mimo-v2.5-free",
+        "provider": "opencode",
+        "variant": "high"
+      },
       "task": "Multi-agent web debugging session",
       "outcome": "partial",
       "entries": [
-        {"type": "stream-meta", "stream_id": "collab_001", "mode": "multi", "agents": [{"id": "opencode", "name": "opencode", "capabilities": ["bash", "filesystem", "search"]}, {"id": "chrome-nano", "name": "Chrome Gemini Nano", "capabilities": ["browser", "prompt-api", "dom-inspection"]}], "timestamp": 1783400000000},
-        {"type": "presence", "agent": "opencode", "status": "online", "timestamp": 1783400001000},
-        {"type": "user-query", "agent": "user", "text": "Analyze the LCP of example.com", "timestamp": 1783400002000},
-        {"type": "handoff", "from": "user", "to": "opencode", "conch": "opencode", "reason": "task assigned", "timestamp": 1783400003000},
-        {"type": "thought", "agent": "opencode", "text": "I need Chrome to do performance analysis", "timestamp": 1783400010000},
-        {"type": "handoff", "from": "opencode", "to": "chrome-nano", "conch": "chrome-nano", "reason": "need browser performance trace", "context": "Navigate to example.com, run performance trace, report LCP", "timestamp": 1783400020000},
-        {"type": "presence", "agent": "chrome-nano", "status": "busy", "message": "Running performance trace", "timestamp": 1783400030000},
-        {"type": "action", "agent": "chrome-nano", "tool": "browser.performance", "timestamp": 1783400040000},
-        {"type": "observation", "agent": "chrome-nano", "source": "tool", "text": "LCP: 2.3s (largest-contentful-paint)", "timestamp": 1783400100000},
-        {"type": "handoff", "from": "chrome-nano", "to": "opencode", "conch": "opencode", "reason": "performance data collected", "context": "LCP is 2.3s, full trace available", "timestamp": 1783400110000},
-        {"type": "answer", "agent": "opencode", "text": "LCP is 2.3 seconds. Here's the optimization plan...", "timestamp": 1783400120000}
+        {
+          "type": "stream-meta",
+          "stream_id": "collab_001",
+          "mode": "multi",
+          "agents": [
+            {
+              "id": "opencode",
+              "name": "opencode",
+              "capabilities": [
+                "bash",
+                "filesystem",
+                "search"
+              ]
+            },
+            {
+              "id": "chrome-nano",
+              "name": "Chrome Gemini Nano",
+              "capabilities": [
+                "browser",
+                "prompt-api",
+                "dom-inspection"
+              ]
+            }
+          ],
+          "timestamp": 1783400000000
+        },
+        {
+          "type": "presence",
+          "agent": "opencode",
+          "status": "online",
+          "timestamp": 1783400001000
+        },
+        {
+          "type": "user-query",
+          "agent": "user",
+          "text": "Analyze the LCP of example.com",
+          "timestamp": 1783400002000
+        },
+        {
+          "type": "handoff",
+          "from": "user",
+          "to": "opencode",
+          "conch": "opencode",
+          "reason": "task assigned",
+          "timestamp": 1783400003000
+        },
+        {
+          "type": "thought",
+          "agent": "opencode",
+          "text": "I need Chrome to do performance analysis",
+          "timestamp": 1783400010000
+        },
+        {
+          "type": "handoff",
+          "from": "opencode",
+          "to": "chrome-nano",
+          "conch": "chrome-nano",
+          "reason": "need browser performance trace",
+          "context": "Navigate to example.com, run performance trace, report LCP",
+          "timestamp": 1783400020000
+        },
+        {
+          "type": "presence",
+          "agent": "chrome-nano",
+          "status": "busy",
+          "message": "Running performance trace",
+          "timestamp": 1783400030000
+        },
+        {
+          "type": "action",
+          "agent": "chrome-nano",
+          "tool": "browser.performance",
+          "timestamp": 1783400040000
+        },
+        {
+          "type": "observation",
+          "agent": "chrome-nano",
+          "source": "tool",
+          "text": "LCP: 2.3s (largest-contentful-paint)",
+          "timestamp": 1783400100000
+        },
+        {
+          "type": "handoff",
+          "from": "chrome-nano",
+          "to": "opencode",
+          "conch": "opencode",
+          "reason": "performance data collected",
+          "context": "LCP is 2.3s, full trace available",
+          "timestamp": 1783400110000
+        },
+        {
+          "type": "answer",
+          "agent": "opencode",
+          "text": "LCP is 2.3 seconds. Here's the optimization plan...",
+          "timestamp": 1783400120000
+        }
       ]
     }
   ]

@@ -23,29 +23,25 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Install audio processing dependencies (pydub, numpy, scipy)",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Create professional audio processing script",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Process the karaoke track with studio-quality enhancements",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Teach you how it was done and conversion tips",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "user-query",

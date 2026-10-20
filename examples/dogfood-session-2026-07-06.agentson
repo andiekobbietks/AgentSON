@@ -59,7 +59,8 @@
     {
       "type": "observation",
       "text": "User confirmed the changes but flagged that the paper outline was trying to be four papers simultaneously",
-      "timestamp": 1782381650000
+      "timestamp": 1782381650000,
+      "source": "user"
     },
     {
       "type": "user-query",
@@ -95,7 +96,8 @@
     {
       "type": "observation",
       "text": "User confirmed the refactor was correct and asked about next steps",
-      "timestamp": 1782381720000
+      "timestamp": 1782381720000,
+      "source": "user"
     },
     {
       "type": "user-query",
