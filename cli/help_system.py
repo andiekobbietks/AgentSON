@@ -34,9 +34,13 @@ except ImportError:
 _console = Console(force_terminal=True, legacy_windows=False)
 
 # ── Wordmark ────────────────────────────────────────────────────────────
-# Generated with figlet's "banner" face. Every row is padded to a fixed 59
-# columns so the glyph grid stays intact; the SON half begins at column 35.
-# Regenerate with: pyfiglet -f banner AgentSON
+# Generated with figlet's "larry3d" face. Every row is padded to a fixed 65
+# columns so the glyph grid stays intact; the SON half begins at column 40.
+# Regenerate with: pyfiglet -f larry3d AgentSON
+#
+# Correction, 2026-10-21: an earlier revision of this comment claimed the
+# "banner" face at 59 columns with SON at 35. Measured: 9 rows x exactly 65
+# columns, and the split at 40 is the one that yields Agent | SON.
 
 WORDMARK = (
     ' ______                         __    ____    _____   __  __     ',
