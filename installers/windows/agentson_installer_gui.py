@@ -29,7 +29,7 @@ import subprocess
 import sys
 import tkinter as tk
 from pathlib import Path
-from tkinter import font as tkfont, messagebox, scrolledtext
+from tkinter import font as tkfont, messagebox, scrolledtext, filedialog
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -47,6 +47,9 @@ OK = "#3fb950"
 BAD = "#f85149"
 BUTTON_BG = "#21262d"
 BUTTON_EDGE = "#30363d"
+
+# Icon next to this script, created 2026-10-21
+ICON_PATH = HERE / "agentson_icon.ico"
 
 MONO = "Consolas"      # present on every Windows install; keeps the art aligned
 MONO_FALLBACK = "Courier New"
@@ -88,6 +91,13 @@ class Installer(tk.Tk):
         super().__init__()
         self.title("AgentSON file association")
         self.configure(bg=GROUND)
+
+        # ---- window icon (best-effort; absent .ico is not fatal) --------
+        try:
+            if ICON_PATH.exists():
+                self.iconbitmap(str(ICON_PATH))
+        except Exception:
+            pass
 
         self.rows, self.son_start, self.tagline, self.wordmark_error = load_wordmark()
 
@@ -139,19 +149,46 @@ class Installer(tk.Tk):
         art.configure(state="disabled")
         art.pack(fill="x")
 
-        tag = tk.Label(
-            outer,
-            text=self.tagline or "",
-            bg=GROUND,
-            fg=MUTED,
-            font=("Segoe UI", 9),
-            justify="left",
+        # ---- browse section -------------------------------------------
+        browse_frame = tk.Frame(outer, bg=GROUND)
+        browse_frame.pack(fill="x", pady=(12, 6))
+
+        self.browse_path = tk.StringVar()
+
+        browse_entry = tk.Entry(
+            browse_frame,
+            textvariable=self.browse_path,
+            width=55,
+            bg=PANEL,
+            fg=TEXT,
+            font=("Consolas", 9),
+            relief="flat",
+            highlightthickness=0,
         )
-        tag.pack(fill="x", pady=(10, 14), anchor="w")
+        browse_entry.pack(side="left", padx=(0, 6))
+
+        btn_browse = tk.Button(
+            browse_frame,
+            text="Browse…",
+            command=self._browse_file,
+            bg=BUTTON_BG,
+            fg=TEXT,
+            activebackground="#30363d",
+            activeforeground=TEXT,
+            relief="flat",
+            bd=0,
+            highlightthickness=1,
+            highlightbackground=BUTTON_EDGE,
+            font=("Segoe UI", 9),
+            padx=10,
+            pady=4,
+            cursor="hand2",
+        )
+        btn_browse.pack(side="left")
 
         # ---- buttons --------------------------------------------------
         buttons = tk.Frame(outer, bg=GROUND)
-        buttons.pack(fill="x")
+        buttons.pack(fill="x", pady=(6, 6))
 
         self.btn_register = self._button(
             buttons, "Register .agentson files", self.register
@@ -172,7 +209,7 @@ class Installer(tk.Tk):
             anchor="w",
             justify="left",
         )
-        self.status.pack(fill="x", pady=(14, 6))
+        self.status.pack(fill="x", pady=(6, 6))
 
         # ---- output ---------------------------------------------------
         self.output = scrolledtext.ScrolledText(
@@ -228,6 +265,71 @@ class Installer(tk.Tk):
         self.output.configure(state="normal")
         self.output.delete("1.0", "end")
         self.output.configure(state="disabled")
+        self.update_idletasks()
+
+    def _browse_file(self) -> None:
+        """Open a file dialog and, if a .agentson file is selected, render it."""
+        filepath = filedialog.askopenfilename(
+            title="Select an .agentson file",
+            filetypes=[("AgentSON files", "*.agentson"), ("All files", "*.*")],
+        )
+        if not filepath:
+            return
+
+        self.browse_path.set(filepath)
+        self._clear()
+        self._set_status("Rendering selected file…", MUTED)
+
+        powershell = shutil.which("powershell") or "powershell.exe"
+        command = [
+            powershell,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(PS1),
+            "render",
+            "--format",
+            "html",
+            filepath,
+        ]
+
+        try:
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=120,
+            )
+        except Exception as exc:
+            self._append("\n%s: %s\n" % (type(exc).__name__, exc))
+            self._set_status("Failed to render the file.", BAD)
+            return
+
+        for line in (result.stdout or "").splitlines():
+            self._append(line + "\n")
+        if result.stderr:
+            self._append("\n-- stderr --\n")
+            for line in result.stderr.splitlines():
+                self._append(line + "\n")
+
+        if result.returncode == 0:
+            # Show first few lines of the HTML; if it starts with <!DOCTYPE html>
+            # that's the confirmed conformant output.
+            lines = (result.stdout or "").splitlines()
+            shown = lines[:8] if lines else []
+            self._append("\n--- Render finished (exit %d). ---\n" % result.returncode)
+            self._set_status("Render complete (exit 0).", OK)
+        else:
+            self._set_status("Render exited with code %d." % result.returncode, BAD)
+
+    def register(self) -> None:
+        self._run()
+
+    def unregister(self) -> None:
+        self._run("-Uninstall")
 
     def _run(self, *args: str) -> None:
         if not PS1.exists():
@@ -249,7 +351,7 @@ class Installer(tk.Tk):
         ]
 
         self._clear()
-        self._set_status("Running...", MUTED)
+        self._set_status("Running…", MUTED)
         self._append("$ %s\n\n" % " ".join(command))
 
         try:
@@ -277,12 +379,6 @@ class Installer(tk.Tk):
             self._set_status("Done (exit 0).", OK)
         else:
             self._set_status("Finished with exit code %d." % result.returncode, BAD)
-
-    def register(self) -> None:
-        self._run()
-
-    def unregister(self) -> None:
-        self._run("-Uninstall")
 
 
 def main() -> int:

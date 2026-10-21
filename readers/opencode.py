@@ -5,7 +5,7 @@ Reads session data from opencode's SQLite database.
 
 import sqlite3
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 
 
@@ -243,7 +243,7 @@ class OpencodeReader:
                 "cost": session["cost"] or 0.0,
                 "messages": len(messages),
                 "parts": len(parts),
-                "exported_at": datetime.utcnow().isoformat() + "Z"
+                "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             }
         }
         
