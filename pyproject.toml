@@ -28,7 +28,17 @@ dependencies = [
     "jsonschema>=4.17",
     "openpyxl>=3.1",
     "pylatex>=1.4",
-    "mcp-use==1.7.0",
+    # rich is required directly by cli/help_system.py (Console, Text, Panel,
+    # box) -- declared here because it was previously present only as a
+    # transitive dependency of mcp-use, so nothing in the package metadata
+    # said the CLI needed it. Dropping mcp-use exposed that.
+    "rich>=13.0",
+    # mcp-use removed 2026-10-21. It was reachable only from
+    # stream/lib/mcp_adapter.py, which packages.find does not ship, and it
+    # installed 61 of 75 distributions (78.7 MB) including posthog 7.73.3 and
+    # Scarf telemetry. Its own import was also broken: it declares
+    # mcp>=1.24.0 with no upper bound, pip resolved mcp 2.3.0, and
+    # mcp.shared.context.RequestContext was removed there.
 ]
 
 [project.optional-dependencies]
