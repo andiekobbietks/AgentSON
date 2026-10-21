@@ -807,21 +807,30 @@ def cmd_grc_export(args) -> None:
     digest_path = args.digest
     out = args.output or f"grc_evidence_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
     package = build_evidence(digest_path=digest_path)
+    if getattr(args, "secure", False):
+        from cli.signing import sign_package
+        package = sign_package(package)
     write_evidence(package, out, args.format)
-    print(f"GRC evidence exported: {out}")
+    print(f"GRC evidence exported: {out}  (secure={getattr(args, 'secure', False)})")
     if args.post:
-        import urllib.request
+        import urllib.request, time
         data = json.dumps(package).encode("utf-8")
-        req = urllib.request.Request(
-            args.post, data=data,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                print(f"POSTed to {args.post}: HTTP {resp.status}")
-        except Exception as e:
-            print(f"POST to {args.post} failed: {e}")
+        for attempt in range(1, 4):
+            req = urllib.request.Request(
+                args.post, data=data,
+                headers={"Content-Type": "application/json", "X-AgentSON-Secure": str(getattr(args,"secure",False))},
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    print(f"POSTed to {args.post}: HTTP {resp.status} (attempt {attempt})")
+                    break
+            except Exception as e:
+                print(f"POST to {args.post} failed (attempt {attempt}/3): {e}")
+                if attempt < 3:
+                    time.sleep(2 ** attempt)  # 2s, 4s backoff
+            else:
+                break
 
 
 def _display_banner() -> None:
@@ -987,6 +996,7 @@ TOPICS:
     grc_parser.add_argument("--output", help="Output evidence JSON (default: grc_evidence_<timestamp>.json)")
     grc_parser.add_argument("--format", choices=["json"], default="json")
     grc_parser.add_argument("--post", help="POST URL for platform ingestion (optional)")
+    grc_parser.add_argument("--secure", action="store_true", help="Sign the evidence package with a local ECDSA P-256 key (premium)")
 
     # platform command (Data Rights Intelligence Platform)
     platform_parser = subparsers.add_parser("platform", help="Data Rights Intelligence Platform — scan, analyze, report")
@@ -1000,6 +1010,8 @@ TOPICS:
     serve_p = platform_sub.add_parser("serve", help="Local preview server (AgentSON Platform dashboard)")
     serve_p.add_argument("--port", type=int, default=8080, help="Port")
     serve_p.add_argument("--scan-dir", help="Scan folder with report.json (default: latest found)")
+    license_p = platform_sub.add_parser("license", help="Generate a local dev licence key (premium test only)")
+    license_p.add_argument("--dev", action="store_true", help="Write a dev licence covering all premium features")
 
     # watch command (adoption monitor — forks, stars, watchers, clone trend)
     from cli.watch import build_parser as build_watch_parser
@@ -1060,9 +1072,21 @@ TOPICS:
         elif args.platform_command == "serve":
             from agentson_platform.server import serve
             serve(port=args.port, scan_dir=args.scan_dir)
+        elif args.platform_command == "license":
+            if args.dev:
+                import json
+                from cli.licensing import LICENSE_PATH
+                lic = {"tier":"platform","features":["grc-export","structure","audit-log"],"revoked":False,"dev":True}
+                LICENSE_PATH.parent.mkdir(parents=True, exist_ok=True)
+                LICENSE_PATH.write_text(json.dumps(lic, indent=2), encoding="utf-8")
+                print("Dev licence written:", LICENSE_PATH)
+                print("Features:", lic["features"])
+            else:
+                print("Usage: agentson platform license --dev")
         else:
-            print("Usage: agentson platform <scan|detect|serve>")
-            print("  serve  --port 8080  [--scan-dir DIR]  (local preview server)")
+            print("Usage: agentson platform <scan|detect|serve|license>")
+            print("  serve   --port 8080  [--scan-dir DIR]  (local preview server)")
+            print("  license --dev                          (write local dev licence)")
     elif args.command in ("help", "guide"):
         from cli.help_system import show_help_page, show_encyclopedia, show_onboarding, mark_onboarded
         if args.onboard:
