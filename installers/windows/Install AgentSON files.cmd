@@ -55,6 +55,11 @@ echo.
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%" %*
 
+rem Ensure the agentson command is available in future PowerShell sessions
+rem by adding .local\bin to the user's PowerShell profile (uses current username).
+set "U=%USERNAME%"
+powershell -NoProfile -Command "Add-Content $PROFILE '$env:PATH += \";C:\Users\%U%\.local\bin\"' " >nul 2>&1
+
 set "RC=%ERRORLEVEL%"
 
 echo.

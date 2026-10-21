@@ -9,6 +9,7 @@ import os
 import sys
 from pathlib import Path
 from typing import List
+from cli.help_system import WORDMARK, WORDMARK_SON_START, WORDMARK_TAGLINE
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -786,6 +787,66 @@ def _search_session(data: dict, term: str) -> List[dict]:
     return matches
 
 
+def cmd_grc_export(args) -> None:
+    from cli.licensing import require_premium
+    from cli.grc_export import build_evidence, write_evidence
+    from cli.barcode import platform_upgrade_url
+    from datetime import datetime, timezone
+    from pathlib import Path
+    import os
+
+    if not require_premium("grc-export"):
+        # Print barcode pointing at upgrade when premium absent
+        try:
+            from cli.barcode import render_text
+            print(render_text(platform_upgrade_url()))
+        except Exception:
+            pass
+        return
+
+    digest_path = args.digest
+    out = args.output or f"grc_evidence_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+    package = build_evidence(digest_path=digest_path)
+    write_evidence(package, out, args.format)
+    print(f"GRC evidence exported: {out}")
+    if args.post:
+        import urllib.request
+        data = json.dumps(package).encode("utf-8")
+        req = urllib.request.Request(
+            args.post, data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                print(f"POSTed to {args.post}: HTTP {resp.status}")
+        except Exception as e:
+            print(f"POST to {args.post} failed: {e}")
+
+
+def _display_banner() -> None:
+    """The AgentSON ASCII wordmark + version, shown on CLI startup."""
+    ver = '0.1.0'
+    art_lines = WORDMARK
+    # Print art
+    for line in art_lines:
+        print(line)
+    # Print version line
+    print(f'-{ver}-')
+    # Barcode: scan to open the AgentSON Platform upgrade page
+    # WHY: mirrors opencode's remote-server QR handoff — scan a phone, land on
+    # the platform page, no copy-paste of URLs.
+    try:
+        from cli.barcode import platform_upgrade_url, render_text
+        url = platform_upgrade_url()
+        print()
+        print(render_text(url))
+        print(f'  {url}')
+        print()
+    except Exception:
+        pass
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="""
@@ -914,6 +975,13 @@ TOPICS:
     tools_p = browser_sub.add_parser("list-tools", help="NOT IMPLEMENTED — list MCP server tools")
     tools_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
 
+    # grc-export command (premium — GRC evidence package)
+    grc_parser = subparsers.add_parser("grc-export", help="Export GRC evidence package (AgentSON Platform)")
+    grc_parser.add_argument("--digest", help="Path to report.json or digest JSON")
+    grc_parser.add_argument("--output", help="Output evidence JSON (default: grc_evidence_<timestamp>.json)")
+    grc_parser.add_argument("--format", choices=["json"], default="json")
+    grc_parser.add_argument("--post", help="POST URL for platform ingestion (optional)")
+
     # platform command (Data Rights Intelligence Platform)
     platform_parser = subparsers.add_parser("platform", help="Data Rights Intelligence Platform — scan, analyze, report")
     platform_sub = platform_parser.add_subparsers(dest="platform_command", help="Platform sub-command")
@@ -934,6 +1002,7 @@ TOPICS:
         hp.add_argument("topic", nargs="?", default=None, help="Topic to explore (e.g. mcp, a2a, validate)")
         hp.add_argument("--onboard", action="store_true", help="Re-run first-run onboarding")
 
+    _display_banner()
     args = parser.parse_args()
     
     if args.command == "export":
@@ -964,6 +1033,8 @@ TOPICS:
     elif args.command == "watch":
         from cli.watch import cmd_watch
         cmd_watch(args)
+    elif args.command == "grc-export":
+        cmd_grc_export(args)
     elif args.command == "platform":
         if args.platform_command == "scan":
             from agentson_platform.scan import run_scan
