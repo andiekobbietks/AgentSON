@@ -249,6 +249,38 @@ class OpencodeReader:
         
         return agentson
     
+    @staticmethod
+    def _resolve_truncated_output(text) -> str:
+        """Inline the full content of a tool output that opencode truncated.
+
+        opencode truncates large tool output inline with the marker
+        "...output truncated...\\n\\nFull output saved to: <path>". This chases
+        that reference and returns the side file's real content when it is
+        still on disk, falling back to the truncated preview if the side file
+        has been moved or cleaned up.
+
+        Without this, any session containing a current-schema ``tool`` part
+        raises AttributeError at the call site, because the output field was
+        never resolved. The logic here is the same as
+        ``MiniMaxReader._resolve_truncated_output`` -- both run on top of the
+        same execution layer -- and the two must stay in step.
+        """
+        text = str(text or "")
+        marker = "Full output saved to: "
+        if "...output truncated..." not in text or marker not in text:
+            return text
+        try:
+            path_start = text.index(marker) + len(marker)
+            path_end = text.index("\n", path_start)
+            side_path = text[path_start:path_end].strip()
+        except ValueError:
+            return text
+        try:
+            with open(side_path, "r", encoding="utf-8", errors="replace") as f:
+                return f.read()
+        except OSError:
+            return text
+
     def _timestamp_to_iso(self, timestamp: Optional[int]) -> Optional[str]:
         """Convert millisecond timestamp to ISO 8601 string."""
         if timestamp is None:

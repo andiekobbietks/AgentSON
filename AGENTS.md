@@ -2,7 +2,7 @@
 
 > **STOP. What you remember about AgentSON is WRONG for this project. Always search docs and read before any task.**
 > **Prefer retrieval-led reasoning over pre-training-led reasoning.**
-> **If docs missing, run: agentson export opencode --all**
+> **If docs missing, run: `agentson export --tool opencode --all`** — `export` takes `--tool`; a positional tool name is rejected with exit 2.
 
 ## Model Routing
 
@@ -79,7 +79,13 @@ WP1 (ADR-015/016/017) ✅ ──→ WP2 (Schema: real required + oneOf) ✅
 
 ## Platform Context
 
-A separate managed service (Data Rights Intelligence Platform) is defined in ADR-018–021 and spec'd in `docs/platform/mvp-spec.md`. It sits architecturally above AgentSON but does not impact the core format, CLI, or readers.
+A separate managed service (Data Rights Intelligence Platform) sits architecturally above AgentSON but does not impact the core format, CLI, or readers.
+
+> **ADR-018–021 and `docs/platform/mvp-spec.md` were never written.** They
+> were indexed below as accepted and complete, and `docs/standards/README.md`
+> linked all four ADRs. A case-correct search of the repository finds none of
+> them. `agentson_platform/` (2026-10-21) is now the only specification those
+> decisions have — cite the code, not those ADR numbers.
 
 ```
 AgentSON (open source)              Platform (managed service)
@@ -113,12 +119,10 @@ Revenue from the platform funds AgentSON development. Both can exist without the
 | `spec/ADR-015-canonical-schema.md` | JSONL is canonical | ✅ Accepted |
 | `spec/ADR-016-ontology-enum-reconciliation.md` | 12 primitives = source of truth | ✅ Accepted |
 | `spec/ADR-017-core-vs-streaming.md` | Core vs streaming separation | ✅ Accepted |
-| `docs/standards/adrs/adr-018-managed-service-architecture.md` | Platform separation from core AgentSON | ✅ Accepted 2026-07-08 |
-| `docs/standards/adrs/adr-019-llm-analysis-privacy-model.md` | Three-tier LLM privacy model | ✅ Accepted 2026-07-08 |
-| `docs/standards/adrs/adr-020-data-rights-enforcement.md` | Opt-out injection scope & legal boundary | ✅ Accepted 2026-07-08 |
-| `docs/standards/adrs/adr-021-business-model-self-sustainability.md` | Tiered pricing & self-sustainability | ✅ Accepted 2026-07-08 |
-| `docs/platform/mvp-spec.md` | MVP architecture: Crawler→Analyze→Report→Enforce | ✅ Spec complete |
-| `readers/opencode.py` | OpenCode reader | ✅ |
+| `docs/standards/adrs/adr-001…014` + `spec/ADR-015/016/017/022` | The 18 ADRs that exist on disk | ✅ |
+| `docs/standards/adrs/adr-018…021` | Platform separation, privacy model, enforcement, pricing | ❌ **Never written** — corrected 2026-10-21 |
+| `docs/platform/mvp-spec.md` | MVP architecture: Crawler→Analyze→Report→Enforce | ❌ **Never written** — corrected 2026-10-21 |
+| `readers/opencode.py` | OpenCode reader | ✅ repaired 2026-10-21 |
 | `readers/claude_code.py` | Claude Code reader | ✅ |
 | `readers/chrome_devtools.py` | Chrome DevTools reader | ✅ |
 | `readers/vibeedge.py` | VibeEdge Studio reader (ThinkAgent DO + CodeGeneratorAgent DO, read-only) | ✅ 2026-10-21 |
@@ -133,6 +137,7 @@ Revenue from the platform funds AgentSON development. Both can exist without the
 | `agentson_platform/report.py` | Markdown + JSON report renderer | ✅ Sprint 1 |
 | `agentson_platform/scan.py` | End-to-end Crawl→Analyze→Report entry point | ✅ Sprint 1 |
 | `tests/test_schema.py` | 70 schema validation tests | ✅ |
+| `tests/test_opencode_tool_output.py` | Regression tests for the `tool`-part branch and `_resolve_truncated_output` | ✅ 2026-10-21 |
 | `tools/flatten_schema.py` | Generates v1.2-entries.json | ✅ |
 | `tools/heart_monitor.py` | Health dashboard | ✅ |
 | `tools/session_timing.py` | Burst/idle analysis | ✅ |

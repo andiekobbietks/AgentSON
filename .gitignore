@@ -53,3 +53,8 @@ auto_test.pdf
 # Astro
 site/node_modules/
 site/.astro/
+
+# AgentSON Windows installer -- generated at install time, not source.
+# Holds an absolute path to this machine's agentson.exe, so committing it
+# would pin another user's machine layout.
+installers/windows/agentson-viewer.path
