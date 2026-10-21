@@ -1029,6 +1029,16 @@ TOPICS:
     serve_p.add_argument("--scan-dir", help="Scan folder with report.json (default: latest found)")
     license_p = platform_sub.add_parser("license", help="Generate a local dev licence key (premium test only)")
     license_p.add_argument("--dev", action="store_true", help="Write a dev licence covering all premium features")
+    structure_p = platform_sub.add_parser("structure", help="Premium data pipeline — build graph / lake / CSV from .agentson stream")
+    structure_p.add_argument("--input", default=".", help="Directory of .agentson files")
+    structure_p.add_argument("--output", default="structure", help="Output directory")
+    doctor_p = platform_sub.add_parser("doctor", help="Network troubleshooting diagnostics (enterprise ops)")
+    doctor_p.add_argument("--dns", help="Resolve hostname")
+    doctor_p.add_argument("--tcp", help="TCP target host:port")
+    doctor_p.add_argument("--tls", help="TLS target host:port")
+    doctor_p.add_argument("--http", help="URL to probe")
+    doctor_p.add_argument("--proxy", action="store_true", help="Show proxy env vars")
+    doctor_p.add_argument("--offline", action="store_true", help="Confirm core is offline / no DNS")
 
     # watch command (adoption monitor — forks, stars, watchers, clone trend)
     from cli.watch import build_parser as build_watch_parser
@@ -1086,6 +1096,22 @@ TOPICS:
             from agentson_platform.tool_registry import detect_all
             import json as _json
             print(_json.dumps(detect_all(), indent=2))
+        elif args.platform_command == "doctor":
+            from agentson_platform import netdoctor
+            results = []
+            if args.offline or not (args.dns or args.tcp or args.tls or args.http or args.proxy):
+                results.append(netdoctor.offline_check())
+            if args.proxy:
+                results.append(netdoctor.proxy_env())
+            if args.dns:
+                results.append(netdoctor.dns_probe(args.dns))
+            if args.tcp:
+                results.append(netdoctor.tcp_probe(args.tcp))
+            if args.tls:
+                results.append(netdoctor.tls_probe(args.tls))
+            if args.http:
+                results.append(netdoctor.http_probe(args.http))
+            print(json.dumps({"probes": results}, indent=2, ensure_ascii=False))
         elif args.platform_command == "serve":
             from agentson_platform.server import serve
             serve(port=args.port, scan_dir=args.scan_dir)
@@ -1100,8 +1126,23 @@ TOPICS:
                 print("Features:", lic["features"])
             else:
                 print("Usage: agentson platform license --dev")
+        elif args.platform_command == "structure":
+            from agentson_platform.structure import build_graph, build_csv, build_training_export
+            from cli.licensing import is_premium
+            if not is_premium("structure"):
+                from cli.licensing import upgrade_notice
+                print(upgrade_notice("structure"))
+                sys.exit(1)
+            out_dir = Path(args.output)
+            out_dir.mkdir(parents=True, exist_ok=True)
+            graph = build_graph(args.input)
+            (out_dir / "graph.json").write_text(json.dumps(graph, indent=2, ensure_ascii=False), encoding="utf-8")
+            csv_files = build_csv(args.input, args.output)
+            train_path = build_training_export(args.input, args.output)
+            print(f"Structure pipeline done: {out_dir}")
+            print("  graph.json  |  entities.csv + relations.csv  |  training_module.jsonl")
         else:
-            print("Usage: agentson platform <scan|detect|serve|license>")
+            print("Usage: agentson platform <scan|detect|serve|license|structure|doctor>")
             print("  serve   --port 8080  [--scan-dir DIR]  (local preview server)")
             print("  license --dev                          (write local dev licence)")
     elif args.command in ("help", "guide"):

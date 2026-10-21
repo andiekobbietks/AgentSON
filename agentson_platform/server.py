@@ -17,6 +17,7 @@ Then open http://localhost:8090/
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -206,6 +207,22 @@ class PlatformHandler(BaseHTTPRequestHandler):
             )
             body = json.dumps(package, indent=2, ensure_ascii=False).encode("utf-8")
             self._send(200, body, "application/json; charset=utf-8")
+        elif route == "/api/health":
+            self._json({
+                "status": "ok",
+                "service": "agentson-platform-local",
+                "scan_dir": str(self.scan_dir),
+                "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            })
+        elif route == "/api/doctor":
+            from agentson_platform import netdoctor
+            target = query.get("target", [None])[0]
+            url = query.get("url", [None])[0]
+            self._json({"results": netdoctor.run_all(target=target, url=url)})
+        elif route == "/api/structure":
+            directory = query.get("input", [str(self.scan_dir)])[0]
+            from agentson_platform.structure import build_graph
+            self._json(build_graph(directory))
         elif route == "/report.md":
             md = self.scan_dir / SCAN_MARKDOWN_NAME
             if not md.exists():
@@ -214,6 +231,48 @@ class PlatformHandler(BaseHTTPRequestHandler):
             self._send(200, md.read_bytes(), "text/markdown; charset=utf-8")
         else:
             self._json({"error": "not found", "path": route}, 404)
+
+    def do_POST(self) -> None:  # noqa: N802 - stdlib naming
+        """Ingest a GRC evidence package (agentson grc-export --post)."""
+        from urllib.parse import urlparse
+
+        parsed = urlparse(self.path)
+        length = int(self.headers.get("Content-Length", 0) or 0)
+        raw = self.rfile.read(length) if length else b""
+        if parsed.path != "/api/evidence":
+            self._json({"error": "not found", "path": parsed.path}, 404)
+            return
+        try:
+            package = json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError) as exc:
+            self._json({"error": "invalid JSON body", "detail": str(exc)}, 400)
+            return
+
+        verified = None
+        if package.get("signature"):
+            try:
+                from cli.signing import verify_package
+                verified = verify_package(package)
+            except Exception as exc:  # noqa: BLE001
+                verified = False
+                package["_verify_error"] = str(exc)
+
+        store_dir = Path.home() / ".agentson" / "platform" / "evidence"
+        store_dir.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        out = store_dir / f"evidence_{stamp}.json"
+        out.write_text(json.dumps(package, indent=2, ensure_ascii=False), encoding="utf-8")
+
+        evidence = package.get("evidence", [])
+        self._json({
+            "accepted": True,
+            "received_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "signature_present": bool(package.get("signature")),
+            "signature_verified": verified,
+            "signer_kid": package.get("signer_kid"),
+            "evidence_items": len(evidence),
+            "stored_at": str(out),
+        }, 201)
 
     def log_message(self, fmt: str, *args: Any) -> None:
         print("  [platform] " + fmt % args)
