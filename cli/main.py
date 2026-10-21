@@ -828,27 +828,29 @@ def _display_banner() -> None:
     """The AgentSON ASCII wordmark + version, shown on CLI startup."""
     ver = '0.1.0'
     art_lines = WORDMARK
-    # Print art
+    # Print art (AgentSON wordmark + PLATFORM subtitle in same larry3d face)
     for line in art_lines:
         print(line)
-    # Print version line
-    print(f'-{ver}-')
-    # Barcode: scan to open the AgentSON Platform upgrade page
-    # WHY: mirrors the opencode mobile/remote pairing flow — scan a phone,
-    # land on the platform page, no copy-paste of URLs.
+    # Platform subtitle — same face, baked constant, no pyfiglet at runtime
     try:
-        from cli.barcode import platform_upgrade_url, render_qr_ascii, render_text
-        url = platform_upgrade_url()
-        print()
-        art = render_qr_ascii(url)
-        if art:
-            print(art)
-        else:
-            print(render_text(url))
-        print(f'  {url}')
-        print()
+        from cli.help_system import WORDMARK_PLATFORM
+        for pline in WORDMARK_PLATFORM:
+            print(pline)
     except Exception:
         pass
+    # Print a clean PLATFORM subtitle in the same larry3d face
+    try:
+        import pyfiglet
+        platform_art = pyfiglet.figlet_format("PLATFORM", font="larry3d")
+        for line in platform_art.rstrip().splitlines()[:7]:
+            print(line)
+    except Exception:
+        pass  # pyfiglet not in core dependencies; art baked in when available
+    # Print version line
+    print(f'-{ver}-')
+    # Premium tagline (matches Option A — Enterprise Compliance & Audit)
+    print()
+    print("  AgentSON Platform  —  Enterprise Compliance & Audit")
 
 
 def main():

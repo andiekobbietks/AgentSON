@@ -54,7 +54,19 @@ WORDMARK = (
     '              \\_/__/                                             ',
 )
 WORDMARK_SON_START = 40
-WORDMARK_TAGLINE = "The universal provenance format for agent sessions."
+WORDMARK_TAGLINE = "AgentSON Platform — Enterprise Compliance & Audit"
+
+# PLATFORM in the same larry3d face, generated once with pyfiglet and baked
+# in as a constant so pyfiglet is never a runtime dependency.
+WORDMARK_PLATFORM = (
+    ' ____    __       ______  ______  ____    _____   ____                ',
+    "/\\  _`\\ /\\ \\     /\\  _  \\/\\__  _\\/\\  _`\\ /\\  __`\\/\\  _`\\   /'\\_/`\\    ",
+    '\\ \\ \\L\\ \\ \\ \\    \\ \\ \\L\\ \\/_/\\ \\/\\ \\ \\L\\_\\ \\ \\/\\ \\ \\ \\L\\ \\/\\      \\   ',
+    ' \\ \\ ,__/\\ \\ \\  __\\ \\  __ \\ \\ \\ \\ \\ \\  _\\/\\ \\ \\ \\ \\ \\ ,  /\\ \\ \\__\\ \\  ',
+    '  \\ \\ \\/  \\ \\ \\L\\ \\\\ \\ \\/\\ \\ \\ \\ \\ \\ \\ \\/  \\ \\ \\_\\ \\ \\ \\\\ \\ \\\\ \\ \\_/\\ \\ ',
+    '   \\ \\_\\   \\ \\____/ \\ \\_\\ \\_\\ \\ \\_\\ \\ \\_\\   \\ \\_____\\ \\_\\ \\_\\ \\_\\\\ \\_\\',
+    '    \\/_/    \\/___/   \\/_/\\/_/  \\/_/  \\/_/    \\/_____/\\/_/\\/ /\\/_/ \\/_/',
+)
 
 
 def wordmark_text(tagline: str = WORDMARK_TAGLINE) -> Text:
@@ -505,7 +517,7 @@ def show_encyclopedia():
     # Header
     c.print(Panel(
         "[bold #ffb000]AgentSON Encyclopedia[/]\n"
-        "[dim]The universal provenance format — explained[/]\n\n"
+        "[dim]AgentSON Platform — Enterprise Compliance & Audit — explained[/]\n\n"
         "[dim]Select a topic below or run:[/]\n"
         "[bold]  agentson help <topic>[/]",
         box=box.DOUBLE,
