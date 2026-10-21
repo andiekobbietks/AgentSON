@@ -377,6 +377,22 @@ class Installer(tk.Tk):
 
         if result.returncode == 0:
             self._set_status("Done (exit 0).", OK)
+            # Persist the agentson command across PowerShell sessions by adding
+            # .local\bin to the user's PowerShell profile (best-effort; uses
+            # the current %USERNAME% so it works on any account, and never breaks
+            # the installer if the profile is locked or the username differs).
+            username = os.environ.get("USERNAME", "")
+            if username:
+                # Idempotent: add .local\bin to user's $PROFILE using $env:USERPROFILE
+                # (never hardcodes Admin or a drive letter; works on any account)
+                ps_cmd = (
+                    "if (-not (Select-String -Path $PROFILE -Pattern '.local\\\\bin' -Quiet -ErrorAction SilentlyContinue)) "
+                    "{ Add-Content -Path $PROFILE -Value \"`$env:PATH += ';$env:USERPROFILE\\.local\\bin'\" }"
+                )
+                subprocess.run(
+                    ["powershell", "-NoProfile", "-Command", ps_cmd],
+                    capture_output=True, text=True, timeout=10,
+                )
         else:
             self._set_status("Finished with exit code %d." % result.returncode, BAD)
 
