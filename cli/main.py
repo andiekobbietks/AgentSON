@@ -834,13 +834,17 @@ def _display_banner() -> None:
     # Print version line
     print(f'-{ver}-')
     # Barcode: scan to open the AgentSON Platform upgrade page
-    # WHY: mirrors opencode's remote-server QR handoff — scan a phone, land on
-    # the platform page, no copy-paste of URLs.
+    # WHY: mirrors the opencode mobile/remote pairing flow — scan a phone,
+    # land on the platform page, no copy-paste of URLs.
     try:
-        from cli.barcode import platform_upgrade_url, render_text
+        from cli.barcode import platform_upgrade_url, render_qr_ascii, render_text
         url = platform_upgrade_url()
         print()
-        print(render_text(url))
+        art = render_qr_ascii(url)
+        if art:
+            print(art)
+        else:
+            print(render_text(url))
         print(f'  {url}')
         print()
     except Exception:

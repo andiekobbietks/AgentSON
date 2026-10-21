@@ -1,13 +1,21 @@
 """
 Barcode generation for AgentSON.
 
-WHY: the free core must install with zero extra dependencies, so the barcode
-is drawn with Pillow (already used for the installer icon) rather than a QR
-library. Code 128 subset B is used because it encodes any printable ASCII
-URL and scans with a normal phone camera.
+WHY: the mobile/remote pairing flow needs a scannable code printed in the CLI.
+A phone camera reads a QR natively, so prefer the ``qrcode`` library; fall back
+to Code 128 patterns when it is absent (the free core ships zero runtime deps,
+so the Core Package Registry deliberately omits qrcode).
 """
 
 from __future__ import annotations
+
+import io
+from typing import List, Optional
+
+try:  # optional — only used when a phone scanner is nearby
+    import qrcode
+except ImportError:  # pragma: no cover
+    qrcode = None
 
 from typing import List, Optional
 
@@ -119,6 +127,59 @@ def render_text(data: str) -> str:
         for r in range(3):
             rows[r] += ch
     return "\n".join(rows)
+
+
+def render_qr_png(data: str, path: str, scale: int = 6) -> Optional[str]:
+    """Write ``data`` as a QR PNG at ``path``. Returns the path, or None when
+    the optional ``qrcode`` dependency is not installed."""
+    if qrcode is None:
+        return None
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=scale,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save(path, "PNG")
+    return path
+
+
+def render_qr_ascii(data: str) -> Optional[str]:
+    """Render a QR code as ASCII art (2 chars per module). None if unavailable."""
+    if qrcode is None:
+        return None
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=1,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    if not hasattr(img, "convert"):
+        img = img.convert("1")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    small = Image.open(buf).convert("1")
+    w, h = small.size
+    pixels = small.load()
+    # Black module (0) = filled; white (255) = empty
+    out = []
+    for y in range(h):
+        row = []
+        for x in range(w):
+            row.append("██" if pixels[x, y] < 128 else "  ")
+        out.append("".join(row))
+    return "\n".join(out)
 
 
 def platform_upgrade_url(base: Optional[str] = None) -> str:
