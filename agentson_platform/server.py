@@ -304,3 +304,12 @@ def serve(port: int = 8080, scan_dir: Optional[str] = None, base: Optional[str] 
         print("\n  stopped")
     finally:
         server.server_close()
+
+
+if __name__ == "__main__":
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("--port", type=int, default=8080)
+    p.add_argument("--scan-dir", default=None)
+    args = p.parse_args()
+    serve(port=args.port, scan_dir=args.scan_dir)

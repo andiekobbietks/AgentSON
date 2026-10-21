@@ -1027,6 +1027,7 @@ TOPICS:
     serve_p = platform_sub.add_parser("serve", help="Local preview server (AgentSON Platform dashboard)")
     serve_p.add_argument("--port", type=int, default=8080, help="Port")
     serve_p.add_argument("--scan-dir", help="Scan folder with report.json (default: latest found)")
+    serve_p.add_argument("--watch", action="store_true", help="Dev mode: restart on .py file change (stdlib supervisor, like npm run dev)")
     license_p = platform_sub.add_parser("license", help="Generate a local dev licence key (premium test only)")
     license_p.add_argument("--dev", action="store_true", help="Write a dev licence covering all premium features")
     structure_p = platform_sub.add_parser("structure", help="Premium data pipeline — build graph / lake / CSV from .agentson stream")
@@ -1113,8 +1114,12 @@ TOPICS:
                 results.append(netdoctor.http_probe(args.http))
             print(json.dumps({"probes": results}, indent=2, ensure_ascii=False))
         elif args.platform_command == "serve":
-            from agentson_platform.server import serve
-            serve(port=args.port, scan_dir=args.scan_dir)
+            if getattr(args, "watch", False):
+                from agentson_platform.dev_serve import serve_watch
+                serve_watch(port=args.port, scan_dir=args.scan_dir)
+            else:
+                from agentson_platform.server import serve
+                serve(port=args.port, scan_dir=args.scan_dir)
         elif args.platform_command == "license":
             if args.dev:
                 import json
