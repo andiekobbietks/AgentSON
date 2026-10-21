@@ -997,6 +997,9 @@ TOPICS:
     scan_p.add_argument("--slm", action="store_true", help="Try to use a local SLM for classification")
     scan_p.add_argument("--model", help="SLM model name")
     detect_p = platform_sub.add_parser("detect", help="List installed AI tools and their data locations")
+    serve_p = platform_sub.add_parser("serve", help="Local preview server (AgentSON Platform dashboard)")
+    serve_p.add_argument("--port", type=int, default=8080, help="Port")
+    serve_p.add_argument("--scan-dir", help="Scan folder with report.json (default: latest found)")
 
     # watch command (adoption monitor — forks, stars, watchers, clone trend)
     from cli.watch import build_parser as build_watch_parser
@@ -1054,8 +1057,12 @@ TOPICS:
             from agentson_platform.tool_registry import detect_all
             import json as _json
             print(_json.dumps(detect_all(), indent=2))
+        elif args.platform_command == "serve":
+            from agentson_platform.server import serve
+            serve(port=args.port, scan_dir=args.scan_dir)
         else:
-            print("Usage: agentson platform <scan|detect>")
+            print("Usage: agentson platform <scan|detect|serve>")
+            print("  serve  --port 8080  [--scan-dir DIR]  (local preview server)")
     elif args.command in ("help", "guide"):
         from cli.help_system import show_help_page, show_encyclopedia, show_onboarding, mark_onboarded
         if args.onboard:
