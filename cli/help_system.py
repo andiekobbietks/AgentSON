@@ -33,6 +33,67 @@ except ImportError:
 
 _console = Console(force_terminal=True, legacy_windows=False)
 
+# ── Wordmark ────────────────────────────────────────────────────────────
+# Generated with figlet's "banner" face. Every row is padded to a fixed 59
+# columns so the glyph grid stays intact; the SON half begins at column 35.
+# Regenerate with: pyfiglet -f banner AgentSON
+
+WORDMARK = (
+    ' ______                         __    ____    _____   __  __     ',
+    '/\\  _  \\                       /\\ \\__/\\  _`\\ /\\  __`\\/\\ \\/\\ \\    ',
+    '\\ \\ \\L\\ \\     __      __    ___\\ \\ ,_\\ \\,\\L\\_\\ \\ \\/\\ \\ \\ `\\\\ \\   ',
+    " \\ \\  __ \\  /'_ `\\  /'__`\\/' _ `\\ \\ \\/\\/_\\__ \\\\ \\ \\ \\ \\ \\ , ` \\  ",
+    '  \\ \\ \\/\\ \\/\\ \\L\\ \\/\\  __//\\ \\/\\ \\ \\ \\_ /\\ \\L\\ \\ \\ \\_\\ \\ \\ \\`\\ \\ ',
+    '   \\ \\_\\ \\_\\ \\____ \\ \\____\\ \\_\\ \\_\\ \\__\\\\ `\\____\\ \\_____\\ \\_\\ \\_\\',
+    '    \\/_/\\/_/\\/___L\\ \\/____/\\/_/\\/_/\\/__/ \\/_____/\\/_____/\\/_/\\/_/',
+    '              /\\____/                                            ',
+    '              \\_/__/                                             ',
+)
+WORDMARK_SON_START = 40
+WORDMARK_TAGLINE = "The universal provenance format for agent sessions."
+
+
+def wordmark_text(tagline: str = WORDMARK_TAGLINE) -> Text:
+    """The wordmark as one renderable: Agent in brand amber, SON bold.
+
+    The split is by fixed column, not by string search, because the two halves
+    share rows in the glyph grid.
+    """
+    t = Text()
+    for i, row in enumerate(WORDMARK):
+        if i:
+            t.append("\n")
+        t.append(row[:WORDMARK_SON_START], style="#ffb000")
+        t.append(row[WORDMARK_SON_START:], style="bold #ffb000")
+    if tagline:
+        t.append("\n\n")
+        t.append(f"  {tagline}", style="dim")
+    return t
+
+
+def show_wordmark(tagline: str = WORDMARK_TAGLINE) -> None:
+    """Print the logo + tagline above the Encyclopedia.
+
+    Panel width follows the art, not the other way round: the larry3d face is
+    65 columns against banner's 59, and a fixed width would clip the 3D
+    outline mid-glyph. The tagline sets a floor so it never wraps, and the
+    console width caps it so a narrow terminal degrades instead of shredding
+    the grid.
+    """
+    art_w = max(len(r) for r in WORDMARK)
+    tag_w = (len(tagline) + 4) if tagline else 0
+    width = max(art_w + 4, tag_w + 4, 40)
+    width = min(width, max(_console.width - 2, 40))
+    _console.print(Panel(
+        wordmark_text(tagline),
+        box=box.MINIMAL,
+        border_style="bold #ffb000",
+        width=width,
+        padding=(0, 1),
+    ))
+    _console.print()
+
+
 # ── Onboarding ──────────────────────────────────────────────────────────
 
 ONBOARDING_FLAG = Path.home() / ".agentson_onboarded"
@@ -435,7 +496,7 @@ def show_encyclopedia():
 
     c = _console
     c.clear()
-    c.print()
+    show_wordmark()
 
     # Header
     c.print(Panel(
