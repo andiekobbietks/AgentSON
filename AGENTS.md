@@ -121,6 +121,7 @@ Revenue from the platform funds AgentSON development. Both can exist without the
 | `readers/opencode.py` | OpenCode reader | ✅ |
 | `readers/claude_code.py` | Claude Code reader | ✅ |
 | `readers/chrome_devtools.py` | Chrome DevTools reader | ✅ |
+| `readers/vibeedge.py` | VibeEdge Studio reader (ThinkAgent DO + CodeGeneratorAgent DO, read-only) | ✅ 2026-10-21 |
 | `cli/main.py` | CLI (13 commands: +reconstruct, +platform) | ✅ |
 | `cli/compliance.py` | GDPR/EU AI Act compliance engine (dual-track EU/UK) | ✅ Resolved 2026-07-08 |
 | `cli/reconstruct.py` | Three-mode reconstructor (forensic/narrative/live) | ✅ Resolved 2026-07-08 |

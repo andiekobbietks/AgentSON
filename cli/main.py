@@ -20,7 +20,10 @@ def get_default_db_paths():
     return {
         "opencode": home / ".local" / "share" / "opencode" / "opencode.db",
         "minimax": home / ".minimax" / "sqlite.db",
-        "antigravity": home / ".gemini" / "antigravity-ide" / "conversations"
+        "antigravity": home / ".gemini" / "antigravity-ide" / "conversations",
+        # VibeEdge stores its chats in Cloudflare Durable Object SQLite under
+        # the local wrangler state dir, not in a single database file.
+        "vibeedge": home / "vibeedge-studio" / "vibesdk" / ".wrangler",
     }
 
 
@@ -202,6 +205,54 @@ def cmd_export(args):
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported to {output_path}")
+    elif args.tool == "vibeedge":
+        from readers.vibeedge import VibeedgeReader
+
+        root = args.input or db_paths["vibeedge"]
+        if not Path(root).exists():
+            print(f"Error: VibeEdge wrangler state not found at {root}", file=sys.stderr)
+            sys.exit(1)
+
+        reader = VibeedgeReader(root)
+        try:
+            # Create the output dir up front: the other branches assume it
+            # exists and fail with FileNotFoundError on a fresh path.
+            Path(args.output).mkdir(parents=True, exist_ok=True)
+            if args.all:
+                sessions = reader.list_sessions()
+                if not sessions:
+                    print("No VibeEdge sessions found", file=sys.stderr)
+                    sys.exit(1)
+                for session in sessions:
+                    sid = session["id"]
+                    print(f"Exporting: {session['backend']}:{sid} "
+                          f"({session['messages']} msgs) {session['preview']}")
+                    data = reader.read_session(sid)
+                    if data:
+                        output_path = (Path(args.output) /
+                                       f"vibeedge_{sid}.agentson")
+                        with open(output_path, "w", encoding="utf-8") as f:
+                            json.dump(data, f, indent=2,
+                                      ensure_ascii=False, default=str)
+                print(f"Exported {len(sessions)} sessions")
+            else:
+                if not args.session:
+                    print("Error: --session required when not using --all",
+                          file=sys.stderr)
+                    sys.exit(1)
+                data = reader.read_session(args.session)
+                if not data:
+                    print(f"Error: Session {args.session} not found",
+                          file=sys.stderr)
+                    sys.exit(1)
+                output_path = (Path(args.output) /
+                               f"vibeedge_{args.session}.agentson")
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False,
+                              default=str)
+                print(f"Exported to {output_path}")
+        finally:
+            reader.disconnect()
     else:
         sys.exit(1)
 
@@ -256,6 +307,18 @@ def cmd_list(args):
 
         reader = ClaudeCodeReader()
         sessions = reader.list_sessions()
+    elif args.tool == "vibeedge":
+        from readers.vibeedge import VibeedgeReader
+
+        root = args.input or db_paths["vibeedge"]
+        if not Path(root).exists():
+            print(f"Error: VibeEdge wrangler state not found at {root}", file=sys.stderr)
+            sys.exit(1)
+        reader = VibeedgeReader(root)
+        try:
+            sessions = reader.list_sessions(args.limit)
+        finally:
+            reader.disconnect()
     else:
         print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
@@ -276,6 +339,12 @@ def cmd_list(args):
             print(f"Project: {s.get('project_hash', 'N/A')}")
             print(f"Path:    {s.get('fullPath', s.get('project_path', 'N/A'))}")
             print(f"Msgs:    {s.get('messageCount', 'N/A')}")
+        elif args.tool == "vibeedge":
+            print(f"ID:      {s['id']}")
+            print(f"Backend: {s.get('backend', 'N/A')}")
+            print(f"Msgs:    {s.get('messages', 'N/A')}")
+            print(f"Span:    {s.get('started', 'N/A')} -> {s.get('ended', 'N/A')}")
+            print(f"Preview: {s.get('preview', 'N/A')}")
         else:
             print(f"ID:      {s['id']}")
             print(f"Title:   {s.get('title', 'N/A')}")
@@ -751,7 +820,7 @@ TOPICS:
     
     # export command
     export_parser = subparsers.add_parser("export", help="Export sessions to AgentSON format")
-    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code"])
+    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code", "vibeedge"])
     export_parser.add_argument("--session", help="Session ID to export")
     export_parser.add_argument("--all", action="store_true", help="Export all sessions")
     export_parser.add_argument("--output", default=".", help="Output directory")
@@ -766,8 +835,11 @@ TOPICS:
     
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
-    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code"])
+    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code", "vibeedge"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
+    # cmd_list reads args.input for chrome-devtools and vibeedge; without this
+    # flag the attribute was missing and those branches raised AttributeError.
+    list_parser.add_argument("--input", help="Input directory (chrome-devtools exports, vibeedge wrangler state)")
     
     # search command
     search_parser = subparsers.add_parser("search", help="Search AgentSON files")
@@ -829,20 +901,17 @@ TOPICS:
 
     # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
     browser_parser = subparsers.add_parser(
-        "browser", help="Drive a live browser via MCP (capture Google AI Mode, Chrome DevTools AI)"
+        "browser", help="NOT IMPLEMENTED — planned MCP capture (agentson_mcp, see ADR-022)"
     )
     browser_sub = browser_parser.add_subparsers(dest="browser_command", help="Browser sub-command")
-    grab_p = browser_sub.add_parser("grab", help="Navigate to a URL and capture the page state")
+    grab_p = browser_sub.add_parser("grab", help="NOT IMPLEMENTED — navigate to a URL and capture page state")
     grab_p.add_argument("--url", required=True, help="URL to navigate to")
     grab_p.add_argument("--out", help="Output .md path (default: ./devtools_<slug>.md)")
     grab_p.add_argument("--attach", help="Attach to existing Chrome at this URL (e.g. http://127.0.0.1:9222)")
-    grab_p.add_argument("--raw", action="store_true", help="Save raw markdown, do not canonicalise to .agentson")
-    grab_p.add_argument("--out-agentson", help="Also write a v1.2 .agentson to this path")
-    grab_p.add_argument("--no-ai-mode", action="store_true", help="Skip the AI Mode WIZ/SFC analysis")
     grab_p.add_argument("--no-headless", action="store_true", help="Run Chrome with a visible window")
-    tabs_p = browser_sub.add_parser("tabs", help="List open browser tabs")
+    tabs_p = browser_sub.add_parser("tabs", help="NOT IMPLEMENTED — list open browser tabs")
     tabs_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
-    tools_p = browser_sub.add_parser("list-tools", help="List tools exposed by the MCP server")
+    tools_p = browser_sub.add_parser("list-tools", help="NOT IMPLEMENTED — list MCP server tools")
     tools_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
 
     # platform command (Data Rights Intelligence Platform)
@@ -854,6 +923,10 @@ TOPICS:
     scan_p.add_argument("--slm", action="store_true", help="Try to use a local SLM for classification")
     scan_p.add_argument("--model", help="SLM model name")
     detect_p = platform_sub.add_parser("detect", help="List installed AI tools and their data locations")
+
+    # watch command (adoption monitor — forks, stars, watchers, clone trend)
+    from cli.watch import build_parser as build_watch_parser
+    build_watch_parser(subparsers)
 
     # help / guide command (encyclopedia)
     for name in ("help", "guide"):
@@ -888,6 +961,9 @@ TOPICS:
         cmd_reconstruct(args)
     elif args.command == "browser":
         cmd_browser(args)
+    elif args.command == "watch":
+        from cli.watch import cmd_watch
+        cmd_watch(args)
     elif args.command == "platform":
         if args.platform_command == "scan":
             from agentson_platform.scan import run_scan
@@ -921,62 +997,35 @@ TOPICS:
 
 
 def cmd_browser(args):
-    """Drive a live browser via chrome-devtools-mcp + mcp-use."""
-    from agentson_mcp.client import MCPBrowser
-    from agentson_mcp.exporters.ai_mode import AIModeExporter
+    """Browser capture -- NOT IMPLEMENTED.
 
-    attach_url = getattr(args, "attach", None)
-    browser = MCPBrowser(attach_url=attach_url) if attach_url else MCPBrowser()
+    The original design (ADR-022/023) drove chrome-devtools-mcp via a
+    companion package `agentson_mcp` providing MCPBrowser and
+    AIModeExporter. That package was never written: it is listed in
+    pyproject packaging includes but does not exist in this repo or in
+    site-packages, so this command has always raised ImportError.
 
-    if args.browser_command == "list-tools":
-        browser.connect()
-        try:
-            tools = browser.list_tools()
-            for t in tools:
-                name = getattr(t, "name", None) or (t.get("name") if isinstance(t, dict) else None)
-                desc = getattr(t, "description", "") or (t.get("description", "") if isinstance(t, dict) else "")
-                print(f"  {name}: {desc[:80] if desc else ''}")
-        finally:
-            browser.close()
-        return
-
-    if args.browser_command == "tabs":
-        browser.connect()
-        try:
-            tabs = browser.list_tabs()
-            print(tabs)
-        finally:
-            browser.close()
-        return
-
-    if args.browser_command == "grab":
-        if not args.url:
-            print("Error: --url required", file=sys.stderr)
-            sys.exit(1)
-        out_path = Path(args.out) if args.out else Path(f"devtools_{Path(args.url).stem[:50]}.md")
-        browser.connect()
-        try:
-            saved = browser.grab(args.url, out_path)
-            print(f"Captured: {saved}")
-            if args.raw:
-                print(f"(raw mode — .agentson not written. Re-run without --raw to canonicalise.)")
-                return
-            exporter = AIModeExporter()
-            doc = exporter.normalise(saved, source_url=args.url)
-            if args.out_agentson:
-                target = Path(args.out_agentson)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
-                print(f"Canonicalised: {target}")
-            else:
-                tag = Path(args.url).stem[:50] or "ai_mode"
-                out = exporter.write(doc, session_tag=tag)
-                print(f"Canonicalised: {out}")
-        finally:
-            browser.close()
-        return
-
-    print("Usage: agentson browser <grab|tabs|list-tools>")
+    The planned replacement is `agentson capture`, which reads each
+    vendor's own conversation API using the user's own session token
+    rather than rendering the page. DOM capture loses the tool
+    invocations that the API retains -- see the SaveAI adapter survey.
+    """
+    try:
+        from agentson_mcp.client import MCPBrowser  # noqa: F401
+    except ImportError:
+        print(
+            "Error: `agentson browser` is not implemented.\n"
+            "\n"
+            "  The CLI imports `agentson_mcp.client.MCPBrowser`, which does\n"
+            "  not exist in this repository. See ADR-022 / ADR-023.\n"
+            "\n"
+            "  Not implemented: grab, tabs, list-tools.\n"
+            "\n"
+            "  Planned replacement: `agentson capture` (vendor API capture).\n"
+            "  Until then use a reader:  agentson export --tool <name>",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def cmd_publish(args):
