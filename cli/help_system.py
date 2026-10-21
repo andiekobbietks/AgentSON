@@ -556,6 +556,7 @@ def show_encyclopedia():
     toc.add_row("  redact", "Redact PII before sharing")
     toc.add_row("  publish", "Publish to Docker Hub / LXD Hub")
     toc.add_row("  runbook", "Replay session as runbook (planned)")
+    toc.add_row("  telemetry", "Telemetry mount docs — see /internal/security mkdocs (dev only; not shipped)")
     toc.add_row("", "")
     toc.add_row("[dim]Conceptual References[/]", "")
     toc.add_row("  capi", "kevin-dp session protocol (conceptual)")
