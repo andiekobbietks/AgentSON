@@ -133,6 +133,28 @@ def cmd_export(args):
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
                 print(f"Exported to {output_path}")
+    elif args.tool == "gemini":
+        from readers.gemini import read as read_gemini, list_sessions as list_gemini
+        inp = args.input or args.output
+        if not inp:
+            print("Error: use --input <path-to-Google-Search_*.json> for gemini", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_gemini(str(inp))
+            for s in sessions:
+                data = read_gemini(str(inp), s["id"])
+                out = Path(args.output) / f"gemini_{s['id']}.agentson"
+                with open(out, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                print(f"Exported: {out}")
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            sid = args.session or "gemini-export"
+            data = read_gemini(str(inp), sid)
+            out = Path(args.output) / f"gemini_{sid}.agentson"
+            with open(out, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {out}")
     elif args.tool == "chrome-devtools":
         from readers.chrome_devtools import read as read_chrome, list_exports as list_chrome
         
@@ -290,6 +312,21 @@ def cmd_list(args):
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
+    elif args.tool == "gemini":
+        from readers.gemini import list_sessions as list_gemini
+        inp = Path(args.input) if args.input else (Path.home() / "Downloads")
+        if inp.is_file():
+            hits = [inp]
+        elif inp.is_dir():
+            hits = sorted(inp.glob("Google-Search_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        else:
+            hits = []
+        sessions = []
+        for h in hits[:args.limit]:
+            for s in list_gemini(str(h)):
+                s["source_file"] = str(h)
+                sessions.append(s)
+        sessions = sessions[:args.limit]
     elif args.tool == "chrome-devtools":
         from readers.chrome_devtools import list_exports as list_chrome
         
@@ -834,32 +871,12 @@ def cmd_grc_export(args) -> None:
 
 
 def _display_banner() -> None:
-    """The AgentSON ASCII wordmark + version, shown on CLI startup."""
+    """The AgentSON ASCII wordmark + version — clean, no duplication."""
     ver = '0.1.0'
-    art_lines = WORDMARK
-    # Print art (AgentSON wordmark + PLATFORM subtitle in same larry3d face)
-    for line in art_lines:
-        print(line)
-    # Platform subtitle — same face, baked constant, no pyfiglet at runtime
-    try:
-        from cli.help_system import WORDMARK_PLATFORM
-        for pline in WORDMARK_PLATFORM:
-            print(pline)
-    except Exception:
-        pass
-    # Print a clean PLATFORM subtitle in the same larry3d face
-    try:
-        import pyfiglet
-        platform_art = pyfiglet.figlet_format("PLATFORM", font="larry3d")
-        for line in platform_art.rstrip().splitlines()[:7]:
-            print(line)
-    except Exception:
-        pass  # pyfiglet not in core dependencies; art baked in when available
-    # Print version line
-    print(f'-{ver}-')
-    # Premium tagline (matches Option A — Enterprise Compliance & Audit)
-    print()
-    print("  AgentSON Platform  —  Enterprise Compliance & Audit")
+    # Clean: wordmark + baked PLATFORM + version + tagline, no pyfiglet retry
+    from cli.help_system import WORDMARK, WORDMARK_PLATFORM
+    for ln in list(WORDMARK) + list(WORDMARK_PLATFORM) + ["-" + ver + "-", "", "  AgentSON Platform  —  Enterprise Compliance & Audit"]:
+        print(ln)
 
 
 def main():
@@ -896,7 +913,7 @@ TOPICS:
     
     # export command
     export_parser = subparsers.add_parser("export", help="Export sessions to AgentSON format")
-    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code", "vibeedge"])
+    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code", "vibeedge", "gemini"])
     export_parser.add_argument("--session", help="Session ID to export")
     export_parser.add_argument("--all", action="store_true", help="Export all sessions")
     export_parser.add_argument("--output", default=".", help="Output directory")
@@ -911,7 +928,7 @@ TOPICS:
     
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
-    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code", "vibeedge"])
+    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code", "vibeedge", "gemini"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
     # cmd_list reads args.input for chrome-devtools and vibeedge; without this
     # flag the attribute was missing and those branches raised AttributeError.
