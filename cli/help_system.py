@@ -453,6 +453,98 @@ TOPICS = {
         border_style="bold #ffb000",
     ),
 
+    "gemini": lambda c: Panel(
+        "[bold #ffb000]agentson export --tool gemini[/]\n\n"
+        "Reads Google AI Studio / Gemini conversation exports — the JSON\n"
+        "files Chrome saves as [i]Google-Search_<topic>_<stamp>.json[/].\n"
+        "Each message carries id, chatGroupId, role, model, displayModel,\n"
+        "contents, created_at, updated_at.\n\n"
+        "Usage:\n"
+        "  agentson list --tool gemini --limit 5\n"
+        "  agentson export --tool gemini --all --input <file.json> --output .\n\n"
+        "[dim]Code: readers/gemini.py[/]",
+        title="[bold]Gemini Reader[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "platform": lambda c: Panel(
+        "[bold #ffb000]agentson platform <subcommand>[/]\n\n"
+        "[bold]scan[/]     detect tools, crawl sessions, classify, write report\n"
+        "[bold]detect[/]   list installed AI tools and their data locations\n"
+        "[bold]serve[/]    local preview server (add --watch for npm-dev reload)\n"
+        "[bold]license[/]  --dev writes a local dev licence (testing only)\n"
+        "[bold]structure[/] premium data pipeline — graph / CSV / training export\n"
+        "[bold]doctor[/]   network troubleshooting probes (see [i]doctor[/])\n\n"
+        "Usage:\n"
+        "  agentson platform serve --port 8090 --watch\n\n"
+        "[dim]Code: agentson_platform/[/]",
+        title="[bold]Platform Commands[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "grc-export": lambda c: Panel(
+        "[bold #ffb000]agentson grc-export --secure --post <url>[/]\n\n"
+        "Premium. Builds a vendor-neutral GRC evidence package from a scan\n"
+        "digest, optionally signs it, and can POST it to an ingestion\n"
+        "endpoint. Signing is ECDSA P-256 with a local key; the public key\n"
+        "travels with the package so the receiver verifies without the\n"
+        "private key.\n\n"
+        "Usage:\n"
+        "  agentson grc-export --digest report.json --secure --output e.json\n"
+        "  agentson grc-export --digest report.json --secure \\\n"
+        "      --post http://localhost:8090/api/evidence\n\n"
+        "[dim]Code: cli/grc_export.py, cli/signing.py[/]",
+        title="[bold]GRC Export (premium)[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "structure": lambda c: Panel(
+        "[bold #ffb000]agentson platform structure[/] (premium)\n\n"
+        "The data pipeline. Reads .agentson JSONL streams and emits:\n"
+        "  graph.json         entities + relations (agent, session, tool)\n"
+        "  entities.csv       tabular for Excel / GRC import\n"
+        "  relations.csv      relation table\n"
+        "  training_module.jsonl  entry stream for fine-tuning\n\n"
+        "Only relations present in the stream are emitted — nothing inferred.\n\n"
+        "Usage:\n"
+        "  agentson platform structure --input . --output ./structure/",
+        title="[bold]Structure Pipeline (premium)[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "doctor": lambda c: Panel(
+        "[bold #ffb000]agentson platform doctor[/]\n\n"
+        "Read-only network probes for enterprise troubleshooting. No\n"
+        "telemetry; each probe reports ok/error plus elapsed_ms.\n\n"
+        "  --dns HOST        resolve a hostname\n"
+        "  --tcp HOST:PORT   TCP connectivity\n"
+        "  --tls HOST:PORT   TLS handshake + certificate details\n"
+        "  --http URL        HTTP status + body preview\n"
+        "  --proxy           show proxy environment variables\n"
+        "  --offline         confirm the core makes no DNS / TCP call\n\n"
+        "[dim]Code: agentson_platform/netdoctor.py[/]",
+        title="[bold]Network Doctor[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "telemetry": lambda c: Panel(
+        "[bold #ffb000]Telemetry — exposed, not shipped[/]\n\n"
+        "AgentSON ships no telemetry. The core licence check reads a local\n"
+        "file only; the free core performs 0 DNS lookups and 0 TCP\n"
+        "connects (measured under socket instrumentation).\n\n"
+        "A telemetry module may be mounted by a developer for their own\n"
+        "deployments. It is documented, not bundled.\n\n"
+        "  Docs: /internal/security mkdocs (telemetry mount page)",
+        title="[bold]Telemetry[/]",
+        box=box.MINIMAL,
+        border_style="dim",
+    ),
+
     "capi": lambda c: Panel(
         "[dim]capi — Cognitive Agent Protocol Interface[/]\n"
         "[dim]by kevin-dp · conceptual reference[/]\n\n"
@@ -561,6 +653,12 @@ def show_encyclopedia():
     toc.add_row("[dim]Conceptual References[/]", "")
     toc.add_row("  capi", "kevin-dp session protocol (conceptual)")
     toc.add_row("  toast", "bivalve-ai assertion format (conceptual)")
+    toc.add_row("  gemini", "Google AI Studio export reader")
+    toc.add_row("  platform", "Scan / detect / serve / license / structure / doctor")
+    toc.add_row("  grc-export", "Premium evidence package (signed)")
+    toc.add_row("  structure", "Premium graph / CSV / training pipeline")
+    toc.add_row("  doctor", "Network troubleshooting probes")
+    toc.add_row("  telemetry", "Mount (dev only) — see /internal/security mkdocs")
 
     c.print(toc)
     c.print()
