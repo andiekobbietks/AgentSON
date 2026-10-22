@@ -231,17 +231,21 @@ agentson search "nightscout" --tool opencode
 # Render as Markdown
 agentson render session.AgentSON --format md
 
-# Push to Supabase (optional)
-agentson push session.AgentSON
+# Validate against the canonical schema
+agentson validate ./sessions/
 ```
 
 ---
 
-## Schema (v1.1)
+## Schema (v1.2 — canonical)
+
+> v1 and v1.1 are deprecated. v1.2 is the canonical schema
+> (`spec/v1.2.json`); individual entries validate against
+> `spec/v1.2-entries.json`.
 
 ```json
 {
-  "$schema": "https://agentson.dev/schema/v1.1.json",
+  "$schema": "https://agentson.dev/schema/v1.2.json",
   "id": "session-2026-07-04-001",
   "task": "Fix the authentication bug in the login flow",
   "outcome": "success",
@@ -261,15 +265,18 @@ agentson push session.AgentSON
 
 | Type | Description |
 |------|-------------|
+| `stream-meta` | Session header; first entry of a JSONL stream |
 | `user-query` | User's input or question |
-| `context` | Additional context (data used, DOM info) |
-| `querying` | Agent is processing |
-| `title` | Section or step title |
-| `thought` | Agent's reasoning/thinking |
+| `thought` | Agent's reasoning |
 | `action` | Tool execution (code + output) |
+| `observation` | Reading from a tool, user, system or sensor |
 | `answer` | Agent's response |
-| `side-effect` | File changes, state mutations |
-| `observation` | Async observation from tool/user/system |
+| `side-effect` | File change or state mutation |
+| `user-feedback` | User's reaction or correction |
+| `system-event` | Runtime or system signal |
+| `capabilities` | What the agent can do |
+| `handoff` | Transfer of control between agents |
+| `presence` | An agent joining or leaving |
 
 ---
 
@@ -310,8 +317,10 @@ Full-featured web viewer at `docs/viewer/`: validation, download, search, sort, 
 ```
 agentson/
 ├── spec/
-│   ├── v1.json              # JSON Schema v1
-│   └── v1.1.json            # JSON Schema v1.1 (trajectory semantics)
+│   ├── v1.json              # JSON Schema v1 (deprecated)
+│   ├── v1.1.json            # JSON Schema v1.1 (deprecated)
+│   ├── v1.2.json            # JSON Schema v1.2 (canonical)
+│   └── v1.2-entries.json    # v1.2 per-entry validator
 ├── readers/                 # Tool-specific readers
 │   ├── opencode.py          # ✅ Working
 │   ├── minimax.py           # ✅ Working

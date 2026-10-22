@@ -392,10 +392,6 @@ def cmd_list(args):
         print()
 
 
-def cmd_search(args):
-    """Search AgentSON files for a term."""
-
-
 def cmd_render(args):
     """Render an AgentSON file to different formats."""
     with open(args.input, "r", encoding="utf-8") as f:
