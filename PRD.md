@@ -136,7 +136,7 @@ AgentSON is:
 
 1. **A specification** — a JSON Schema defining the structure of agent session data
 2. **A set of readers** — SQLite parsers for each supported tool's database
-3. **A normalizer** — converts tool-specific schemas into the AgentSON format
+3. **A canonicaliser** — converts tool-specific schemas into the AgentSON format
 4. **A CLI** — command-line tool for exporting, searching, and rendering sessions
 5. **A VSCode extension** — hydrates context across tools within the IDE
 6. **An export API** — programmatic access to session data from any tool
@@ -460,7 +460,7 @@ agentson/
 │   ├── chrome_devtools.py       # Chrome DevTools AI parser
 │   ├── cursor.py                # Cursor reader (planned)
 │   └── claude_code.py           # Claude Code reader (planned)
-├── normalizer/
+├── canonicaliser/
 │   ├── __init__.py
 │   └── convert.py               # Tool-specific → AgentSON conversion
 ├── renderers/

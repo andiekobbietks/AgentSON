@@ -54,7 +54,7 @@ This paper does **not** propose a reconstruction or gap-filling system. Reconstr
 5. **Versioned schema with backward compatibility** — schema URI pinning, documented upgrade path for v1.x
 
 **Evidence (that the representation generalises):**
-6. **Cross-runtime import/export architecture** — reader pattern for tool-specific extraction, normalizer pipeline, validator; implemented for 7 ecosystems (opencode, Claude Code, ChatGPT, MiniMax, Chrome DevTools AI, Copilot Chat, FreeStyle Libre 2)
+6. **Cross-runtime import/export architecture** — reader pattern for tool-specific extraction, canonicaliser pipeline, validator; implemented for 7 ecosystems (opencode, Claude Code, ChatGPT, MiniMax, Chrome DevTools AI, Copilot Chat, FreeStyle Libre 2)
 7. **Multi-ecosystem evaluation** — format fidelity, cross-tool information retention, and downstream application compatibility across AI coding tools
 8. **Regulated domain validation** — healthcare compliance case study (FreeStyle Libre 2, GDPR Article 20) demonstrating robustness in a highly regulated environment
 
@@ -233,7 +233,7 @@ Tool X storage (SQLite / JSONL / CSV / DOM)
 Reader (tool-specific extraction logic)
     │
     ▼
-Normalizer (maps tool-native events → AgentSON typed entries)
+Canonicaliser (maps tool-native events → AgentSON typed entries)
     │
     ▼
 Validator (schema validation + event constraint checks)
@@ -452,7 +452,7 @@ AgentSON occupies a unique position: the only system targeting **portable, file-
 
 From AER (arXiv 2603.21692):
 
-> **Proposition.** Given only the persisted computational state, reasoning provenance cannot in general be faithfully reconstructed as a normalized, schema-conforming, cross-run-comparable representation without contemporaneous capture at execution time.
+> **Proposition.** Given only the persisted computational state, reasoning provenance cannot in general be faithfully reconstructed as a canonicalised, schema-conforming, cross-run-comparable representation without contemporaneous capture at execution time.
 
 **Three sources of non-identifiability:**
 1. Intent multiplicity — different reasoning paths produce identical state

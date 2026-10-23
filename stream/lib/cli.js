@@ -2,6 +2,15 @@
 import { readFileSync, writeFileSync, appendFileSync, watchFile, existsSync, mkdirSync } from 'fs';
 import { resolve } from 'path';
 
+// ADR-022 decision 2: mode is a STREAM mode (single|multi|collab), not the
+// name of the file format. JSONL is the only format (ADR-015), so "jsonl"
+// carried no information and broke ADR-017's detection rule. More than one
+// agent, excluding "user", means multi.
+function streamMode(agents) {
+  const peers = (agents || []).filter((a) => a && a.id !== 'user');
+  return peers.length > 1 ? 'multi' : 'single';
+}
+
 const COMMANDS = {
   init: cmdInit,
   append: cmdAppend,
@@ -35,15 +44,16 @@ async function cmdInit() {
   const streamId = process.argv[3] || 'collab-' + Date.now();
   const streamPath = getStreamPath();
 
+  const streamAgents = [
+    { id: 'opencode', name: 'opencode', capabilities: ['bash', 'filesystem', 'search', 'read', 'write', 'edit'] },
+    { id: 'chrome-nano', name: 'Chrome Gemini Nano', capabilities: ['browser', 'prompt-api', 'dom-inspection', 'performance'] }
+  ];
   const meta = {
     type: 'stream-meta',
     stream_id: streamId,
     timestamp: Date.now(),
-    agents: [
-      { id: 'opencode', name: 'opencode', capabilities: ['bash', 'filesystem', 'search', 'read', 'write', 'edit'] },
-      { id: 'chrome-nano', name: 'Chrome Gemini Nano', capabilities: ['browser', 'prompt-api', 'dom-inspection', 'performance'] }
-    ],
-    mode: 'jsonl'
+    agents: streamAgents,
+    mode: streamMode(streamAgents)
   };
 
   appendFileSync(streamPath, JSON.stringify(meta) + '\n', 'utf-8');

@@ -23,50 +23,43 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Create site directory structure and global CSS with design tokens",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build index.html (homepage with live taxonomy demo)",
-      "status": "in_progress",
-      "timestamp": null
+      "status": "in_progress"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build extensions.html (both extensions with install guides)",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build research.html (theory and references)",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build install.html (detailed install guide)",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Create shared nav.js and site.js",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Add Netlify config and README",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "user-query",

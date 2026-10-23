@@ -33,6 +33,83 @@ except ImportError:
 
 _console = Console(force_terminal=True, legacy_windows=False)
 
+# ── Wordmark ────────────────────────────────────────────────────────────
+# Generated with figlet's "larry3d" face. Every row is padded to a fixed 65
+# columns so the glyph grid stays intact; the SON half begins at column 40.
+# Regenerate with: pyfiglet -f larry3d AgentSON
+#
+# Correction, 2026-10-21: an earlier revision of this comment claimed the
+# "banner" face at 59 columns with SON at 35. Measured: 9 rows x exactly 65
+# columns, and the split at 40 is the one that yields Agent | SON.
+
+WORDMARK = (
+    ' ______                         __    ____    _____   __  __     ',
+    '/\\  _  \\                       /\\ \\__/\\  _`\\ /\\  __`\\/\\ \\/\\ \\    ',
+    '\\ \\ \\L\\ \\     __      __    ___\\ \\ ,_\\ \\,\\L\\_\\ \\ \\/\\ \\ \\ `\\\\ \\   ',
+    " \\ \\  __ \\  /'_ `\\  /'__`\\/' _ `\\ \\ \\/\\/_\\__ \\\\ \\ \\ \\ \\ \\ , ` \\  ",
+    '  \\ \\ \\/\\ \\/\\ \\L\\ \\/\\  __//\\ \\/\\ \\ \\ \\_ /\\ \\L\\ \\ \\ \\_\\ \\ \\ \\`\\ \\ ',
+    '   \\ \\_\\ \\_\\ \\____ \\ \\____\\ \\_\\ \\_\\ \\__\\\\ `\\____\\ \\_____\\ \\_\\ \\_\\',
+    '    \\/_/\\/_/\\/___L\\ \\/____/\\/_/\\/_/\\/__/ \\/_____/\\/_____/\\/_/\\/_/',
+    '              /\\____/                                            ',
+    '              \\_/__/                                             ',
+)
+WORDMARK_SON_START = 40
+WORDMARK_TAGLINE = "AgentSON Platform — Enterprise Compliance & Audit"
+
+# PLATFORM in the same larry3d face, generated once with pyfiglet and baked
+# in as a constant so pyfiglet is never a runtime dependency.
+WORDMARK_PLATFORM = (
+    ' ____    __       ______  ______  ____    _____   ____                ',
+    "/\\  _`\\ /\\ \\     /\\  _  \\/\\__  _\\/\\  _`\\ /\\  __`\\/\\  _`\\   /'\\_/`\\    ",
+    '\\ \\ \\L\\ \\ \\ \\    \\ \\ \\L\\ \\/_/\\ \\/\\ \\ \\L\\_\\ \\ \\/\\ \\ \\ \\L\\ \\/\\      \\   ',
+    ' \\ \\ ,__/\\ \\ \\  __\\ \\  __ \\ \\ \\ \\ \\ \\  _\\/\\ \\ \\ \\ \\ \\ ,  /\\ \\ \\__\\ \\  ',
+    '  \\ \\ \\/  \\ \\ \\L\\ \\\\ \\ \\/\\ \\ \\ \\ \\ \\ \\ \\/  \\ \\ \\_\\ \\ \\ \\\\ \\ \\\\ \\ \\_/\\ \\ ',
+    '   \\ \\_\\   \\ \\____/ \\ \\_\\ \\_\\ \\ \\_\\ \\ \\_\\   \\ \\_____\\ \\_\\ \\_\\ \\_\\\\ \\_\\',
+    '    \\/_/    \\/___/   \\/_/\\/_/  \\/_/  \\/_/    \\/_____/\\/_/\\/ /\\/_/ \\/_/',
+)
+
+
+def wordmark_text(tagline: str = WORDMARK_TAGLINE) -> Text:
+    """The wordmark as one renderable: Agent in brand amber, SON bold.
+
+    The split is by fixed column, not by string search, because the two halves
+    share rows in the glyph grid.
+    """
+    t = Text()
+    for i, row in enumerate(WORDMARK):
+        if i:
+            t.append("\n")
+        t.append(row[:WORDMARK_SON_START], style="#ffb000")
+        t.append(row[WORDMARK_SON_START:], style="bold #ffb000")
+    if tagline:
+        t.append("\n\n")
+        t.append(f"  {tagline}", style="dim")
+    return t
+
+
+def show_wordmark(tagline: str = WORDMARK_TAGLINE) -> None:
+    """Print the logo + tagline above the Encyclopedia.
+
+    Panel width follows the art, not the other way round: the larry3d face is
+    65 columns against banner's 59, and a fixed width would clip the 3D
+    outline mid-glyph. The tagline sets a floor so it never wraps, and the
+    console width caps it so a narrow terminal degrades instead of shredding
+    the grid.
+    """
+    art_w = max(len(r) for r in WORDMARK)
+    tag_w = (len(tagline) + 4) if tagline else 0
+    width = max(art_w + 4, tag_w + 4, 40)
+    width = min(width, max(_console.width - 2, 40))
+    _console.print(Panel(
+        wordmark_text(tagline),
+        box=box.MINIMAL,
+        border_style="bold #ffb000",
+        width=width,
+        padding=(0, 1),
+    ))
+    _console.print()
+
+
 # ── Onboarding ──────────────────────────────────────────────────────────
 
 ONBOARDING_FLAG = Path.home() / ".agentson_onboarded"
@@ -63,7 +140,7 @@ def show_onboarding():
         width=60,
     ))
     c.print()
-    c.print("  [dim]AgentSON normalises agent traces from every major protocol[/]")
+    c.print("  [dim]AgentSON canonicalises agent traces from every major protocol[/]")
     c.print("  [dim]into one portable JSONL format. Export to any tool.[/]")
     c.print("  [dim]Distribute via Docker Hub or LXD Hub.[/]")
     c.print()
@@ -90,7 +167,7 @@ def show_tour():
          "  [blue]coordination[/] · [green]execution[/] · [amber]input[/]"),
         ("[bold #a0d060]Protocol Adapters[/]",
          "MCP · A2A · AGNTCY · ChatGPT\n"
-         "Each adapter normalises a protocol's traces into AgentSON's\n"
+         "Each adapter canonicalises a protocol's traces into AgentSON's\n"
          "12 primitives. No silent data loss — every unmapped field\n"
          "is recorded in a [i]_loss[/] array."),
         ("[bold #ffb000]Export & Read[/]",
@@ -163,7 +240,7 @@ TOPICS = {
         "and quickly became the de facto standard for tool-enabled agents.\n\n"
         "[bold]Why it matters[/]\n"
         "MCP is the most widely deployed agent protocol. If your agent calls\n"
-        "tools, it almost certainly speaks MCP. AgentSON normalises MCP's\n"
+        "tools, it almost certainly speaks MCP. AgentSON canonicalises MCP's\n"
         "tool_call/tool_result pattern into action/observation primitives,\n"
         "capturing the provenance MCP itself doesn't store.\n\n"
         "[bold]AgentSON mapping[/]\n"
@@ -376,6 +453,98 @@ TOPICS = {
         border_style="bold #ffb000",
     ),
 
+    "gemini": lambda c: Panel(
+        "[bold #ffb000]agentson export --tool gemini[/]\n\n"
+        "Reads Google AI Studio / Gemini conversation exports — the JSON\n"
+        "files Chrome saves as [i]Google-Search_<topic>_<stamp>.json[/].\n"
+        "Each message carries id, chatGroupId, role, model, displayModel,\n"
+        "contents, created_at, updated_at.\n\n"
+        "Usage:\n"
+        "  agentson list --tool gemini --limit 5\n"
+        "  agentson export --tool gemini --all --input <file.json> --output .\n\n"
+        "[dim]Code: readers/gemini.py[/]",
+        title="[bold]Gemini Reader[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "platform": lambda c: Panel(
+        "[bold #ffb000]agentson platform <subcommand>[/]\n\n"
+        "[bold]scan[/]     detect tools, crawl sessions, classify, write report\n"
+        "[bold]detect[/]   list installed AI tools and their data locations\n"
+        "[bold]serve[/]    local preview server (add --watch for npm-dev reload)\n"
+        "[bold]license[/]  --dev writes a local dev licence (testing only)\n"
+        "[bold]structure[/] premium data pipeline — graph / CSV / training export\n"
+        "[bold]doctor[/]   network troubleshooting probes (see [i]doctor[/])\n\n"
+        "Usage:\n"
+        "  agentson platform serve --port 8090 --watch\n\n"
+        "[dim]Code: agentson_platform/[/]",
+        title="[bold]Platform Commands[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "grc-export": lambda c: Panel(
+        "[bold #ffb000]agentson grc-export --secure --post <url>[/]\n\n"
+        "Premium. Builds a vendor-neutral GRC evidence package from a scan\n"
+        "digest, optionally signs it, and can POST it to an ingestion\n"
+        "endpoint. Signing is ECDSA P-256 with a local key; the public key\n"
+        "travels with the package so the receiver verifies without the\n"
+        "private key.\n\n"
+        "Usage:\n"
+        "  agentson grc-export --digest report.json --secure --output e.json\n"
+        "  agentson grc-export --digest report.json --secure \\\n"
+        "      --post http://localhost:8090/api/evidence\n\n"
+        "[dim]Code: cli/grc_export.py, cli/signing.py[/]",
+        title="[bold]GRC Export (premium)[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "structure": lambda c: Panel(
+        "[bold #ffb000]agentson platform structure[/] (premium)\n\n"
+        "The data pipeline. Reads .agentson JSONL streams and emits:\n"
+        "  graph.json         entities + relations (agent, session, tool)\n"
+        "  entities.csv       tabular for Excel / GRC import\n"
+        "  relations.csv      relation table\n"
+        "  training_module.jsonl  entry stream for fine-tuning\n\n"
+        "Only relations present in the stream are emitted — nothing inferred.\n\n"
+        "Usage:\n"
+        "  agentson platform structure --input . --output ./structure/",
+        title="[bold]Structure Pipeline (premium)[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "doctor": lambda c: Panel(
+        "[bold #ffb000]agentson platform doctor[/]\n\n"
+        "Read-only network probes for enterprise troubleshooting. No\n"
+        "telemetry; each probe reports ok/error plus elapsed_ms.\n\n"
+        "  --dns HOST        resolve a hostname\n"
+        "  --tcp HOST:PORT   TCP connectivity\n"
+        "  --tls HOST:PORT   TLS handshake + certificate details\n"
+        "  --http URL        HTTP status + body preview\n"
+        "  --proxy           show proxy environment variables\n"
+        "  --offline         confirm the core makes no DNS / TCP call\n\n"
+        "[dim]Code: agentson_platform/netdoctor.py[/]",
+        title="[bold]Network Doctor[/]",
+        box=box.HEAVY,
+        border_style="bold #ffb000",
+    ),
+
+    "telemetry": lambda c: Panel(
+        "[bold #ffb000]Telemetry — exposed, not shipped[/]\n\n"
+        "AgentSON ships no telemetry. The core licence check reads a local\n"
+        "file only; the free core performs 0 DNS lookups and 0 TCP\n"
+        "connects (measured under socket instrumentation).\n\n"
+        "A telemetry module may be mounted by a developer for their own\n"
+        "deployments. It is documented, not bundled.\n\n"
+        "  Docs: /internal/security mkdocs (telemetry mount page)",
+        title="[bold]Telemetry[/]",
+        box=box.MINIMAL,
+        border_style="dim",
+    ),
+
     "capi": lambda c: Panel(
         "[dim]capi — Cognitive Agent Protocol Interface[/]\n"
         "[dim]by kevin-dp · conceptual reference[/]\n\n"
@@ -435,12 +604,12 @@ def show_encyclopedia():
 
     c = _console
     c.clear()
-    c.print()
+    show_wordmark()
 
     # Header
     c.print(Panel(
         "[bold #ffb000]AgentSON Encyclopedia[/]\n"
-        "[dim]The universal provenance format — explained[/]\n\n"
+        "[dim]AgentSON Platform — Enterprise Compliance & Audit — explained[/]\n\n"
         "[dim]Select a topic below or run:[/]\n"
         "[bold]  agentson help <topic>[/]",
         box=box.DOUBLE,
@@ -479,10 +648,17 @@ def show_encyclopedia():
     toc.add_row("  redact", "Redact PII before sharing")
     toc.add_row("  publish", "Publish to Docker Hub / LXD Hub")
     toc.add_row("  runbook", "Replay session as runbook (planned)")
+    toc.add_row("  telemetry", "Telemetry mount docs — see /internal/security mkdocs (dev only; not shipped)")
     toc.add_row("", "")
     toc.add_row("[dim]Conceptual References[/]", "")
     toc.add_row("  capi", "kevin-dp session protocol (conceptual)")
     toc.add_row("  toast", "bivalve-ai assertion format (conceptual)")
+    toc.add_row("  gemini", "Google AI Studio export reader")
+    toc.add_row("  platform", "Scan / detect / serve / license / structure / doctor")
+    toc.add_row("  grc-export", "Premium evidence package (signed)")
+    toc.add_row("  structure", "Premium graph / CSV / training pipeline")
+    toc.add_row("  doctor", "Network troubleshooting probes")
+    toc.add_row("  telemetry", "Mount (dev only) — see /internal/security mkdocs")
 
     c.print(toc)
     c.print()

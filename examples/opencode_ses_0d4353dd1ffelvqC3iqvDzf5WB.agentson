@@ -23,43 +23,37 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Investigate BSOD error WHEA_UNCORRECTABLE_ERROR using enterprise root cause analysis",
-      "status": "in_progress",
-      "timestamp": null
+      "status": "in_progress"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Gather system information and crash dumps",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Analyze event logs for hardware errors",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Provide fixability score and reliability assessment",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Advise on PC temperature improvement without stress testing",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Ensure PowerShell and Python tools work for diagnostics",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "user-query",

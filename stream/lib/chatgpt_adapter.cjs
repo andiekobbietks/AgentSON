@@ -3,6 +3,15 @@ const fs = require('fs');
 const { appendFileSync, existsSync } = require('fs');
 const { resolve } = require('path');
 
+// ADR-022 decision 2: mode is a STREAM mode (single|multi|collab), not the
+// name of the file format. JSONL is the only format (ADR-015), so "jsonl"
+// carried no information and broke ADR-017's detection rule. More than one
+// agent, excluding "user", means multi.
+function streamMode(agents) {
+  const peers = (agents || []).filter((a) => a && a.id !== 'user');
+  return peers.length > 1 ? 'multi' : 'single';
+}
+
 // AgentSON ChatGPT Adapter
 // Usage: node chatgpt_adapter.cjs <session-id-or-url> [output-stream]
 
@@ -130,15 +139,16 @@ async function main() {
     
     // Initialize stream if needed
     if (!existsSync(STREAM)) {
+        const streamAgents = [
+            { id: 'chatgpt-adapter', capabilities: ['export'] },
+            { id: 'user', capabilities: ['query'] }
+        ];
         emit({
             type: 'stream-meta',
             stream_id: `chatgpt-export-${sessionId}`,
             timestamp: Date.now(),
-            agents: [
-                { id: 'chatgpt-adapter', capabilities: ['export'] },
-                { id: 'user', capabilities: ['query'] }
-            ],
-            mode: 'jsonl',
+            agents: streamAgents,
+            mode: streamMode(streamAgents),
             source: {
                 platform: 'chatgpt',
                 sessionId: sessionId,

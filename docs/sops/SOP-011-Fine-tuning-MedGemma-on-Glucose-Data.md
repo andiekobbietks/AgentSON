@@ -30,25 +30,57 @@ Convert glucose data to MedGemma format:
 
 ```python
 import json
+from datetime import datetime, timezone
 
 training_data = []
 
-# Read AgentSON glucose file
-with open("libre_libre_data.agentson", "r") as f:
+# Read AgentSON glucose file (v1.2: readings are `observation` entries)
+with open("libre_libre_data.agentson", "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Convert to training format
-for entry in data["entries"]:
-    if entry["type"] == "glucose_reading":
-        training_data.append({
-            "input": f"Glucose reading at {entry['timestamp']}: {entry['data']['value']} mmol/L",
-            "output": f"Status: {entry['status']}. {'Normal range.' if entry['status'] == 'normal' else 'Attention required.'}"
-        })
+# Convert to training format.
+# v1.2 uses `type: "observation"` for sensor readings (not
+# "glucose_reading"). Filter on source + numeric value instead.
+for entry in data.get("entries", []):
+    d = entry.get("data") or {}
+    if entry.get("source") != "sensor":
+        continue
+    if not isinstance(d.get("value"), (int, float)):
+        continue
+
+    # Timestamp is integer ms in v1.2; render as ISO for the prompt.
+    ts_ms = entry.get("timestamp")
+    if isinstance(ts_ms, (int, float)):
+        ts_iso = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).isoformat()
+    else:
+        ts_iso = str(ts_ms)
+
+    labels = entry.get("labels") or {}
+    status = entry.get("status", "unknown")
+    reading_type = d.get("reading_type", "CGM")
+    provenance = entry.get("provenance") or {}
+
+    training_data.append({
+        "input": (
+            f"Glucose reading at {ts_iso}: {d['value']} {d.get('unit', 'mmol/L')} "
+            f"(source: {reading_type}, provenance: {provenance.get('confidence', 'unknown')})"
+        ),
+        "output": (
+            f"Status: {status}. "
+            f"Pattern: {labels.get('pattern', 'unlabelled')}. "
+            f"Hypo risk (2h): {labels.get('hypo_risk_2h', 'unknown')}. "
+            + ("Normal range." if status == "normal" else "Attention required.")
+        ),
+    })
 
 # Save training data
-with open("glucose_training_data.json", "w") as f:
+with open("glucose_training_data.json", "w", encoding="utf-8") as f:
     json.dump(training_data, f, indent=2)
 ```
+
+> **Note:** for time-series foundation models (GlucoFM, Chronos-2, GluFormer, ...),
+> export a flat series instead with:
+> `agentson timeseries libre_libre_data.agentson --format csv`
 
 ### Step 2: Fine-tune with LoRA
 

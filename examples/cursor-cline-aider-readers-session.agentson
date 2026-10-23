@@ -23,43 +23,37 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build cursor.py reader (SQLite key-value store)",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build cline.py reader (JSON files)",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Build aider.py reader (Markdown log)",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Write tests for all three readers",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Update __init__.py and CLI",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Run tests to verify",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "user-query",

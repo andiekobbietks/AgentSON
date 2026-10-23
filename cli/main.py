@@ -9,6 +9,11 @@ import os
 import sys
 from pathlib import Path
 from typing import List
+import sys as _sys
+_TOOLS_DIR = str(Path(__file__).resolve().parent.parent / "tools")
+if _TOOLS_DIR not in _sys.path:
+    _sys.path.insert(0, _TOOLS_DIR)
+from cli.help_system import WORDMARK, WORDMARK_SON_START, WORDMARK_TAGLINE
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,8 +25,48 @@ def get_default_db_paths():
     return {
         "opencode": home / ".local" / "share" / "opencode" / "opencode.db",
         "minimax": home / ".minimax" / "sqlite.db",
-        "antigravity": home / ".gemini" / "antigravity-ide" / "conversations"
+        "antigravity": home / ".gemini" / "antigravity-ide" / "conversations",
+        # VibeEdge stores its chats in Cloudflare Durable Object SQLite under
+        # the local wrangler state dir, not in a single database file.
+        "vibeedge": home / "vibeedge-studio" / "vibesdk" / ".wrangler",
+        "cursor": home / "AppData" / "Roaming" / "Cursor" / "User" / "globalStorage" / "state.vscdb",
+        "cline": home / "AppData" / "Roaming" / "Code" / "User" / "globalStorage" / "saoudrizwan.claude-dev",
+        "aider": Path.cwd(),
     }
+
+
+def _load_agentson(path):
+    """Load an AgentSON file that may be single-document JSON or JSONL.
+
+    JSONL streams (one entry per line) are wrapped into a synthetic session
+    document so downstream renderers/searchers/fine-tuners can treat every
+    file uniformly. Returns a dict.
+    """
+    from pathlib import Path as _P
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read().strip()
+    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+    is_jsonl = len(lines) > 1
+    if is_jsonl:
+        try:
+            json.loads(lines[0])
+            json.loads(lines[1])
+        except json.JSONDecodeError:
+            is_jsonl = False
+    if is_jsonl:
+        entries = [json.loads(ln) for ln in lines]
+        stem = _P(path).stem
+        return {
+            "id": entries[0].get("stream_id", stem) if isinstance(entries[0], dict) else stem,
+            "tool": {"name": "other", "session_id": stem},
+            "entries": entries,
+            "_format": "jsonl",
+        }
+    data = json.loads(content)
+    if isinstance(data, list):
+        stem = _P(path).stem
+        return {"id": stem, "tool": {"name": "other", "session_id": stem}, "entries": data, "_format": "jsonl"}
+    return data
 
 
 def cmd_export(args):
@@ -129,6 +174,28 @@ def cmd_export(args):
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False, default=str)
                 print(f"Exported to {output_path}")
+    elif args.tool == "gemini":
+        from readers.gemini import read as read_gemini, list_sessions as list_gemini
+        inp = args.input or args.output
+        if not inp:
+            print("Error: use --input <path-to-Google-Search_*.json> for gemini", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_gemini(str(inp))
+            for s in sessions:
+                data = read_gemini(str(inp), s["id"])
+                out = Path(args.output) / f"gemini_{s['id']}.agentson"
+                with open(out, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                print(f"Exported: {out}")
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            sid = args.session or "gemini-export"
+            data = read_gemini(str(inp), sid)
+            out = Path(args.output) / f"gemini_{sid}.agentson"
+            with open(out, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {out}")
     elif args.tool == "chrome-devtools":
         from readers.chrome_devtools import read as read_chrome, list_exports as list_chrome
         
@@ -174,6 +241,78 @@ def cmd_export(args):
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"Exported to {output_path}")
+    elif args.tool == "cursor":
+        from readers.cursor import list_sessions as list_cursor, read as read_cursor
+        db_path = db_paths["cursor"]
+        if not db_path.exists():
+            print(f"Error: Cursor database not found at {db_path}", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_cursor(str(db_path), args.limit)
+            for session in sessions:
+                sid = session.get("id") or session.get("composer_id")
+                print(f"Exporting: {session.get('title', sid)} ({sid})")
+                data = read_cursor(str(db_path), sid)
+                output_path = Path(args.output) / f"cursor_{sid}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_cursor(str(db_path), args.session)
+            output_path = Path(args.output) / f"cursor_{args.session}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
+    elif args.tool == "cline":
+        from readers.cline import list_sessions as list_cline, read as read_cline
+        tasks_dir = db_paths["cline"]
+        if not tasks_dir.exists():
+            print(f"Error: Cline tasks directory not found at {tasks_dir}", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_cline(str(tasks_dir), args.limit)
+            for session in sessions:
+                sid = session.get("id") or session.get("task_id")
+                print(f"Exporting: {session.get('title', sid)} ({sid})")
+                data = read_cline(str(tasks_dir), sid)
+                output_path = Path(args.output) / f"cline_{sid}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_cline(str(tasks_dir), args.session)
+            output_path = Path(args.output) / f"cline_{args.session}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
+    elif args.tool == "aider":
+        from readers.aider import list_sessions as list_aider, read as read_aider
+        repo_dir = db_paths["aider"]
+        if not repo_dir.exists():
+            print(f"Error: Aider repo directory not found at {repo_dir}", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_aider(str(repo_dir), args.limit)
+            for session in sessions:
+                sid = session.get("id") or session.get("session_id")
+                print(f"Exporting: {session.get('title', sid)} ({sid})")
+                data = read_aider(str(repo_dir), sid)
+                output_path = Path(args.output) / f"aider_{sid}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            data = read_aider(str(repo_dir), args.session)
+            output_path = Path(args.output) / f"aider_{args.session or 'session'}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
     elif args.tool == "claude-code":
         from readers.claude_code import ClaudeCodeReader
 
@@ -202,6 +341,54 @@ def cmd_export(args):
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             print(f"Exported to {output_path}")
+    elif args.tool == "vibeedge":
+        from readers.vibeedge import VibeedgeReader
+
+        root = args.input or db_paths["vibeedge"]
+        if not Path(root).exists():
+            print(f"Error: VibeEdge wrangler state not found at {root}", file=sys.stderr)
+            sys.exit(1)
+
+        reader = VibeedgeReader(root)
+        try:
+            # Create the output dir up front: the other branches assume it
+            # exists and fail with FileNotFoundError on a fresh path.
+            Path(args.output).mkdir(parents=True, exist_ok=True)
+            if args.all:
+                sessions = reader.list_sessions()
+                if not sessions:
+                    print("No VibeEdge sessions found", file=sys.stderr)
+                    sys.exit(1)
+                for session in sessions:
+                    sid = session["id"]
+                    print(f"Exporting: {session['backend']}:{sid} "
+                          f"({session['messages']} msgs) {session['preview']}")
+                    data = reader.read_session(sid)
+                    if data:
+                        output_path = (Path(args.output) /
+                                       f"vibeedge_{sid}.agentson")
+                        with open(output_path, "w", encoding="utf-8") as f:
+                            json.dump(data, f, indent=2,
+                                      ensure_ascii=False, default=str)
+                print(f"Exported {len(sessions)} sessions")
+            else:
+                if not args.session:
+                    print("Error: --session required when not using --all",
+                          file=sys.stderr)
+                    sys.exit(1)
+                data = reader.read_session(args.session)
+                if not data:
+                    print(f"Error: Session {args.session} not found",
+                          file=sys.stderr)
+                    sys.exit(1)
+                output_path = (Path(args.output) /
+                               f"vibeedge_{args.session}.agentson")
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False,
+                              default=str)
+                print(f"Exported to {output_path}")
+        finally:
+            reader.disconnect()
     else:
         sys.exit(1)
 
@@ -238,6 +425,21 @@ def cmd_list(args):
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
+    elif args.tool == "gemini":
+        from readers.gemini import list_sessions as list_gemini
+        inp = Path(args.input) if args.input else (Path.home() / "Downloads")
+        if inp.is_file():
+            hits = [inp]
+        elif inp.is_dir():
+            hits = sorted(inp.glob("Google-Search_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        else:
+            hits = []
+        sessions = []
+        for h in hits[:args.limit]:
+            for s in list_gemini(str(h)):
+                s["source_file"] = str(h)
+                sessions.append(s)
+        sessions = sessions[:args.limit]
     elif args.tool == "chrome-devtools":
         from readers.chrome_devtools import list_exports as list_chrome
         
@@ -251,11 +453,44 @@ def cmd_list(args):
             sys.exit(1)
         
         sessions = list_chrome(input_dir)
+    elif args.tool == "cursor":
+        from readers.cursor import list_sessions as list_cursor
+        db_path = db_paths["cursor"]
+        if not db_path.exists():
+            print(f"Error: Cursor database not found at {db_path}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_cursor(str(db_path), args.limit)
+    elif args.tool == "cline":
+        from readers.cline import list_sessions as list_cline
+        tasks_dir = db_paths["cline"]
+        if not tasks_dir.exists():
+            print(f"Error: Cline tasks directory not found at {tasks_dir}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_cline(str(tasks_dir), args.limit)
+    elif args.tool == "aider":
+        from readers.aider import list_sessions as list_aider
+        repo_dir = db_paths["aider"]
+        if not repo_dir.exists():
+            print(f"Error: Aider repo directory not found at {repo_dir}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_aider(str(repo_dir), args.limit)
     elif args.tool == "claude-code":
         from readers.claude_code import ClaudeCodeReader
 
         reader = ClaudeCodeReader()
         sessions = reader.list_sessions()
+    elif args.tool == "vibeedge":
+        from readers.vibeedge import VibeedgeReader
+
+        root = args.input or db_paths["vibeedge"]
+        if not Path(root).exists():
+            print(f"Error: VibeEdge wrangler state not found at {root}", file=sys.stderr)
+            sys.exit(1)
+        reader = VibeedgeReader(root)
+        try:
+            sessions = reader.list_sessions(args.limit)
+        finally:
+            reader.disconnect()
     else:
         print(f"Error: Unknown tool '{args.tool}'", file=sys.stderr)
         sys.exit(1)
@@ -276,6 +511,12 @@ def cmd_list(args):
             print(f"Project: {s.get('project_hash', 'N/A')}")
             print(f"Path:    {s.get('fullPath', s.get('project_path', 'N/A'))}")
             print(f"Msgs:    {s.get('messageCount', 'N/A')}")
+        elif args.tool == "vibeedge":
+            print(f"ID:      {s['id']}")
+            print(f"Backend: {s.get('backend', 'N/A')}")
+            print(f"Msgs:    {s.get('messages', 'N/A')}")
+            print(f"Span:    {s.get('started', 'N/A')} -> {s.get('ended', 'N/A')}")
+            print(f"Preview: {s.get('preview', 'N/A')}")
         else:
             print(f"ID:      {s['id']}")
             print(f"Title:   {s.get('title', 'N/A')}")
@@ -285,15 +526,10 @@ def cmd_list(args):
         print()
 
 
-def cmd_search(args):
-    """Search AgentSON files for a term."""
-
-
 def cmd_render(args):
     """Render an AgentSON file to different formats."""
-    with open(args.input, "r", encoding="utf-8") as f:
-        data = json.load(f)
-        
+    data = _load_agentson(args.input)
+
     if args.format == "md":
         output = render_markdown(data)
     elif args.format == "html":
@@ -317,7 +553,7 @@ def cmd_excel(args):
     # Optionally redact PII first
     input_path = args.input
     if args.redact:
-        from tools.pii_redactor import PIIRedactor
+        from pii_redactor import PIIRedactor
         redactor = PIIRedactor(use_model=False)
         
         if args.all:
@@ -345,7 +581,7 @@ def cmd_excel(args):
 
 def cmd_redact(args):
     """Redact PII from AgentSON files."""
-    from tools.pii_redactor import PIIRedactor, redact_all
+    from pii_redactor import PIIRedactor, redact_all
     
     if args.all:
         redact_all(args.input, args.output or "examples_redacted")
@@ -495,9 +731,8 @@ def cmd_finetune(args):
     """Export AgentSON session to fine-tuning format."""
     from exporters.finetune import export_training_data
     
-    with open(args.input, "r", encoding="utf-8") as f:
-        session = json.load(f)
-    
+    session = _load_agentson(args.input)
+
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -665,9 +900,8 @@ def cmd_search(args):
     
     for filepath in files:
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            
+            data = _load_agentson(filepath)
+
             matches = _search_session(data, term)
             if matches:
                 results.append({
@@ -717,7 +951,67 @@ def _search_session(data: dict, term: str) -> List[dict]:
     return matches
 
 
+def cmd_grc_export(args) -> None:
+    from cli.licensing import require_premium
+    from cli.grc_export import build_evidence, write_evidence
+    from cli.barcode import platform_upgrade_url
+    from datetime import datetime, timezone
+    from pathlib import Path
+    import os
+
+    if not require_premium("grc-export"):
+        # Print barcode pointing at upgrade when premium absent
+        try:
+            from cli.barcode import render_text
+            print(render_text(platform_upgrade_url()))
+        except Exception:
+            pass
+        return
+
+    digest_path = args.digest
+    out = args.output or f"grc_evidence_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+    package = build_evidence(digest_path=digest_path)
+    if getattr(args, "secure", False):
+        from cli.signing import sign_package
+        package = sign_package(package)
+    write_evidence(package, out, args.format)
+    print(f"GRC evidence exported: {out}  (secure={getattr(args, 'secure', False)})")
+    if args.post:
+        import urllib.request, time
+        data = json.dumps(package).encode("utf-8")
+        for attempt in range(1, 4):
+            req = urllib.request.Request(
+                args.post, data=data,
+                headers={"Content-Type": "application/json", "X-AgentSON-Secure": str(getattr(args,"secure",False))},
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    print(f"POSTed to {args.post}: HTTP {resp.status} (attempt {attempt})")
+                    break
+            except Exception as e:
+                print(f"POST to {args.post} failed (attempt {attempt}/3): {e}")
+                if attempt < 3:
+                    time.sleep(2 ** attempt)  # 2s, 4s backoff
+            else:
+                break
+
+
+def _display_banner() -> None:
+    """The AgentSON ASCII wordmark + version — clean, no duplication."""
+    ver = '0.1.0'
+    # Clean: wordmark + baked PLATFORM + version + tagline, no pyfiglet retry
+    from cli.help_system import WORDMARK, WORDMARK_PLATFORM
+    for ln in list(WORDMARK) + list(WORDMARK_PLATFORM) + ["-" + ver + "-", "", "  AgentSON Platform  —  Enterprise Compliance & Audit"]:
+        print(ln)
+
+
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     parser = argparse.ArgumentParser(
         description="""
 AgentSON — Universal provenance for agent sessions.
@@ -751,7 +1045,7 @@ TOPICS:
     
     # export command
     export_parser = subparsers.add_parser("export", help="Export sessions to AgentSON format")
-    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code"])
+    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code", "vibeedge", "gemini", "cursor", "cline", "aider"])
     export_parser.add_argument("--session", help="Session ID to export")
     export_parser.add_argument("--all", action="store_true", help="Export all sessions")
     export_parser.add_argument("--output", default=".", help="Output directory")
@@ -766,8 +1060,11 @@ TOPICS:
     
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
-    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code"])
+    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code", "vibeedge", "gemini", "cursor", "cline", "aider"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
+    # cmd_list reads args.input for chrome-devtools and vibeedge; without this
+    # flag the attribute was missing and those branches raised AttributeError.
+    list_parser.add_argument("--input", help="Input directory (chrome-devtools exports, vibeedge wrangler state)")
     
     # search command
     search_parser = subparsers.add_parser("search", help="Search AgentSON files")
@@ -787,6 +1084,13 @@ TOPICS:
     render_parser.add_argument("input", help="Input AgentSON JSON file")
     render_parser.add_argument("--format", choices=["md", "html"], default="md")
     render_parser.add_argument("--output", help="Output file")
+
+    # timeseries command (glucose/numeric series for Chronos, GlucoFM, etc.)
+    ts_parser = subparsers.add_parser("timeseries", help="Export numeric observation series (timestamp,value) for time-series models")
+    ts_parser.add_argument("input", help="Input AgentSON file")
+    ts_parser.add_argument("--format", choices=["csv", "jsonl"], default="csv", help="Output format")
+    ts_parser.add_argument("--output", help="Output file (default: stdout)")
+    ts_parser.add_argument("--no-sort", action="store_true", help="Do not sort by timestamp")
     
     # excel command
     excel_parser = subparsers.add_parser("excel", help="Export to Excel with charts and analytics")
@@ -829,21 +1133,26 @@ TOPICS:
 
     # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
     browser_parser = subparsers.add_parser(
-        "browser", help="Drive a live browser via MCP (capture Google AI Mode, Chrome DevTools AI)"
+        "browser", help="NOT IMPLEMENTED — planned MCP capture (agentson_mcp, see ADR-022)"
     )
     browser_sub = browser_parser.add_subparsers(dest="browser_command", help="Browser sub-command")
-    grab_p = browser_sub.add_parser("grab", help="Navigate to a URL and capture the page state")
+    grab_p = browser_sub.add_parser("grab", help="NOT IMPLEMENTED — navigate to a URL and capture page state")
     grab_p.add_argument("--url", required=True, help="URL to navigate to")
     grab_p.add_argument("--out", help="Output .md path (default: ./devtools_<slug>.md)")
     grab_p.add_argument("--attach", help="Attach to existing Chrome at this URL (e.g. http://127.0.0.1:9222)")
-    grab_p.add_argument("--raw", action="store_true", help="Save raw markdown, do not normalise to .agentson")
-    grab_p.add_argument("--out-agentson", help="Also write a v1.2 .agentson to this path")
-    grab_p.add_argument("--no-ai-mode", action="store_true", help="Skip the AI Mode WIZ/SFC analysis")
     grab_p.add_argument("--no-headless", action="store_true", help="Run Chrome with a visible window")
-    tabs_p = browser_sub.add_parser("tabs", help="List open browser tabs")
+    tabs_p = browser_sub.add_parser("tabs", help="NOT IMPLEMENTED — list open browser tabs")
     tabs_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
-    tools_p = browser_sub.add_parser("list-tools", help="List tools exposed by the MCP server")
+    tools_p = browser_sub.add_parser("list-tools", help="NOT IMPLEMENTED — list MCP server tools")
     tools_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
+
+    # grc-export command (premium — GRC evidence package)
+    grc_parser = subparsers.add_parser("grc-export", help="Export GRC evidence package (AgentSON Platform)")
+    grc_parser.add_argument("--digest", help="Path to report.json or digest JSON")
+    grc_parser.add_argument("--output", help="Output evidence JSON (default: grc_evidence_<timestamp>.json)")
+    grc_parser.add_argument("--format", choices=["json"], default="json")
+    grc_parser.add_argument("--post", help="POST URL for platform ingestion (optional)")
+    grc_parser.add_argument("--secure", action="store_true", help="Sign the evidence package with a local ECDSA P-256 key (premium)")
 
     # platform command (Data Rights Intelligence Platform)
     platform_parser = subparsers.add_parser("platform", help="Data Rights Intelligence Platform — scan, analyze, report")
@@ -854,6 +1163,26 @@ TOPICS:
     scan_p.add_argument("--slm", action="store_true", help="Try to use a local SLM for classification")
     scan_p.add_argument("--model", help="SLM model name")
     detect_p = platform_sub.add_parser("detect", help="List installed AI tools and their data locations")
+    serve_p = platform_sub.add_parser("serve", help="Local preview server (AgentSON Platform dashboard)")
+    serve_p.add_argument("--port", type=int, default=8080, help="Port")
+    serve_p.add_argument("--scan-dir", help="Scan folder with report.json (default: latest found)")
+    serve_p.add_argument("--watch", action="store_true", help="Dev mode: restart on .py file change (stdlib supervisor, like npm run dev)")
+    license_p = platform_sub.add_parser("license", help="Generate a local dev licence key (premium test only)")
+    license_p.add_argument("--dev", action="store_true", help="Write a dev licence covering all premium features")
+    structure_p = platform_sub.add_parser("structure", help="Premium data pipeline — build graph / lake / CSV from .agentson stream")
+    structure_p.add_argument("--input", default=".", help="Directory of .agentson files")
+    structure_p.add_argument("--output", default="structure", help="Output directory")
+    doctor_p = platform_sub.add_parser("doctor", help="Network troubleshooting diagnostics (enterprise ops)")
+    doctor_p.add_argument("--dns", help="Resolve hostname")
+    doctor_p.add_argument("--tcp", help="TCP target host:port")
+    doctor_p.add_argument("--tls", help="TLS target host:port")
+    doctor_p.add_argument("--http", help="URL to probe")
+    doctor_p.add_argument("--proxy", action="store_true", help="Show proxy env vars")
+    doctor_p.add_argument("--offline", action="store_true", help="Confirm core is offline / no DNS")
+
+    # watch command (adoption monitor — forks, stars, watchers, clone trend)
+    from cli.watch import build_parser as build_watch_parser
+    build_watch_parser(subparsers)
 
     # help / guide command (encyclopedia)
     for name in ("help", "guide"):
@@ -861,6 +1190,7 @@ TOPICS:
         hp.add_argument("topic", nargs="?", default=None, help="Topic to explore (e.g. mcp, a2a, validate)")
         hp.add_argument("--onboard", action="store_true", help="Re-run first-run onboarding")
 
+    _display_banner()
     args = parser.parse_args()
     
     if args.command == "export":
@@ -875,6 +1205,12 @@ TOPICS:
         cmd_finetune(args)
     elif args.command == "render":
         cmd_render(args)
+    elif args.command == "timeseries":
+        from exporters.timeseries import export_timeseries
+        data = _load_agentson(args.input)
+        n = export_timeseries(data, fmt=args.format, output_path=args.output, sort=not args.no_sort)
+        if args.output:
+            print(f"Exported {n} readings to {args.output}")
     elif args.command == "excel":
         cmd_excel(args)
     elif args.command == "validate":
@@ -884,10 +1220,19 @@ TOPICS:
     elif args.command == "publish":
         cmd_publish(args)
     elif args.command == "reconstruct":
-        from cli.reconstruct import cmd_reconstruct
+        try:
+            from cli.reconstruct import cmd_reconstruct
+        except ImportError:
+            print("Error: `agentson reconstruct` is not implemented (cli/reconstruct.py is missing).", file=sys.stderr)
+            sys.exit(1)
         cmd_reconstruct(args)
     elif args.command == "browser":
         cmd_browser(args)
+    elif args.command == "watch":
+        from cli.watch import cmd_watch
+        cmd_watch(args)
+    elif args.command == "grc-export":
+        cmd_grc_export(args)
     elif args.command == "platform":
         if args.platform_command == "scan":
             from agentson_platform.scan import run_scan
@@ -901,8 +1246,59 @@ TOPICS:
             from agentson_platform.tool_registry import detect_all
             import json as _json
             print(_json.dumps(detect_all(), indent=2))
+        elif args.platform_command == "doctor":
+            from agentson_platform import netdoctor
+            results = []
+            if args.offline or not (args.dns or args.tcp or args.tls or args.http or args.proxy):
+                results.append(netdoctor.offline_check())
+            if args.proxy:
+                results.append(netdoctor.proxy_env())
+            if args.dns:
+                results.append(netdoctor.dns_probe(args.dns))
+            if args.tcp:
+                results.append(netdoctor.tcp_probe(args.tcp))
+            if args.tls:
+                results.append(netdoctor.tls_probe(args.tls))
+            if args.http:
+                results.append(netdoctor.http_probe(args.http))
+            print(json.dumps({"probes": results}, indent=2, ensure_ascii=False))
+        elif args.platform_command == "serve":
+            if getattr(args, "watch", False):
+                from agentson_platform.dev_serve import serve_watch
+                serve_watch(port=args.port, scan_dir=args.scan_dir)
+            else:
+                from agentson_platform.server import serve
+                serve(port=args.port, scan_dir=args.scan_dir)
+        elif args.platform_command == "license":
+            if args.dev:
+                import json
+                from cli.licensing import LICENSE_PATH
+                lic = {"tier":"platform","features":["grc-export","structure","audit-log"],"revoked":False,"dev":True}
+                LICENSE_PATH.parent.mkdir(parents=True, exist_ok=True)
+                LICENSE_PATH.write_text(json.dumps(lic, indent=2), encoding="utf-8")
+                print("Dev licence written:", LICENSE_PATH)
+                print("Features:", lic["features"])
+            else:
+                print("Usage: agentson platform license --dev")
+        elif args.platform_command == "structure":
+            from agentson_platform.structure import build_graph, build_csv, build_training_export
+            from cli.licensing import is_premium
+            if not is_premium("structure"):
+                from cli.licensing import upgrade_notice
+                print(upgrade_notice("structure"))
+                sys.exit(1)
+            out_dir = Path(args.output)
+            out_dir.mkdir(parents=True, exist_ok=True)
+            graph = build_graph(args.input)
+            (out_dir / "graph.json").write_text(json.dumps(graph, indent=2, ensure_ascii=False), encoding="utf-8")
+            csv_files = build_csv(args.input, args.output)
+            train_path = build_training_export(args.input, args.output)
+            print(f"Structure pipeline done: {out_dir}")
+            print("  graph.json  |  entities.csv + relations.csv  |  training_module.jsonl")
         else:
-            print("Usage: agentson platform <scan|detect>")
+            print("Usage: agentson platform <scan|detect|serve|license|structure|doctor>")
+            print("  serve   --port 8080  [--scan-dir DIR]  (local preview server)")
+            print("  license --dev                          (write local dev licence)")
     elif args.command in ("help", "guide"):
         from cli.help_system import show_help_page, show_encyclopedia, show_onboarding, mark_onboarded
         if args.onboard:
@@ -921,67 +1317,40 @@ TOPICS:
 
 
 def cmd_browser(args):
-    """Drive a live browser via chrome-devtools-mcp + mcp-use."""
-    from agentson_mcp.client import MCPBrowser
-    from agentson_mcp.exporters.ai_mode import AIModeExporter
+    """Browser capture -- NOT IMPLEMENTED.
 
-    attach_url = getattr(args, "attach", None)
-    browser = MCPBrowser(attach_url=attach_url) if attach_url else MCPBrowser()
+    The original design (ADR-022/023) drove chrome-devtools-mcp via a
+    companion package `agentson_mcp` providing MCPBrowser and
+    AIModeExporter. That package was never written: it is listed in
+    pyproject packaging includes but does not exist in this repo or in
+    site-packages, so this command has always raised ImportError.
 
-    if args.browser_command == "list-tools":
-        browser.connect()
-        try:
-            tools = browser.list_tools()
-            for t in tools:
-                name = getattr(t, "name", None) or (t.get("name") if isinstance(t, dict) else None)
-                desc = getattr(t, "description", "") or (t.get("description", "") if isinstance(t, dict) else "")
-                print(f"  {name}: {desc[:80] if desc else ''}")
-        finally:
-            browser.close()
-        return
-
-    if args.browser_command == "tabs":
-        browser.connect()
-        try:
-            tabs = browser.list_tabs()
-            print(tabs)
-        finally:
-            browser.close()
-        return
-
-    if args.browser_command == "grab":
-        if not args.url:
-            print("Error: --url required", file=sys.stderr)
-            sys.exit(1)
-        out_path = Path(args.out) if args.out else Path(f"devtools_{Path(args.url).stem[:50]}.md")
-        browser.connect()
-        try:
-            saved = browser.grab(args.url, out_path)
-            print(f"Captured: {saved}")
-            if args.raw:
-                print(f"(raw mode — .agentson not written. Re-run without --raw to normalise.)")
-                return
-            exporter = AIModeExporter()
-            doc = exporter.normalise(saved, source_url=args.url)
-            if args.out_agentson:
-                target = Path(args.out_agentson)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
-                print(f"Normalised: {target}")
-            else:
-                tag = Path(args.url).stem[:50] or "ai_mode"
-                out = exporter.write(doc, session_tag=tag)
-                print(f"Normalised: {out}")
-        finally:
-            browser.close()
-        return
-
-    print("Usage: agentson browser <grab|tabs|list-tools>")
+    The planned replacement is `agentson capture`, which reads each
+    vendor's own conversation API using the user's own session token
+    rather than rendering the page. DOM capture loses the tool
+    invocations that the API retains -- see the SaveAI adapter survey.
+    """
+    try:
+        from agentson_mcp.client import MCPBrowser  # noqa: F401
+    except ImportError:
+        print(
+            "Error: `agentson browser` is not implemented.\n"
+            "\n"
+            "  The CLI imports `agentson_mcp.client.MCPBrowser`, which does\n"
+            "  not exist in this repository. See ADR-022 / ADR-023.\n"
+            "\n"
+            "  Not implemented: grab, tabs, list-tools.\n"
+            "\n"
+            "  Planned replacement: `agentson capture` (vendor API capture).\n"
+            "  Until then use a reader:  agentson export --tool <name>",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def cmd_publish(args):
     """Publish AgentSON session to Docker Hub or LXD Hub."""
-    from tools.distribute import publish
+    from distribute import publish
 
     result = publish(
         session_path=args.input,
