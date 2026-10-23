@@ -988,6 +988,13 @@ TOPICS:
     render_parser.add_argument("input", help="Input AgentSON JSON file")
     render_parser.add_argument("--format", choices=["md", "html"], default="md")
     render_parser.add_argument("--output", help="Output file")
+
+    # timeseries command (glucose/numeric series for Chronos, GlucoFM, etc.)
+    ts_parser = subparsers.add_parser("timeseries", help="Export numeric observation series (timestamp,value) for time-series models")
+    ts_parser.add_argument("input", help="Input AgentSON file")
+    ts_parser.add_argument("--format", choices=["csv", "jsonl"], default="csv", help="Output format")
+    ts_parser.add_argument("--output", help="Output file (default: stdout)")
+    ts_parser.add_argument("--no-sort", action="store_true", help="Do not sort by timestamp")
     
     # excel command
     excel_parser = subparsers.add_parser("excel", help="Export to Excel with charts and analytics")
@@ -1102,6 +1109,12 @@ TOPICS:
         cmd_finetune(args)
     elif args.command == "render":
         cmd_render(args)
+    elif args.command == "timeseries":
+        from exporters.timeseries import export_timeseries
+        data = _load_agentson(args.input)
+        n = export_timeseries(data, fmt=args.format, output_path=args.output, sort=not args.no_sort)
+        if args.output:
+            print(f"Exported {n} readings to {args.output}")
     elif args.command == "excel":
         cmd_excel(args)
     elif args.command == "validate":
