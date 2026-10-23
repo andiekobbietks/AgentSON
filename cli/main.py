@@ -29,6 +29,9 @@ def get_default_db_paths():
         # VibeEdge stores its chats in Cloudflare Durable Object SQLite under
         # the local wrangler state dir, not in a single database file.
         "vibeedge": home / "vibeedge-studio" / "vibesdk" / ".wrangler",
+        "cursor": home / "AppData" / "Roaming" / "Cursor" / "User" / "globalStorage" / "state.vscdb",
+        "cline": home / "AppData" / "Roaming" / "Code" / "User" / "globalStorage" / "saoudrizwan.claude-dev",
+        "aider": Path.cwd(),
     }
 
 
@@ -238,6 +241,78 @@ def cmd_export(args):
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"Exported to {output_path}")
+    elif args.tool == "cursor":
+        from readers.cursor import list_sessions as list_cursor, read as read_cursor
+        db_path = db_paths["cursor"]
+        if not db_path.exists():
+            print(f"Error: Cursor database not found at {db_path}", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_cursor(str(db_path), args.limit)
+            for session in sessions:
+                sid = session.get("id") or session.get("composer_id")
+                print(f"Exporting: {session.get('title', sid)} ({sid})")
+                data = read_cursor(str(db_path), sid)
+                output_path = Path(args.output) / f"cursor_{sid}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_cursor(str(db_path), args.session)
+            output_path = Path(args.output) / f"cursor_{args.session}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
+    elif args.tool == "cline":
+        from readers.cline import list_sessions as list_cline, read as read_cline
+        tasks_dir = db_paths["cline"]
+        if not tasks_dir.exists():
+            print(f"Error: Cline tasks directory not found at {tasks_dir}", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_cline(str(tasks_dir), args.limit)
+            for session in sessions:
+                sid = session.get("id") or session.get("task_id")
+                print(f"Exporting: {session.get('title', sid)} ({sid})")
+                data = read_cline(str(tasks_dir), sid)
+                output_path = Path(args.output) / f"cline_{sid}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            if not args.session:
+                print("Error: --session required when not using --all", file=sys.stderr)
+                sys.exit(1)
+            data = read_cline(str(tasks_dir), args.session)
+            output_path = Path(args.output) / f"cline_{args.session}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
+    elif args.tool == "aider":
+        from readers.aider import list_sessions as list_aider, read as read_aider
+        repo_dir = db_paths["aider"]
+        if not repo_dir.exists():
+            print(f"Error: Aider repo directory not found at {repo_dir}", file=sys.stderr)
+            sys.exit(1)
+        if args.all:
+            sessions = list_aider(str(repo_dir), args.limit)
+            for session in sessions:
+                sid = session.get("id") or session.get("session_id")
+                print(f"Exporting: {session.get('title', sid)} ({sid})")
+                data = read_aider(str(repo_dir), sid)
+                output_path = Path(args.output) / f"aider_{sid}.agentson"
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported {len(sessions)} sessions")
+        else:
+            data = read_aider(str(repo_dir), args.session)
+            output_path = Path(args.output) / f"aider_{args.session or 'session'}.agentson"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            print(f"Exported to {output_path}")
     elif args.tool == "claude-code":
         from readers.claude_code import ClaudeCodeReader
 
@@ -378,6 +453,27 @@ def cmd_list(args):
             sys.exit(1)
         
         sessions = list_chrome(input_dir)
+    elif args.tool == "cursor":
+        from readers.cursor import list_sessions as list_cursor
+        db_path = db_paths["cursor"]
+        if not db_path.exists():
+            print(f"Error: Cursor database not found at {db_path}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_cursor(str(db_path), args.limit)
+    elif args.tool == "cline":
+        from readers.cline import list_sessions as list_cline
+        tasks_dir = db_paths["cline"]
+        if not tasks_dir.exists():
+            print(f"Error: Cline tasks directory not found at {tasks_dir}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_cline(str(tasks_dir), args.limit)
+    elif args.tool == "aider":
+        from readers.aider import list_sessions as list_aider
+        repo_dir = db_paths["aider"]
+        if not repo_dir.exists():
+            print(f"Error: Aider repo directory not found at {repo_dir}", file=sys.stderr)
+            sys.exit(1)
+        sessions = list_aider(str(repo_dir), args.limit)
     elif args.tool == "claude-code":
         from readers.claude_code import ClaudeCodeReader
 
@@ -949,7 +1045,7 @@ TOPICS:
     
     # export command
     export_parser = subparsers.add_parser("export", help="Export sessions to AgentSON format")
-    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code", "vibeedge", "gemini"])
+    export_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "chrome-devtools", "libre", "claude-code", "vibeedge", "gemini", "cursor", "cline", "aider"])
     export_parser.add_argument("--session", help="Session ID to export")
     export_parser.add_argument("--all", action="store_true", help="Export all sessions")
     export_parser.add_argument("--output", default=".", help="Output directory")
@@ -964,7 +1060,7 @@ TOPICS:
     
     # list command
     list_parser = subparsers.add_parser("list", help="List available sessions")
-    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code", "vibeedge", "gemini"])
+    list_parser.add_argument("--tool", required=True, choices=["opencode", "minimax", "antigravity", "claude-code", "vibeedge", "gemini", "cursor", "cline", "aider"])
     list_parser.add_argument("--limit", type=int, default=50, help="Max sessions to list")
     # cmd_list reads args.input for chrome-devtools and vibeedge; without this
     # flag the attribute was missing and those branches raised AttributeError.
