@@ -2,6 +2,48 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **Python 3.12 deprecation warnings** — Replaced all `datetime.utcnow()` and `datetime.utcfromtimestamp()` calls with timezone-aware equivalents (`datetime.now(timezone.utc)` / `datetime.fromtimestamp(..., timezone.utc)`) across readers, importers, and tools. Output keeps the `Z` suffix to remain backward-compatible. pytest warning count drops from 84 to 1.
+- **Libre reader test coverage** — Added `tests/test_libre.py` plus `tests/fixtures/libre_sample.csv`. Covers session structure, entry classification, source mapping, metrics, and summary output.
+
+## [1.2.0] - 2026-10-23
+
+### Story
+
+After months of building the open provenance layer — the AgentSON format that lets anyone read exactly how an agent thought, observed, acted, and proved its work — we reached the point where the story could stand alone. The session that started with 8,778 messages (76 MB) is now mirrored in organized folders, the Libre glucose pipeline passes with clean readings, and the CLI learns to inspect its own panels. For the non-technical reader: imagine a lab notebook that writes itself, checks its own notes, and tells you when something is missing. For the engineer: schema v1.2 (12 primitives, JSONL stream, validated), 242 pytest passes, 9 working readers, and a session-debug command (browser grab) that reads state instead of guessing. The AKCloud managed service stays in its own folder, never mixed with the open format. This is the version you can point to when someone asks, "How do I prove my agent worked?" — and the answer is this file, these folders, these tests, and this tag.
+
+### Added
+
+- **Three new IDE readers** — Cursor (`readers/cursor.py`), Cline (`readers/cline.py`), and Aider (`readers/aider.py`) join the supported tool set.
+- **`agentson platform` commands** — End-to-end Crawl → Classify → Report loop via `agentson_platform/`.
+- **Timeseries exporter** — `exporters/timeseries.py` + `agentson export --format timeseries`.
+- **Browser-grab debug helper** — `agentson browser grab` reads browser state instead of guessing.
+- **ADR-015 / ADR-016** — Canonical v1.2 JSONL schema and 12-primitive ontology accepted.
+- **README wordmark** — Real `larry3d` ASCII banner generated from `cli/help_system.py`.
+
+### Changed
+
+- **Schema v1.2 is canonical** — JSONL stream format, 12 primitives, discriminated union.
+- **README rebuilt** — v1.2 banner, full wordmark, clearer quick-start.
+
+### Fixed
+
+- **Libre glucose reader** — Source/type mapping, status thresholds, and local-time basis clarified.
+- **CLI hardening** — `export`/`validate`/`search` edge cases and path handling.
+- **OpenCode reader** — Correct handling of `reasoning` and `tool` parts.
+
+### Security
+
+- Security purge (commit `23352a4`) applied: removed hard-coded secrets and accidental credential leakage.
+
+### Architecture
+
+- AgentSON remains the open provenance format; AKCloud is the separate managed service.
+- ClickOps intentionally not built in beta (documented in `cli/akcloud/comingsoon.md`).
+
 ## [0.2.1] - 2026-07-08
 
 ### Added
@@ -170,5 +212,3 @@ Initial public release. Apache 2.0 license.
 ### License
 
 - Changed from MIT to Apache 2.0 (patent grant + attribution)
-\n--- v1.2.0 (2026-10-23) — The Full-Story Release ---
-Why this version exists: After months of building the open provenance layer — the AgentSON format that lets anyone read exactly how an agent thought, observed, acted, and proved its work — we reached the point where the story could stand alone. The session that started with 8,778 messages (76 MB) is now mirrored in organized folders, the Libre glucose pipeline passes with 4 clean readings, and the CLI learns to inspect its own panels. For the non-technical reader: imagine a lab notebook that writes itself, checks its own notes, and tells you when something is missing. For the engineer: schema v1.2 (12 primitives, JSONL stream, validated PASS 1/1), 236 pytest passes, 9 working readers (Cursor, Cline, Aider, Chrome DevTools, opencode, Claude Code, Copilot, Minimax, Antigravity), and a session-debug command (browser grab) that reads state instead of guessing. What changed since v0.2.0 (dogfood): the security purge at 23352a4 is already in our history; we are 31 commits ahead of public master; all artifacts moved (not copied) to Desktop/AgentSON/ and Desktop/AKCloud/; ClickOps remains intentionally not built (see cli/akcloud/comingsoon.md); the AKCloud managed service stays in its own folder, never mixed with the open format. This is the version you can point to when someone asks, "How do I prove my agent worked?" — and the answer is this file, these folders, these tests, and this tag.
