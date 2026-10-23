@@ -23,29 +23,25 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Gather WHEA error logs from Windows Event Viewer",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Check system temperatures and hardware status",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Analyze dump files if available",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Provide fixability assessment and recommendations",
-      "status": "completed",
-      "timestamp": null
+      "status": "completed"
     },
     {
       "type": "user-query",

@@ -68,7 +68,7 @@ The user's earlier observation: Mori Liu's Mira extension sat inside the browser
 │  │            Background Service Worker               │   │
 │  │                                                    │   │
 │  │   Receives structured events from content scripts  │   │
-│  │   Normalizes to AgentSON entry format              │   │
+│  │   Canonicalises to AgentSON entry format              │   │
 │  │   Tags with provenance (confirmed/live)            │   │
 │  │   Queues for export                                │   │
 │  └────────────┬───────────────────────────────────────┘   │
@@ -220,7 +220,7 @@ What it captures for every page:
 
 ## Background Service Worker
 
-The service worker is the **orchestration layer**. It receives events from all content scripts, normalizes them to AgentSON format, manages the event queue, and handles export.
+The service worker is the **orchestration layer**. It receives events from all content scripts, canonicalises them to AgentSON format, manages the event queue, and handles export.
 
 ### Event flow
 

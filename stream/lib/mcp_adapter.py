@@ -99,14 +99,24 @@ class AgentSONMCPAdapter:
     def init_stream(self, tools: list):
         """Write stream-meta header."""
         tool_names = [t.name if hasattr(t, 'name') else str(t) for t in tools]
+        agents = [
+            {"id": "mcp-client", "capabilities": ["mcp"]},
+            {"id": "chrome-devtools", "capabilities": tool_names}
+        ]
+        # ADR-022 decision 2: mode is a STREAM mode - single, multi or
+        # collab - not the name of the file format. ADR-015 made JSONL the
+        # only format, so "jsonl" as a mode was a constant carrying no
+        # information, and a consumer reading it to decide which primitives
+        # to expect (ADR-017's detection rule) matched nothing. The mode is
+        # computed from the roster, as ADR-017 specifies: more than one
+        # agent, excluding "user", means multi.
+        peers = [a for a in agents if a["id"] != "user"]
+        mode = "multi" if len(peers) > 1 else "single"
         self.emit({
             "type": "stream-meta",
             "stream_id": self.stream_id,
-            "agents": [
-                {"id": "mcp-client", "capabilities": ["mcp"]},
-                {"id": "chrome-devtools", "capabilities": tool_names}
-            ],
-            "mode": "jsonl",
+            "agents": agents,
+            "mode": mode,
             "source": {
                 "platform": "chrome-devtools-mcp",
                 "tools": tool_names

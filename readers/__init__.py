@@ -12,6 +12,9 @@ from .chrome_devtools import (
 )
 from .claude_code import ClaudeCodeReader
 from .copilot_chat import CopilotChatReader, read as read_copilot_chat, list_sessions as list_copilot_chat
+from .cursor import CursorReader, read as read_cursor, list_sessions as list_cursor
+from .cline import ClineReader, read as read_cline, list_sessions as list_cline
+from .aider import AiderReader, read as read_aider, list_sessions as list_aider
 
 # Legacy aliases
 ClaudeCode = ClaudeCodeReader

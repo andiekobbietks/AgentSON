@@ -103,7 +103,7 @@ These methods reconstruct **what happened** from partial event logs. They do not
 
 The Agent Execution Record (AER) paper (arxiv 2603.21692) provides a formal non-identifiability argument:
 
-> **Proposition.** Given only the persisted computational state $S_{1..K}$, reasoning provenance $R_{1..K}$ cannot in general be faithfully reconstructed as a normalized, schema-conforming, cross-run-comparable representation without contemporaneous capture at execution time.
+> **Proposition.** Given only the persisted computational state $S_{1..K}$, reasoning provenance $R_{1..K}$ cannot in general be faithfully reconstructed as a canonicalised, schema-conforming, cross-run-comparable representation without contemporaneous capture at execution time.
 
 Three sources of non-identifiability:
 1. **Intent multiplicity** — different reasoning paths can produce identical state

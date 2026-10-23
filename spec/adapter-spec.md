@@ -10,7 +10,7 @@
 Adapters translate between execution backends (CDP, MCP, browser-use, extensions) and the AgentSON canonical format. Each adapter:
 
 1. Receives operations from its backend
-2. Normalizes them to AgentSON primitives
+2. Canonicalises them to AgentSON primitives
 3. Emits entries to the .agentson stream
 
 ---

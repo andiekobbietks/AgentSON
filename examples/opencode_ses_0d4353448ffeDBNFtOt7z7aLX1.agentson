@@ -23,36 +23,31 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Check Windows Event Logs for WHEA errors",
-      "status": "in_progress",
-      "timestamp": null
+      "status": "in_progress"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Check system temperatures and hardware status",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Analyze minidump files if available",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Run memory diagnostics",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Provide fixability assessment and recommendations",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "user-query",

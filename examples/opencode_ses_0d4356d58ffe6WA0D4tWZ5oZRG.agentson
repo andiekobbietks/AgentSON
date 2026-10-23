@@ -23,29 +23,25 @@
       "type": "side-effect",
       "action": "todo_update",
       "text": "Gather WHEA error logs from Windows Event Viewer",
-      "status": "in_progress",
-      "timestamp": null
+      "status": "in_progress"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Check system temperatures and component health via PowerShell/WMI",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Research iFixit fixability score for WHEA_UNCORRECTABLE_ERROR",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "side-effect",
       "action": "todo_update",
       "text": "Provide root cause analysis and recommendations",
-      "status": "pending",
-      "timestamp": null
+      "status": "pending"
     },
     {
       "type": "user-query",

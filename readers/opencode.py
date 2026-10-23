@@ -5,7 +5,7 @@ Reads session data from opencode's SQLite database.
 
 import sqlite3
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 
 
@@ -194,13 +194,18 @@ class OpencodeReader:
                         
         # Add todos as side-effects
         for todo in todos:
-            entries.append({
+            # A todo update has no moment of its own - it is a property of
+            # the session, not of an instant. So there is no timestamp, and
+            # the key is OMITTED rather than set to null: an absent field
+            # and a field holding null are different facts, and the format
+            # says to canonicalise the structure. See ADR-022.
+            entry = {
                 "type": "side-effect",
                 "action": "todo_update",
                 "text": todo["content"],
                 "status": todo["status"],
-                "timestamp": None
-            })
+            }
+            entries.append(entry)
         
         # Sort entries by timestamp
         entries.sort(key=lambda x: x.get("timestamp") or 0)
@@ -238,12 +243,44 @@ class OpencodeReader:
                 "cost": session["cost"] or 0.0,
                 "messages": len(messages),
                 "parts": len(parts),
-                "exported_at": datetime.utcnow().isoformat() + "Z"
+                "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             }
         }
         
         return agentson
     
+    @staticmethod
+    def _resolve_truncated_output(text) -> str:
+        """Inline the full content of a tool output that opencode truncated.
+
+        opencode truncates large tool output inline with the marker
+        "...output truncated...\\n\\nFull output saved to: <path>". This chases
+        that reference and returns the side file's real content when it is
+        still on disk, falling back to the truncated preview if the side file
+        has been moved or cleaned up.
+
+        Without this, any session containing a current-schema ``tool`` part
+        raises AttributeError at the call site, because the output field was
+        never resolved. The logic here is the same as
+        ``MiniMaxReader._resolve_truncated_output`` -- both run on top of the
+        same execution layer -- and the two must stay in step.
+        """
+        text = str(text or "")
+        marker = "Full output saved to: "
+        if "...output truncated..." not in text or marker not in text:
+            return text
+        try:
+            path_start = text.index(marker) + len(marker)
+            path_end = text.index("\n", path_start)
+            side_path = text[path_start:path_end].strip()
+        except ValueError:
+            return text
+        try:
+            with open(side_path, "r", encoding="utf-8", errors="replace") as f:
+                return f.read()
+        except OSError:
+            return text
+
     def _timestamp_to_iso(self, timestamp: Optional[int]) -> Optional[str]:
         """Convert millisecond timestamp to ISO 8601 string."""
         if timestamp is None:

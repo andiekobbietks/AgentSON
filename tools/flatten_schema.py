@@ -32,6 +32,15 @@ for name, defn in schema['$defs'].items():
                 flat['properties'].update(part['properties'])
             if 'required' in part:
                 flat['required'].extend(part['required'])
+            # Carry every other keyword the primitive declares. Without
+            # this, a constraint like anyOf is silently DROPPED in the
+            # generated entry schema, and the two schemas disagree about
+            # what is valid - which is the drift this flattener's output
+            # was already suffering from.
+            for keyword, value in part.items():
+                if keyword in ('properties', 'required', 'type'):
+                    continue
+                flat[keyword] = value
 
     flat_defs[name] = flat
 

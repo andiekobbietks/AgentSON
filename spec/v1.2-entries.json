@@ -15,7 +15,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -42,11 +42,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -106,6 +129,47 @@
               "format": "uri"
             }
           }
+        },
+        "compliance": {
+          "type": "object",
+          "description": "GDPR + EU AI Act compliance manifest for this reconstructed stream.",
+          "properties": {
+            "jurisdiction": {
+              "type": "string",
+              "enum": [
+                "eu",
+                "uk",
+                "dual"
+              ]
+            },
+            "bases": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "generated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "schema_version": {
+              "type": "string"
+            },
+            "provenance_bounds": {
+              "type": "array"
+            },
+            "precedent_citations": {
+              "type": "object"
+            }
+          }
+        },
+        "reconstruct_mode": {
+          "type": "string",
+          "enum": [
+            "forensic",
+            "narrative",
+            "live"
+          ]
         }
       },
       "required": [
@@ -126,7 +190,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -153,11 +217,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -196,7 +283,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -223,11 +310,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -260,7 +370,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -287,11 +397,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -317,7 +450,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -344,11 +477,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -377,8 +533,10 @@
             "success",
             "error",
             "partial",
-            "pending"
-          ]
+            "pending",
+            "running"
+          ],
+          "description": "success|error|partial|pending|running. 'running' is the state of a tool call that was still in flight when the session was exported."
         },
         "duration_ms": {
           "type": "integer"
@@ -400,7 +558,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -427,11 +585,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -471,7 +652,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -498,11 +679,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -526,7 +730,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -553,7 +757,9 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
@@ -561,15 +767,60 @@
             }
           }
         },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
+            }
+          }
+        },
+        "action": {
+          "type": "string",
+          "description": "What changed. Required when there is no path."
+        },
+        "text": {
+          "type": "string",
+          "description": "Description of the change, for changes with no path."
+        },
+        "status": {
+          "type": "string",
+          "description": "The new state of the change, where one applies."
+        },
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Locator of the change, where the change has one."
         },
         "diff": {
-          "type": "string"
+          "type": "string",
+          "description": "How the thing at path changed."
         }
       },
-      "required": [
-        "path"
+      "required": [],
+      "anyOf": [
+        {
+          "required": [
+            "path"
+          ]
+        },
+        {
+          "required": [
+            "action"
+          ]
+        }
       ]
     },
     {
@@ -584,7 +835,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -611,11 +862,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -639,7 +913,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -666,11 +940,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -697,7 +994,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -724,11 +1021,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -762,7 +1082,7 @@
         },
         "timestamp": {
           "type": "integer",
-          "description": "Unix timestamp ms"
+          "description": "Unix timestamp ms. Omitted when the source did not record one - a side-effect on a session-wide artefact (a todo list) has no moment of its own."
         },
         "correlation_id": {
           "type": "string",
@@ -789,11 +1109,34 @@
                 "extension",
                 "user",
                 "system",
-                "other"
+                "other",
+                "export",
+                "reconstructor"
               ]
             },
             "timestamp_ms": {
               "type": "integer"
+            }
+          }
+        },
+        "_transparency": {
+          "type": "object",
+          "description": "EU AI Act Art. 50(2) marking. Indicates if content is AI-generated and detectable.",
+          "properties": {
+            "ai_generated": {
+              "type": "boolean"
+            },
+            "marking_scheme": {
+              "type": "string"
+            },
+            "compliant_with": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detectable": {
+              "type": "boolean"
             }
           }
         },
@@ -808,8 +1151,13 @@
             "timer",
             "healthcheck",
             "manual",
-            "other"
+            "other",
+            "reconstructor"
           ]
+        },
+        "gap_ms": {
+          "type": "integer",
+          "description": "Duration of gap if this marks a missing segment"
         }
       },
       "required": [

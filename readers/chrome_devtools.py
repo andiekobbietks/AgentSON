@@ -40,7 +40,7 @@ writes a Markdown file with this structure:
 This reader parses that Markdown into an AgentSON document. Each `### Foo`
 subsection in an AI block becomes one or more AgentSON entries:
 
-    "### Analyzing ... + **Data used:** bullets" -> context entry
+    "### Analyzing ... + **Data used:** bullets" -> observation entry (source: system)
     "### Analyzing ... + **Thought:** paragraph" -> thought entry
     "### <verb>-ing ... + **Code executed:** + **Data returned:**" -> action entry
     "### Answer" -> answer entry
@@ -118,7 +118,7 @@ def _parse_meta(header: str) -> tuple[Dict, Optional[datetime]]:
 
 def _parse_analyzing_body(body: str) -> Optional[Dict]:
     """Inside an AI block, a section titled 'Analyzing ...' may carry:
-        **Data used:** + bulleted list          -> context
+        **Data used:** + bulleted list          -> observation (source: system)
         **Thought:** + paragraph                -> thought
     """
     text = body.strip()
@@ -136,7 +136,22 @@ def _parse_analyzing_body(body: str) -> Optional[Dict]:
             else:
                 details.append({"text": line})
         if details:
-            return {"type": "context", "details": details}
+            # ADR-022 decision 3: this was an entry of type "context",
+            # which ADR-016 demoted to session metadata - a primitive that
+            # describes state rather than an occurrence cannot be replayed,
+            # and the format has a replay contract. ADR-016 says exactly
+            # what to do instead: an observation with source "system".
+            # The structured details become the observation's attachments,
+            # and the text carries the summary.
+            return {
+                "type": "observation",
+                "source": "system",
+                "text": "Data used: " + "; ".join(
+                    f"{d.get('title', 'item')}: {d['text']}" if "title" in d else d["text"]
+                    for d in details
+                ),
+                "attachments": details,
+            }
         return None
     if text.startswith("**Thought:**"):
         return {"type": "thought", "text": text[len("**Thought:**"):].strip()}
@@ -241,7 +256,9 @@ def _classify_section_body(title: str, body: str) -> Optional[Dict]:
 
     if rest.startswith("**Data used:**"):
         e = _parse_analyzing_body(rest)
-        if e and e.get("details"):
+        # ADR-022 decision 3: the entry is an observation now, and the
+        # structured details are its attachments.
+        if e and e.get("attachments"):
             return e
         return None
     if rest.startswith("**Thought:**"):
