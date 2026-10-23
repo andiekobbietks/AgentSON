@@ -1,3 +1,4 @@
+# AgentSON core runtime:   init  
 """AgentSON readers — parsers for AI coding agent data sources."""
 from .opencode import OpencodeReader, read as read_opencode, list_sessions as list_opencode
 from .minimax import read as read_minimax, list_sessions as list_minimax

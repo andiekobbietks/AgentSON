@@ -1,3 +1,4 @@
+# AgentSON core runtime: minimax
 """
 AgentSON Reader: minimax
 Reads session data from Mavis (MiniMax Code) SQLite database.

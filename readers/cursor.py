@@ -1,3 +1,4 @@
+# AgentSON core runtime: cursor
 """
 AgentSON Reader: cursor
 =======================

@@ -1,3 +1,4 @@
+# AgentSON core runtime: crawler
 """Crawl every detected tool and read its sessions into text.
 
 Three reader shapes exist, and each is handled once:

@@ -1,3 +1,4 @@
+# AgentSON core runtime: tool registry
 """Tool path registry — where each of the eight tools keeps its sessions.
 
 Path resolution is reused, never restated. Four tools are owned by

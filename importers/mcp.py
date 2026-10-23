@@ -1,3 +1,4 @@
+# AgentSON core runtime: mcp
 """MCP (Model Context Protocol) Importer for AgentSON.
 
 Maps MCP protocol traces to AgentSON 12-primitive ontology.
