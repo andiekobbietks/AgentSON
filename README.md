@@ -1,3 +1,12 @@
+# AgentSON — v1.2.0 (Canonical Schema, 2026-10-23)
+# Release: full session-debug (browser panel inspection), 236 passing tests, 9 readers.
+# Design-level: ClickOps NOT BUILT; full MCP capture (ADR-022) design-only.
+# AKCloud managed service stays separate — banner / tagline AKCloud-only.
+# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
+
+```text
+ ______                         __    ____    _____   __  __     \n/\  _  \                       /\ \__/\  _`\ /\  __`\/\ \/\ \    \n\ \ \L\ \     __      __    ___\ \ ,_\ \,\L\_\ \ \/\ \ \ `\\ \   \n \ \  __ \  /'_ `\  /'__`\/' _ `\ \ \/\/_\__ \\ \ \ \ \ \ , ` \  \n  \ \ \/\ \/\ \L\ \/\  __//\ \/\ \ \ \_ /\ \L\ \ \ \_\ \ \ \`\ \ \n   \ \_\ \_\ \____ \ \____\ \_\ \_\ \__\\ `\____\ \_____\ \_\ \_\\n    \/_/\/_/\/___L\ \/____/\/_/\/_/\/__/ \/_____/\/_____/\/_/\/_/\n              /\____/                                            \n              \_/__/                                             \n
+```
 # AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
 
 > ⚠️ **Alpha, pre-release software.** This is not production-ready. Interfaces, the file format, and CLI commands can change without notice between versions. Known open design questions and gaps are tracked publicly at [github.com/andiekobbietks/AgentSON/issues](https://github.com/andiekobbietks/AgentSON/issues) — check there before depending on this for anything you can't afford to break. If you find a security issue, please open an issue or contact the maintainer directly rather than assuming it's already known.
