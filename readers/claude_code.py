@@ -31,7 +31,7 @@ import json
 import os
 import glob
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -301,7 +301,7 @@ class ClaudeCodeReader:
                 "name": model,
                 "provider": "anthropic",
             },
-            "timestamp": metadata.get("timestamp", datetime.utcnow().isoformat() + "Z"),
+            "timestamp": metadata.get("timestamp", datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")),
             "entries": agentson_entries,
         }
 

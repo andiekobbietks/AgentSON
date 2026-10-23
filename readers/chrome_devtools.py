@@ -56,7 +56,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
@@ -371,7 +371,7 @@ def parse_markdown(md_text: str, source_filename: Optional[str] = None) -> Dict:
     if "url" in meta:
         doc.setdefault("context", {})["url"] = meta["url"]
     doc["metadata"] = {
-        "exported_at": datetime.utcnow().isoformat() + "Z",
+        "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source_filename": source_filename or "",
         "users": sum(1 for e in entries if e.get("type") == "user-query"),
         "answers": answers,

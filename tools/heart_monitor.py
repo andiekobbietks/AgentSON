@@ -10,7 +10,7 @@ import json
 import os
 import glob
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
@@ -98,7 +98,7 @@ class HeartMonitor:
             is_step = ptype in ('step-start', 'step-finish')
             hb = Heartbeat(
                 timestamp_ms=p['time_created'],
-                iso=datetime.utcfromtimestamp(p['time_created'] / 1000).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
+                iso=datetime.fromtimestamp(p['time_created'] / 1000, timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
                 entry_type=ptype,
                 agent=agent_name,
                 is_step_boundary=is_step,
@@ -123,7 +123,7 @@ class HeartMonitor:
         parts = cursor.fetchall()
         conn.close()
 
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
         last_hb = int(session['last_heartbeat']) if session['last_heartbeat'] else 0
         idle_ms = now_ms - last_hb if last_hb > 0 else 0
 
@@ -169,8 +169,8 @@ class HeartMonitor:
         return AgentHealth(
             session_id=session_id,
             agent_name=session['title'] or 'unknown',
-            started_at=datetime.utcfromtimestamp(session['time_created'] / 1000).strftime('%Y-%m-%d %H:%M:%S') if session['time_created'] else 'unknown',
-            last_heartbeat=datetime.utcfromtimestamp(last_hb / 1000).strftime('%Y-%m-%d %H:%M:%S') if last_hb else 'unknown',
+            started_at=datetime.fromtimestamp(session['time_created'] / 1000, timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if session['time_created'] else 'unknown',
+            last_heartbeat=datetime.fromtimestamp(last_hb / 1000, timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if last_hb else 'unknown',
             is_alive=is_alive,
             heart_rate=heart_rate,
             last_step_duration_ms=step_durs[-1] if step_durs else 0,
@@ -228,7 +228,7 @@ class HeartMonitor:
         for i in range(0, width, 12):
             chunk = density[i:i+12]
             t = min_t + (i / width) * span_ms
-            label = datetime.utcfromtimestamp(t / 1000).strftime('%H:%M')
+            label = datetime.fromtimestamp(t / 1000, timezone.utc).strftime('%H:%M')
             bars = ""
             for d in chunk:
                 if d > 0:
@@ -259,7 +259,7 @@ class HeartMonitor:
                 for i, interval in enumerate(intervals[:width]):
                     bar_len = int(interval / max_interval * 40) if max_interval > 0 else 0
                     bar = "#" * bar_len
-                    t = datetime.utcfromtimestamp(step_beats[i+1].timestamp_ms / 1000).strftime('%H:%M')
+                    t = datetime.fromtimestamp(step_beats[i+1].timestamp_ms / 1000, timezone.utc).strftime('%H:%M')
                     lines.append("%s %6.1fs %s" % (t, interval, bar))
 
         return "\n".join(lines)
