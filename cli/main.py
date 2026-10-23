@@ -9,6 +9,10 @@ import os
 import sys
 from pathlib import Path
 from typing import List
+import sys as _sys
+_TOOLS_DIR = str(Path(__file__).resolve().parent.parent / "tools")
+if _TOOLS_DIR not in _sys.path:
+    _sys.path.insert(0, _TOOLS_DIR)
 from cli.help_system import WORDMARK, WORDMARK_SON_START, WORDMARK_TAGLINE
 
 # Add parent directory to path for imports
@@ -26,6 +30,40 @@ def get_default_db_paths():
         # the local wrangler state dir, not in a single database file.
         "vibeedge": home / "vibeedge-studio" / "vibesdk" / ".wrangler",
     }
+
+
+def _load_agentson(path):
+    """Load an AgentSON file that may be single-document JSON or JSONL.
+
+    JSONL streams (one entry per line) are wrapped into a synthetic session
+    document so downstream renderers/searchers/fine-tuners can treat every
+    file uniformly. Returns a dict.
+    """
+    from pathlib import Path as _P
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read().strip()
+    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+    is_jsonl = len(lines) > 1
+    if is_jsonl:
+        try:
+            json.loads(lines[0])
+            json.loads(lines[1])
+        except json.JSONDecodeError:
+            is_jsonl = False
+    if is_jsonl:
+        entries = [json.loads(ln) for ln in lines]
+        stem = _P(path).stem
+        return {
+            "id": entries[0].get("stream_id", stem) if isinstance(entries[0], dict) else stem,
+            "tool": {"name": "other", "session_id": stem},
+            "entries": entries,
+            "_format": "jsonl",
+        }
+    data = json.loads(content)
+    if isinstance(data, list):
+        stem = _P(path).stem
+        return {"id": stem, "tool": {"name": "other", "session_id": stem}, "entries": data, "_format": "jsonl"}
+    return data
 
 
 def cmd_export(args):
@@ -394,9 +432,8 @@ def cmd_list(args):
 
 def cmd_render(args):
     """Render an AgentSON file to different formats."""
-    with open(args.input, "r", encoding="utf-8") as f:
-        data = json.load(f)
-        
+    data = _load_agentson(args.input)
+
     if args.format == "md":
         output = render_markdown(data)
     elif args.format == "html":
@@ -420,7 +457,7 @@ def cmd_excel(args):
     # Optionally redact PII first
     input_path = args.input
     if args.redact:
-        from tools.pii_redactor import PIIRedactor
+        from pii_redactor import PIIRedactor
         redactor = PIIRedactor(use_model=False)
         
         if args.all:
@@ -448,7 +485,7 @@ def cmd_excel(args):
 
 def cmd_redact(args):
     """Redact PII from AgentSON files."""
-    from tools.pii_redactor import PIIRedactor, redact_all
+    from pii_redactor import PIIRedactor, redact_all
     
     if args.all:
         redact_all(args.input, args.output or "examples_redacted")
@@ -598,9 +635,8 @@ def cmd_finetune(args):
     """Export AgentSON session to fine-tuning format."""
     from exporters.finetune import export_training_data
     
-    with open(args.input, "r", encoding="utf-8") as f:
-        session = json.load(f)
-    
+    session = _load_agentson(args.input)
+
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -768,9 +804,8 @@ def cmd_search(args):
     
     for filepath in files:
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            
+            data = _load_agentson(filepath)
+
             matches = _search_session(data, term)
             if matches:
                 results.append({
@@ -876,6 +911,11 @@ def _display_banner() -> None:
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     parser = argparse.ArgumentParser(
         description="""
 AgentSON — Universal provenance for agent sessions.
@@ -1071,7 +1111,11 @@ TOPICS:
     elif args.command == "publish":
         cmd_publish(args)
     elif args.command == "reconstruct":
-        from cli.reconstruct import cmd_reconstruct
+        try:
+            from cli.reconstruct import cmd_reconstruct
+        except ImportError:
+            print("Error: `agentson reconstruct` is not implemented (cli/reconstruct.py is missing).", file=sys.stderr)
+            sys.exit(1)
         cmd_reconstruct(args)
     elif args.command == "browser":
         cmd_browser(args)
@@ -1197,7 +1241,7 @@ def cmd_browser(args):
 
 def cmd_publish(args):
     """Publish AgentSON session to Docker Hub or LXD Hub."""
-    from tools.distribute import publish
+    from distribute import publish
 
     result = publish(
         session_path=args.input,
