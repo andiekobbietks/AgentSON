@@ -1,3 +1,4 @@
+// AgentSON stream module for hook chatgpt.
 const WebSocket = require('ws');
 
 async function main() {

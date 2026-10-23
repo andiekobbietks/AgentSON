@@ -1,3 +1,4 @@
+// AgentSON stream module for simple claude.
 const WebSocket = require('ws');
 
 async function main() {
