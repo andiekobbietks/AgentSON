@@ -385,7 +385,7 @@ def main():
         html = monitor.render_heartbeat_html(heartbeats, health)
         html_path = os.path.join(os.path.dirname(__file__), '..', 'exports', 'heartbeat.html')
         os.makedirs(os.path.dirname(html_path), exist_ok=True)
-        with open(html_path, 'w') as f:
+        with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html)
         print("\nHTML dashboard: %s" % os.path.abspath(html_path))
 
