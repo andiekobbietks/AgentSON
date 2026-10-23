@@ -286,8 +286,8 @@ class OpencodeReader:
         if timestamp is None:
             return None
         try:
-            dt = datetime.utcfromtimestamp(timestamp / 1000)
-            return dt.isoformat() + "Z"
+            dt = datetime.fromtimestamp(timestamp / 1000, timezone.utc)
+            return dt.isoformat().replace("+00:00", "Z")
         except:
             return None
 

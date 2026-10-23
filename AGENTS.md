@@ -164,7 +164,7 @@ Stack: L0 Identity → L1 Execution → L2 Knowledge → L3 Display
 3. ~~**`requests` serves push/pull**~~ — ✅ Removed (ADR-013)
 4. ~~**No ADR-015/016/017**~~ — ✅ Accepted (2026-07-08)
 5. ~~**GDPR compliance model unimplemented**~~ — ✅ Resolved (`cli/compliance.py` + `cli/reconstruct.py` + schema v1.2 updated)
-6. **CHANGELOG.md stale** — needs v0.2.1 entry
+6. ~~**CHANGELOG.md stale**~~ — ✅ v1.2.0 entry + [Unreleased] added (2026-10-23)
 7. ~~**chrome-devtools not in CLI export/list**~~ — ✅ In CLI export (already had handler in cmd_export)
 8. ~~**Data Rights Platform not built**~~ — ✅ Sprint 1 BUILT (`agentson_platform/` — Crawl→Classify→Report working)
 9. **claude-code reader wired into CLI** — ✅ Added to export + list commands (Sprint 1)
@@ -188,5 +188,11 @@ When something goes wrong or a solution works:
 2. Fix it
 3. Add the solution to THIS FILE so the next agent doesn't repeat the mistake
 4. Keep this file as the living knowledge base — every problem solved becomes permanent knowledge
+
+### Solved: `datetime.utcnow()` deprecation
+
+- Use `datetime.now(timezone.utc)` instead of `datetime.utcnow()` and `datetime.fromtimestamp(t, timezone.utc)` instead of `datetime.utcfromtimestamp(t)`.
+- To keep the `Z` suffix that existing consumers/tests expect, use `.isoformat().replace("+00:00", "Z")` instead of `.isoformat() + "Z"`.
+- Applied across `importers/chatgpt.py`, `readers/*.py`, and `tools/*.py`. pytest deprecation warnings dropped from 84 to 1.
 
 **This file is not static. It evolves with every session.**

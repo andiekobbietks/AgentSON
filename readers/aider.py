@@ -36,7 +36,7 @@ the conversation context. Otherwise it serves as a human-readable log.
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -281,7 +281,7 @@ def read_session(repo_dir: str, session_id: Optional[str] = None) -> Dict:
         doc["started_at"] = dt.isoformat() + "Z"
 
     doc["metadata"] = {
-        "exported_at": datetime.utcnow().isoformat() + "Z",
+        "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source": "aider",
         "entries_count": len(entries),
     }

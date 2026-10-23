@@ -24,6 +24,7 @@ So the ground is dark. Amber is never used as ink on a light background.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -320,10 +321,10 @@ class Installer(tk.Tk):
             # that's the confirmed conformant output.
             lines = (result.stdout or "").splitlines()
             shown = lines[:8] if lines else []
-            self._append("\n--- Render finished (exit %d). ---\n" % result.returncode)
+            self._append(f"\n--- Render finished (exit {result.returncode}). ---\n")
             self._set_status("Render complete (exit 0).", OK)
         else:
-            self._set_status("Render exited with code %d." % result.returncode, BAD)
+            self._set_status(f"Render exited with code {result.returncode}.", BAD)
 
     def register(self) -> None:
         self._run()

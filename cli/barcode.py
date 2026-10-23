@@ -151,19 +151,21 @@ def render_qr_ascii(data: str) -> Optional[str]:
     """Render a QR code as ASCII art (2 chars per module). None if unavailable."""
     if qrcode is None:
         return None
+    try:
+        from PIL import Image
+        from qrcode.image.pil import PilImage
+    except ImportError:  # pragma: no cover
+        return None
     qr = qrcode.QRCode(
         version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
         box_size=1,
         border=2,
+        image_factory=PilImage,
     )
     qr.add_data(data)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    try:
-        from PIL import Image
-    except ImportError:
-        return None
     if not hasattr(img, "convert"):
         img = img.convert("1")
     buf = io.BytesIO()

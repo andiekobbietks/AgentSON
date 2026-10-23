@@ -9,7 +9,7 @@ import json
 import os
 import glob
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 
@@ -101,7 +101,7 @@ class SessionTimingAnalyzer:
         """Detect sessions with activity in the last N milliseconds."""
         conn = self._connect()
         cursor = conn.cursor()
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
         cutoff = now_ms - within_ms
 
         cursor.execute('''
@@ -260,7 +260,7 @@ class SessionTimingAnalyzer:
             session_class = 'epic'
 
         # Active check (activity in last 5 min)
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
         is_active = (now_ms - (session['time_updated'] or 0)) < 300000
 
         # Hydration potential
@@ -269,8 +269,8 @@ class SessionTimingAnalyzer:
 
         return SessionTimingProfile(
             session_id=session_id,
-            started_at=datetime.utcfromtimestamp(session['time_created'] / 1000).isoformat() + 'Z' if session['time_created'] else None,
-            ended_at=datetime.utcfromtimestamp(session['time_updated'] / 1000).isoformat() + 'Z' if session['time_updated'] else None,
+            started_at=datetime.fromtimestamp(session['time_created'] / 1000, timezone.utc).isoformat().replace("+00:00", "Z") if session['time_created'] else None,
+            ended_at=datetime.fromtimestamp(session['time_updated'] / 1000, timezone.utc).isoformat().replace("+00:00", "Z") if session['time_updated'] else None,
             wall_clock_ms=total_ms,
             total_parts=len(parts),
             total_messages=msg_count,
@@ -524,7 +524,7 @@ def main():
             print('  Part %d: %s -> %s' % (
                 h['index'],
                 'None',
-                datetime.utcfromtimestamp(h['hydrated'] / 1000).strftime('%H:%M:%S.%f')[:-3]
+                datetime.fromtimestamp(h['hydrated'] / 1000, timezone.utc).strftime('%H:%M:%S.%f')[:-3]
             ))
 
     # 5. Duration prediction
