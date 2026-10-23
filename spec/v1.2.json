@@ -33,6 +33,8 @@
             "antigravity",
             "chrome-devtools",
             "cursor",
+            "cline",
+            "aider",
             "claude-code",
             "copilot",
             "other"
