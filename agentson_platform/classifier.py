@@ -1,3 +1,4 @@
+# AgentSON core runtime: classifier
 """Tier 1 rule-based classifier — PII, secrets, telemetry.
 
 Two rule sources, deliberately:

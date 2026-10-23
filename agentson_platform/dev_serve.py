@@ -1,3 +1,4 @@
+# AgentSON core runtime: dev serve
 """AgentSON dev mode — stdlib supervisor (like npm run dev).
 
 WHY: the user asked whether it runs like npm dev. The supervisor watches

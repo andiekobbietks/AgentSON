@@ -1,3 +1,4 @@
+# AgentSON core runtime: scan
 """``agentson platform scan`` -- Crawl -> Classify -> Report.
 
 Signature matches the call in ``cli/main.py`` exactly::

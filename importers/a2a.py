@@ -1,3 +1,4 @@
+# AgentSON core runtime: a2a
 """A2A (Agent-to-Agent) Protocol Importer for AgentSON.
 
 Maps A2A protocol traces to AgentSON 12-primitive ontology.

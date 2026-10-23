@@ -1,3 +1,4 @@
+# AgentSON core runtime: agentson cli
 """AgentSON export CLI.
 
 Single entry point for converting any AI-tool session into an `.agentson`

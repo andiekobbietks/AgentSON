@@ -1,3 +1,4 @@
+# AgentSON core runtime: opencode
 """
 AgentSON Reader: opencode
 Reads session data from opencode's SQLite database.

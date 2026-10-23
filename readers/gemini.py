@@ -1,3 +1,4 @@
+# AgentSON core runtime: gemini
 """AgentSON Reader: gemini (Google AI Studio / Gemini export JSON)."""
 from __future__ import annotations
 import json
