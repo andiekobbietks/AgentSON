@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// AgentSON stream module for chrome agent.
 import { readFileSync, appendFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 

@@ -1,3 +1,4 @@
+// AgentSON stream module for export chatgpt.
 const WebSocket = require('ws');
 const fs = require('fs');
 

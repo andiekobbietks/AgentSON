@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// AgentSON stream module for cli.
 import { readFileSync, writeFileSync, appendFileSync, watchFile, existsSync, mkdirSync } from 'fs';
 import { resolve } from 'path';
 
