@@ -13,6 +13,7 @@ class TestLibreReader(unittest.TestCase):
     """Smoke tests for read_libre_csv and get_libre_summary."""
 
     def test_read_session_structure(self):
+        """The exported document header identifies the Libre tool and agent."""
         data = read_libre_csv(str(FIXTURE))
         self.assertEqual(data["version"], "1.2")
         self.assertEqual(data["tool"]["id"], "freestyle-libre-2")
@@ -20,6 +21,7 @@ class TestLibreReader(unittest.TestCase):
         self.assertTrue(data["id"].startswith("libre-"))
 
     def test_read_entries(self):
+        """Every CSV row becomes an observation entry with type and source metadata."""
         data = read_libre_csv(str(FIXTURE))
         entries = data["entries"]
         self.assertEqual(len(entries), 4)
@@ -32,12 +34,14 @@ class TestLibreReader(unittest.TestCase):
             self.assertIn("source_raw", entry["data"])
 
     def test_source_mapping(self):
+        """CSV Source values map to the AgentSON source primitive."""
         data = read_libre_csv(str(FIXTURE))
         sources = {e["data"]["source_raw"]: e["source"] for e in data["entries"]}
         self.assertEqual(sources["Sensor"], "sensor")
         self.assertEqual(sources["Manual"], "user")
 
     def test_status_classification(self):
+        """Glucose values classify as low, normal, or high against the target range."""
         data = read_libre_csv(str(FIXTURE))
         statuses = {e["data"]["value"]: e["status"] for e in data["entries"]}
         self.assertEqual(statuses[3.5], "low")
@@ -46,6 +50,7 @@ class TestLibreReader(unittest.TestCase):
         self.assertEqual(statuses[11.2], "high")
 
     def test_metrics(self):
+        """Aggregated metrics cover totals, averages, range, and time-in-range."""
         data = read_libre_csv(str(FIXTURE))
         metrics = data["metrics"]
         self.assertEqual(metrics["total_readings"], 4)
@@ -59,6 +64,7 @@ class TestLibreReader(unittest.TestCase):
         self.assertEqual(metrics["readings_per_day"], 4.0)
 
     def test_summary_contains_key_lines(self):
+        """The human-readable summary names the device and reports totals."""
         data = read_libre_csv(str(FIXTURE))
         summary = get_libre_summary(data)
         self.assertIn("FreeStyle Libre 2 Summary", summary)

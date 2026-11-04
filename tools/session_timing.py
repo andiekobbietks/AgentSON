@@ -28,6 +28,7 @@ class ActivityBurst:
 
     @property
     def parts_per_second(self) -> float:
+        """Average parts per second inside the burst."""
         return self.part_count / (self.duration_ms / 1000) if self.duration_ms > 0 else 0
 
 
@@ -40,6 +41,7 @@ class IdlePeriod:
 
     @property
     def duration_ms(self) -> int:
+        """Length of the idle gap in milliseconds."""
         return self.end_ms - self.start_ms
 
 
@@ -88,11 +90,13 @@ class SessionTimingAnalyzer:
     """Analyzes session timing from SQLite + .agentson files."""
 
     def __init__(self, db_path: Optional[str] = None):
+        """Create a timing analyzer for the given SQLite session database."""
         if db_path is None:
             db_path = os.path.expanduser('~/.local/share/opencode/opencode.db')
         self.db_path = db_path
 
     def _connect(self):
+        """Open a read/write SQLite connection with row factories."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn

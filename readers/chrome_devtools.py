@@ -387,6 +387,7 @@ class ChromeDevtoolsReader:
     """Reads Chrome DevTools AI Assistance Markdown exports into AgentSON."""
 
     def __init__(self, path: str | Path):
+        """Open a Chrome DevTools reader on a single Markdown export file."""
         self.path = Path(path)
 
     def read(self) -> Dict:

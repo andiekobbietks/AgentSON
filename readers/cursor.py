@@ -323,10 +323,13 @@ class CursorReader:
     """Reads Cursor IDE sessions into AgentSON format."""
 
     def __init__(self, db_path: str | Path):
+        """Open a Cursor reader on a globalStorage state.vscdb file."""
         self.db_path = Path(db_path)
 
     def read(self, composer_id: str) -> Dict:
+        """Read a Cursor composer session by ID."""
         return read_session(str(self.db_path), composer_id)
 
     def list_sessions(self, limit: int = 50) -> List[Dict]:
+        """List Cursor composer sessions from the database."""
         return list_sessions(str(self.db_path), limit)

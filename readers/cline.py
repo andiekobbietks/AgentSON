@@ -278,10 +278,13 @@ class ClineReader:
     """Reads Cline VS Code extension sessions into AgentSON format."""
 
     def __init__(self, tasks_dir: str | Path):
+        """Open a Cline reader on the VS Code extension tasks directory."""
         self.tasks_dir = Path(tasks_dir)
 
     def read(self, task_id: str) -> Dict:
+        """Read a Cline task by its ULID directory name."""
         return read_session(str(self.tasks_dir), task_id)
 
     def list_sessions(self, limit: int = 50) -> List[Dict]:
+        """List Cline tasks with metadata from history_item.json files."""
         return list_sessions(str(self.tasks_dir), limit)

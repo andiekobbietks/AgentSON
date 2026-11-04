@@ -302,10 +302,13 @@ class AiderReader:
     """Reads Aider chat history into AgentSON format."""
 
     def __init__(self, repo_dir: str | Path):
+        """Open an Aider reader on the repository containing the chat history."""
         self.repo_dir = Path(repo_dir)
 
     def read(self, session_id: Optional[str] = None) -> Dict:
+        """Read an Aider session by ID, or the most recent session if none given."""
         return read_session(str(self.repo_dir), session_id)
 
     def list_sessions(self, limit: int = 50) -> List[Dict]:
+        """List Aider sessions found in the repository's chat history."""
         return list_sessions(str(self.repo_dir), limit)

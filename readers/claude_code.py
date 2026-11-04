@@ -54,6 +54,7 @@ class ClaudeCodeReader:
     }
 
     def __init__(self, config_dir: Optional[str] = None):
+        """Open a Claude Code reader, optionally on a non-default config directory."""
         if config_dir:
             self.claude_dir = Path(config_dir)
         else:

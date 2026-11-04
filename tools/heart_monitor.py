@@ -49,11 +49,13 @@ class HeartMonitor:
     STALE_THRESHOLD_MS = 86400000  # 24 hours — stale
 
     def __init__(self, db_path: Optional[str] = None):
+        """Create a monitor for the given SQLite session database."""
         if db_path is None:
             db_path = os.path.expanduser('~/.local/share/opencode/opencode.db')
         self.db_path = db_path
 
     def _connect(self):
+        """Open a read/write SQLite connection with row factories."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn
@@ -356,6 +358,7 @@ body { background: #0a0a0a; color: #e5e5e5; font-family: 'Cascadia Code', monosp
 
 
 def main():
+    """Run the heartbeat monitor CLI against the default session database."""
     monitor = HeartMonitor()
 
     print("=" * 60)

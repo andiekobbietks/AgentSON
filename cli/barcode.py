@@ -46,6 +46,7 @@ _STOP = 106
 
 
 def _pattern(value: int) -> str:
+    """Return the Code 128 bar/space width pattern for a symbol value."""
     return _C128_PATTERNS[value]
 
 
