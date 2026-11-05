@@ -28,7 +28,7 @@ Run locally:
 
 ```bash
 python -m pip install pytest jsonschema
-python -m pytest -q tests/conformance/test_canonical_archive.py
+python -m pytest -q tests/conformance/test_canonical_archive.py tests/test_opencode_real_sample.py tests/test_chatgpt_importer.py
 ```
 
 The initial suite and fixture are:
@@ -36,10 +36,12 @@ The initial suite and fixture are:
 - `tests/fixtures/conformance/cross_harness_session_v1_2.json`
 - `tests/conformance/test_canonical_archive.py`
 - `.github/workflows/conformance.yml`
+- Production-reader regression: `tests/test_opencode_real_sample.py`
+- ChatGPT importer v1.2 conformance: `tests/test_chatgpt_importer.py`
 
 The fixture is deliberately synthetic and labelled as such. It exercises the v1.2 envelope, the 12-primitive entry validator, source identifiers, source sequence, correlation, source-specific extensions, action-without-observation semantics and the absence of a mandatory `stream-meta` event.
 
-The initial JSON parse/serialise test is a neutral consumer preservation check. It is **not** a harness-to-harness test.
+The JSON parse/serialise test is a neutral consumer preservation check. The OpenCode and ChatGPT tests now exercise production source conversion paths and validate their v1.2 output. These tests improve producer-side evidence but are **not** a harness-to-harness test: no independent receiving harness adapter is exercised yet.
 
 ## 4. Required adapter test contract
 
@@ -69,7 +71,7 @@ The following matrix is a test programme, not a claim that these pairs currently
 | Producer | Consumer | Current evidence | Next requirement |
 |---|---|---|---|
 | OpenCode | ChatGPT / other independent consumer | OpenCode reader tests exist; ChatGPT importer tests exist, but this does not demonstrate an AgentSON v1.2 import path. | Add canonical export, independent import and semantic diff. |
-| ChatGPT export | OpenCode / other independent consumer | ChatGPT export importer exists; its current output identifies itself with the legacy v1 schema URI and uses `tool.name=chatgpt`, which is not in the v1.2 tool-name enum. | Define and test explicit v1-to-v1.2 migration and source identity mapping before claiming C0/C2. |
+| ChatGPT export | OpenCode / other independent consumer | The ChatGPT importer now emits the v1.2 schema URI, uses the newly recognised `chatgpt` source name and omits unavailable timestamps. Its output is schema-tested. | Add a separate OpenCode consumer adapter and semantic diff to establish C2. |
 | Claude Code | OpenCode | Dedicated reader tests exist for both sources. | Add one shared task fixture and a real producer-to-consumer pair test. |
 | Aider | Cline | Dedicated reader tests exist for both sources. | Add one shared task fixture and a real producer-to-consumer pair test. |
 | Cursor | Copilot Chat | Dedicated reader tests exist for both sources. | Add one shared task fixture and a real producer-to-consumer pair test. |
@@ -104,11 +106,10 @@ Normalisation must be declared. For example, a source timestamp converted to UTC
 
 ## 8. Known gaps to close
 
-1. **Legacy importer/schema mismatch:** the current ChatGPT importer emits a v1 schema URI and a `chatgpt` tool name not accepted by the v1.2 `tool.name` enum. Decide whether to add a versioned source identity model, use the existing `other` value with explicit source metadata, or introduce a migration profile. Do not silently widen the enum without an ADR/schema review.
-2. **Reader test fidelity:** `tests/test_opencode_real_sample.py` contains a minimal reimplementation of the mapping logic rather than invoking `OpencodeReader`. It is useful as a mapping example/regression description but is not an end-to-end regression test of the production reader.
-3. **No canonical archive consumer matrix:** current reader tests do not establish a common consumer import interface or producer-to-consumer round-trip.
-4. **Loss-report representation:** ADR-024 requires semantic-loss accounting, but the v1.2 schema does not yet define a normative, machine-readable loss-report structure. Design and version this before claiming complete loss-report conformance.
-5. **Resume profile:** there is no demonstrated cross-harness checkpoint/resume contract in this test baseline. Keep C4 unclaimed.
+1. **No canonical archive consumer matrix:** current reader tests do not establish a common consumer import interface or producer-to-consumer round-trip.
+2. **Source capture depth:** the OpenCode regression now invokes the production conversion method, but the single-message fixture does not exercise the complete SQLite discovery/read path or multi-message ordering under source-version skew.
+3. **Loss-report representation:** ADR-024 requires semantic-loss accounting, but the v1.2 schema does not yet define a normative, machine-readable loss-report structure. Design and version this before claiming complete loss-report conformance.
+4. **Resume profile:** there is no demonstrated cross-harness checkpoint/resume contract in this test baseline. Keep C4 unclaimed.
 
 ## 9. Release gate
 
