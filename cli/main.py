@@ -9,14 +9,7 @@ import os
 import sys
 from pathlib import Path
 from typing import List
-import sys as _sys
-_TOOLS_DIR = str(Path(__file__).resolve().parent.parent / "tools")
-if _TOOLS_DIR not in _sys.path:
-    _sys.path.insert(0, _TOOLS_DIR)
 from cli.help_system import WORDMARK, WORDMARK_SON_START, WORDMARK_TAGLINE
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def get_default_db_paths():
@@ -554,7 +547,7 @@ def cmd_excel(args):
     # Optionally redact PII first
     input_path = args.input
     if args.redact:
-        from pii_redactor import PIIRedactor
+        from tools.pii_redactor import PIIRedactor
         redactor = PIIRedactor(use_model=False)
         
         if args.all:
@@ -582,7 +575,7 @@ def cmd_excel(args):
 
 def cmd_redact(args):
     """Redact PII from AgentSON files."""
-    from pii_redactor import PIIRedactor, redact_all
+    from tools.pii_redactor import PIIRedactor, redact_all
     
     if args.all:
         redact_all(args.input, args.output or "examples_redacted")
@@ -1339,7 +1332,7 @@ def cmd_browser(args):
 
 def cmd_publish(args):
     """Publish AgentSON session to Docker Hub or LXD Hub."""
-    from distribute import publish
+    from tools.distribute import publish
 
     result = publish(
         session_path=args.input,
