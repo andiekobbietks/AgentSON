@@ -335,7 +335,11 @@ def parse_markdown(md_text: str, source_filename: Optional[str] = None) -> Dict:
         elif title.strip().lower() == "ai":
             entries.extend(_parse_ai_block(sec_body))
         else:
-            entries.append({"type": "side-effect", "text": f"{title}\n\n{sec_body.strip()}"})
+            entries.append({
+                "type": "side-effect",
+                "action": title.strip() or "Source section",
+                "text": f"{title}\n\n{sec_body.strip()}",
+            })
 
     aid = f"{slug}-{created.strftime('%Y%m%d')}" if created else slug
     doc: Dict = {
