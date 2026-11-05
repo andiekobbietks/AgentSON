@@ -1,6 +1,6 @@
 # Coding Standards
 
-This page summarises the repository's engineering rules. The canonical detailed policy is [docs/standards/coding-standards.md](../docs/standards/coding-standards.md); update that source first and keep this page aligned.
+This page summarises the repository's engineering rules. The canonical detailed policy is [docs/standards/coding-standards.md](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/coding-standards.md); update that source first and keep this page aligned.
 
 ## Privacy and security
 
