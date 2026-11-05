@@ -126,18 +126,24 @@ def _archive_digest(archive: Mapping[str, Any]) -> str:
 
 
 def _load_agentson_input(source: Union[str, Path, Mapping[str, Any]]) -> Dict[str, Any]:
-    """Accept a v1.2 document or project a canonical JSONL stream into its archive envelope."""
+    """Accept canonical JSONL or a legacy/document session and project it to v1.2."""
     if isinstance(source, Mapping):
         return _load_archive(source)
-    from exporters.jsonl import load_agentson_document
+    from exporters.jsonl import load_agentson_document, to_v1_2_events
 
     document = load_agentson_document(source)
-    if document.get("_format") != "jsonl":
-        document.pop("_format", None)
-        return _load_archive(document)
+    if document.get("_format") == "jsonl":
+        events = document.get("entries") or []
+        source_session = document.get("source_session")
+        if not isinstance(source_session, dict):
+            source_session = {}
+    else:
+        events = to_v1_2_events(document)
+        source_session = events[0].get("source_session", {}) if events else {}
+        if not isinstance(source_session, dict):
+            source_session = {}
 
     tool_data = document.get("tool") if isinstance(document.get("tool"), dict) else {}
-    source_session = document.get("source_session") if isinstance(document.get("source_session"), dict) else {}
     raw_tool_name = str(tool_data.get("name") or source_session.get("tool") or "other").lower()
     allowed_tools = {"opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "cline", "aider", "claude-code", "copilot", "other"}
     archive = {
@@ -153,12 +159,12 @@ def _load_agentson_input(source: Union[str, Path, Mapping[str, Any]]) -> Dict[st
         "ended_at": document.get("ended_at"),
         "heartbeat": document.get("heartbeat"),
         "context": document.get("context"),
-        "entries": document.get("entries") or [],
+        "entries": events,
         "metadata": {
             **(document.get("metadata") if isinstance(document.get("metadata"), dict) else {}),
             "agentson_source_session": source_session,
             "agentson_original_tool_name": raw_tool_name,
-            "agentson_wire_format": "v1.2-jsonl",
+            "agentson_wire_format": document.get("_format", "legacy-document"),
         },
     }
     return _load_archive(archive)
