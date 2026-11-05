@@ -1,6 +1,6 @@
 # Repository status
 
-**Last updated:** 2026-11-05T18:42:00Z  
+**Last updated:** 2026-11-05T19:03:00Z  
 **Branch:** `feat/jsonl-reader-conformance`  
 **Current pull request:** [#62](https://github.com/andiekobbietks/AgentSON/pull/62)
 
@@ -47,6 +47,16 @@ Each matrix job ran the full test suite: **260 passed, 0 failed**. The workflow 
 The test run reported 60 warnings on the Python 3.12 job. These include existing deprecation and pytest warnings; they are not test failures and should be reviewed separately rather than silently ignored.
 
 The CI workflow concurrency group uses the pull request's source branch (or the pushed branch name) so push and pull-request events for the same branch do not run duplicate matrices.
+
+## Cross-harness continuation
+
+- Added `agentson resume INPUT --target TARGET [--output FILE]`.
+- The command validates canonical JSONL streams and accepts supported legacy session documents, then writes a portable Markdown context packet.
+- The packet preserves available conversation text, event types, tool names, timestamps, source identity and correlation identifiers.
+- Raw tool arguments, code and source payloads are excluded by default to reduce accidental secret disclosure. Conversation text can still contain sensitive material; review/redact before sharing externally.
+- The packet explicitly marks transcript content as untrusted historical data and does not replay commands or restore private runtime state.
+- This is context continuation into a new harness session, not native session import or exact runtime resumption. Destination-specific import adapters and checkpoint restoration remain future work.
+- ADR-025 records the safety and fidelity contract. The existing ADR-024 canonical-envelope versus JSONL conflict with PR #60 remains unresolved.
 
 ## Reader conformance evidence and limits
 
