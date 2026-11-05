@@ -406,6 +406,7 @@ See [ROADMAP.md](ROADMAP.md) for the reader-priority planning snapshot. It is no
 
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
 - [Session Interoperability Architecture](docs/architecture/session-interoperability.md) — Cross-harness capture, exchange, inspection and resumption boundaries
+- [Cross-Harness Conformance Test Plan](docs/architecture/conformance-test-plan.md) — Executable conformance levels, adapter pair matrix and known gaps
 - [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md) — Canonical archive decision
 - [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Operating and specification decision records (separate namespaces)
 - [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — Standard Operating Procedures
