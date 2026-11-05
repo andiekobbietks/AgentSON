@@ -78,7 +78,7 @@ To export from Antigravity required a **third** script — and the built-in expo
 
 ### 1.3 The Gap
 
-**Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.**
+**AgentSON is designed to address a gap between agent communication protocols, memory systems and observability tools: a portable, vendor-neutral record of what a session actually exposed and did.**
 
 - Agent definition standards exist (A2A, ACP, Agent Format) — but they describe capabilities, not session transcripts
 - Agent memory standards are emerging (memorywire, May 2026) — but they address memory persistence, not action traces
