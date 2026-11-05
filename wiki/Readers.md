@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/Readers.md`](../docs/wiki/Readers.md). This file is retained for historical links only.
+
 # Readers
 
 Readers convert tool-specific session data into AgentSON format.

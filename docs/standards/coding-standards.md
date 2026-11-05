@@ -18,37 +18,37 @@ Non-negotiable rules for how I write code.
 
 ## No Telemetry
 
-**No phone-home, no analytics, no tracking.**
+**No unsolicited telemetry, analytics, tracking or error reporting.**
 
-Not even "anonymous usage statistics." Not even "error reporting." If the user didn't explicitly opt in, don't send data anywhere.
+Do not collect or transmit usage/session data for the maintainer or a third party without explicit, informed user opt-in. Core archive operations must not phone home.
 
-**Rule:** No `requests.post`, no `fetch()` to external URLs, no beacon scripts, no tracking pixels.
+**Rule:** No hidden analytics, tracking pixels, beacons or background uploads. Network access required for a user-requested source integration, update check or explicitly enabled hosted feature is not telemetry by itself; it must be documented, scoped to that action and disclose what data leaves the device. Do not send session content to an external service merely because a user opened or inspected an archive.
 
-**Why:** The user owns their data. That includes metadata about how they use the tool.
+**Why:** Users own their session data and must understand and control every external disclosure.
 
 ---
 
 ## Vendor Neutral
 
-**Never depend on one company's API or format.**
+**The canonical model and archive must not depend on one company's API or format.**
 
-If OpenAI shuts down tomorrow, AgentSON still works. If GitHub goes down, the CLI still works. If Supabase disappears, the local files still work.
+The canonical archive must remain readable and inspectable without the originating vendor runtime or a hosted AgentSON service. Individual source adapters may depend on a source application's local database or an explicitly authorised API; those dependencies must be declared per adapter.
 
-**Rule:** Every external service is optional. Every core feature works offline.
+**Rule:** External services are optional to the core archive. Core parse, validate and inspect operations must work offline. Source-specific capture may require the source application or service and must disclose that requirement.
 
-**Why:** Vendor lock-in is the enemy of portability. The whole point of AgentSON is that it works everywhere.
+**Why:** Vendor lock-in is the enemy of portability. The archive must outlive any one harness or provider.
 
 ---
 
 ## Single File Output
 
-**One .agentson file = one complete session.**
+**One canonical .agentson archive = one independently readable session record.**
 
-No sidecar files, no database entries, no config dependencies. One file has everything: schema, entries, metadata, context.
+The archive contains its session envelope, ordered entries and the metadata needed to interpret the recorded session. It must not depend on a hidden database, config file or service. Large or separately governed artefacts may be external references only when explicit and integrity-verifiable; the archive must report when an artefact is unavailable.
 
-**Rule:** If you need a second file to understand the first file, the format is broken.
+**Rule:** A recipient must be able to parse and inspect the session record from the archive alone. External infrastructure must never be a hidden dependency.
 
-**Why:** A single file can be emailed, shared, archived, version-controlled. Multiple files create sync problems.
+**Why:** A self-contained archive can be transferred, shared, archived and version-controlled without silently losing its meaning.
 
 ---
 
@@ -83,6 +83,14 @@ Every dependency is a liability. It can be abandoned, hacked, or become incompat
 **Why:** A bug "fixed" without reproduction is a bug hidden, not solved. This is the same discipline as "Test Against Real Data," applied to the moment a problem is found rather than only to the moment new code is written.
 
 ---
+
+## Privacy-Safe Test Data
+
+Real exports are important for reader fidelity, but raw sessions must never be committed by default. Prompts, code, file paths, tool output, URLs, account identifiers and credentials may contain personal or confidential data.
+
+**Rule:** Keep raw real exports outside the public repository unless the data owner has explicitly approved publication and a documented review confirms that disclosure is safe. Prefer a sanitised, provenance-labelled fixture derived from a real export. Record the sanitisation method and what was changed. Synthetic fixtures remain useful for edge cases, but must be labelled synthetic and must not be presented as real-world evidence.
+
+**Why:** Real-data coverage must not become a route for publishing secrets or personal data.
 
 ## Test Against Real Data
 
@@ -140,3 +148,13 @@ add chrome devtools reader
 ---
 
 *These standards are not suggestions. They are the price of entry.*
+
+
+## Interoperability and Honest Claims
+
+- Do not describe an adapter as cross-harness compatible merely because it can export or parse a session.
+- Report semantic loss, unavailable source data, redactions and unsupported event types.
+- Distinguish capture, portability, reconstruction and resumption.
+- Imported session content is untrusted; inspection must not execute commands or tool calls.
+- Link claims such as 'working', 'validated', 'reconstructable' or 'resumable' to the exact implementation and tests that support them.
+- Treat the canonical session archive as the v1.2 JSON envelope defined by spec/v1.2.json; JSONL stream code is a separate interface until it has its own contract.

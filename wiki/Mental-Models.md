@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/Mental-Models.md`](../docs/wiki/Mental-Models.md). This file is retained for historical links only.
+
 # Mental Models
 
 How we think about problems before writing code.

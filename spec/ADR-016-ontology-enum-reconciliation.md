@@ -24,11 +24,11 @@ The formal ontology (`spec/ontology.md`) defines 12 primitives. The v1.json sche
 | `presence` | ✅ | ❌ | ✅ |
 | `capabilities` | ✅ | ❌ | ✅ |
 | `observation` | ✅ | ❌ | ✅ |
-| `user-feedback` | ✅ | ❌ | ❌ |
-| `system-event` | ✅ | ❌ | ❌ |
+| `user-feedback` | ✅ | ❌ | ✅ |
+| `system-event` | ✅ | ❌ | ✅ |
 | `stream-meta` | ✅ | ❌ | ✅ |
 
-**The v1.2 schema partially fixes this** — it has `handoff`, `presence`, `observation`, `stream-meta` in `$defs`. But it's still missing `user-feedback`, `system-event`, and `capabilities` (as a standalone entry type).
+**Historical context:** the initial v1.2 schema work was incomplete. The current v1.2 schema defines all 12 ontology primitives in `$defs`; this ADR records the reconciliation decision and the requirement that the schema remain aligned with the ontology. Verify that alignment through the schema consistency tests.
 
 ### The 3 types in enum but NOT in ontology
 
@@ -64,7 +64,7 @@ capabilities          side-effect
 
 3. **`title`** → Remove from entry types. Titles are display metadata. If a step needs a label, use `thought` with a structured `text` field, or add an optional `label` field to any entry type.
 
-4. **`observation`** → Add to v1.json enum (currently missing). This is the counterpart to `action` — every action produces an observation.
+4. **`observation`** → Add to v1.json enum (currently missing). This is the result counterpart to `action` when the source provides a result. An action may have no captured observation because the source omitted it, the action failed or capture was incomplete; do not invent an observation.
 
 5. **`user-feedback`** → Add to all schemas. This is distinct from `user-query` — it's a correction or clarification, not an initial request.
 
@@ -123,13 +123,13 @@ capabilities          side-effect
 - Higher fidelity (every event type has clear semantics)
 - Better analyzability (consumers know exactly what 12 types exist)
 - Better replayability (replay engine can handle all 12 types deterministically)
-- Same portability (JSONL format unchanged)
+- Same portability (the canonical v1.2 JSON envelope is unchanged; JSONL stream transport is separate)
 
 ### ISO Litmus Test
 
 > "Is this the only format solving this problem at the international level?"
 
-**Yes.** The 12-primitive ontology is the only formal event model for AI agent sessions. No other standard defines what an agent "did" in a vendor-neutral way. The ontology is the source of truth; the schema enforces it.
+The 12-primitive ontology is AgentSON's chosen event model and the source of truth for its schema. This ADR does not establish that no other event models or adjacent standards exist; comparative research is required before making an exclusivity claim.
 
 ---
 
@@ -137,5 +137,5 @@ capabilities          side-effect
 
 - `spec/ontology.md` — 12-primitive formal ontology (source of truth)
 - `spec/v1.json` lines 111-121 — Current 8-type enum
-- `spec/v1.2.json` lines 23-36 — Current `oneOf` with 10 types
+- `spec/v1.2.json` — current `oneOf` definitions for the 12 ontology primitives
 - `spec/adapter-spec.md` — Adapter mapping tables (uses ontology types)

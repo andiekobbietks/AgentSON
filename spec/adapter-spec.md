@@ -240,7 +240,7 @@ Each adapter MUST validate:
 1. Every `action` has a valid `tool` name
 2. Every `observation` has a `source` field
 3. Handoffs reference valid agent IDs
-4. No orphaned actions (action without observation)
+4. Preserve every captured action. When a source result exists, emit and correlate its observation. Do not require or fabricate an observation when the source provides none; report the missing/unavailable result in the adapter's loss/coverage report.
 
 ---
 

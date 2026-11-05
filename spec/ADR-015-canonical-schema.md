@@ -1,10 +1,12 @@
 # ADR-015: Canonical Schema Decision
 
-**Status:** Accepted
+**Status:** Superseded by ADR-024 (05 November 2026)
 **Date:** 07 July 2026
 **Decision Makers:** andiekobbietks
 
 ---
+
+> Historical decision: this ADR's JSONL-canonical decision is superseded by [ADR-024](ADR-024-canonical-session-archive-and-interoperability.md). The current v1.2 schema defines a single JSON session envelope with an ordered `entries` array. Existing JSONL code is treated as a separate stream/transport implementation until a dedicated contract is defined.
 
 ## Context
 
@@ -100,7 +102,7 @@ The current codebase produces **both shapes**:
 
 > "Is this the only format solving this problem at the international level?"
 
-**Yes.** AgentSON is the only provenance format for AI agent sessions. No ISO standard exists for agent session recording. No non-ISO standard does this either. JSONL is already a de facto standard (IETF RFC 8259). AgentSON builds on JSONL and adds the 12-primitive ontology that makes agent traces machine-readable and human-analyzable.
+**Historical assessment, not independently verified.** This ADR does not establish that AgentSON is the only provenance format or that no adjacent non-ISO standard exists. Any standards-positioning claim requires a current comparative review. The canonical archive decision is now governed by ADR-024.
 
 ---
 
@@ -108,5 +110,5 @@ The current codebase produces **both shapes**:
 
 - `spec/v1.json` — Single-document schema (deprecated)
 - `spec/v1.1.json` — Single-document schema with trajectory (deprecated)
-- `spec/v1.2.json` — JSONL streaming schema (canonical)
+- `spec/v1.2.json` — current JSON session-envelope schema (canonical under ADR-024)
 - `spec/ontology.md` — 12-primitive formal ontology (source of truth for types)

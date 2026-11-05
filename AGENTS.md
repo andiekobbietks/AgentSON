@@ -51,9 +51,9 @@ Ask Codex CLI (GPT-55) for local app verification needing computer use, browser 
 |--------|----------------|-----------|---------|
 | `spec/v1.json` | Per-primitive from ontology | Single-document shape | ✅ Authoritative |
 | `spec/v1.1.json` | Per-primitive + trajectory | Single-document + trajectory | ✅ Working |
-| `spec/v1.2.json` | Per-primitive + oneOf discriminated union | JSONL stream (canonical) | ✅ Accepted (ADR-015) |
+| `spec/v1.2.json` | Session envelope + ordered entries | Single JSON session archive (canonical) | ✅ Architecture baseline (ADR-024) |
 
-**v1.2 is canonical.** ADR-015 accepted. JSONL is the only format. v1/v1.1 deprecated.
+**v1.2 is the canonical session-envelope archive.** It is one JSON document with an ordered `entries` array. ADR-015's historical JSONL-canonical decision is superseded by ADR-024. Existing JSONL stream code is a separate transport/implementation surface until a dedicated contract is specified and tested. v1/v1.1 remain legacy inputs.
 
 ## Ontology ↔ Enum Reconciliation
 
@@ -116,10 +116,11 @@ Revenue from the platform funds AgentSON development. Both can exist without the
 | `spec/adapter-spec.md` | CDP/MCP/browser-use specs | ✅ |
 | `spec/replay-semantics.md` | Replay rules | ✅ |
 | `spec/okf-digest.md` | OKF reference | ✅ |
-| `spec/ADR-015-canonical-schema.md` | JSONL is canonical | ✅ Accepted |
+| `spec/ADR-015-canonical-schema.md` | Historical JSONL decision | Superseded by ADR-024 |
+| `spec/ADR-024-canonical-session-archive-and-interoperability.md` | Canonical session envelope and cross-harness guarantees | ✅ Architecture baseline; implementation migration outstanding |
 | `spec/ADR-016-ontology-enum-reconciliation.md` | 12 primitives = source of truth | ✅ Accepted |
 | `spec/ADR-017-core-vs-streaming.md` | Core vs streaming separation | ✅ Accepted |
-| `docs/standards/adrs/adr-001…014` + `spec/ADR-015/016/017/022` | The 18 ADRs that exist on disk | ✅ |
+| ADR inventory | See `docs/standards/README.md` and the linked files under `docs/standards/adrs/` and `spec/` | Verify paths before editing |
 | `docs/standards/adrs/adr-018…021` | Platform separation, privacy model, enforcement, pricing | ❌ **Never written** — corrected 2026-10-21 |
 | `docs/platform/mvp-spec.md` | MVP architecture: Crawler→Analyze→Report→Enforce | ❌ **Never written** — corrected 2026-10-21 |
 | `readers/opencode.py` | OpenCode reader | ✅ repaired 2026-10-21 |
@@ -164,7 +165,7 @@ Stack: L0 Identity → L1 Execution → L2 Knowledge → L3 Display
 3. ~~**`requests` serves push/pull**~~ — ✅ Removed (ADR-013)
 4. ~~**No ADR-015/016/017**~~ — ✅ Accepted (2026-07-08)
 5. ~~**GDPR compliance model unimplemented**~~ — ✅ Resolved (`cli/compliance.py` + `cli/reconstruct.py` + schema v1.2 updated)
-6. **CHANGELOG.md stale** — needs v0.2.1 entry
+6. ~~**CHANGELOG.md stale**~~ — v0.2.1 entry exists; interoperability alignment is recorded under Unreleased
 7. ~~**chrome-devtools not in CLI export/list**~~ — ✅ In CLI export (already had handler in cmd_export)
 8. ~~**Data Rights Platform not built**~~ — ✅ Sprint 1 BUILT (`agentson_platform/` — Crawl→Classify→Report working)
 9. **claude-code reader wired into CLI** — ✅ Added to export + list commands (Sprint 1)

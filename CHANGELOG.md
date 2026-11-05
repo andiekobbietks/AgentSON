@@ -2,7 +2,30 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Interoperability and conformance
+- Added an executable canonical archive conformance suite and GitHub Actions workflow for archive validation, the production OpenCode conversion path and ChatGPT importer output.
+- Added an experimental OpenCode v2 receiving adapter that stores a validated AgentSON archive as one queued synthetic session-inbox item (`delivery: queue`, `resume: false`) and verifies it by reading the durable inbox back and comparing the archive and SHA-256 digest.
+- Added HTTP Basic authentication support for OpenCode v2; credentials are sent in the Authorization header, never embedded in endpoint URLs.
+- Added mocked API contract tests and a pinned live OpenCode 2.2.5 CI integration job. The live test now exercises the production ChatGPT importer against a synthetic ChatGPT-shaped export, then imports the resulting v1.2 archive into OpenCode, reads the queued inbox item back, compares the archive and digest, and deletes the session. The pipeline passes, but the synthetic source fixture is not real-export C2 evidence.
+- The OpenCode v2 synthetic archive can enter model context on a later turn. The adapter discloses this future-context exposure; `resume: false` prevents immediate execution only.
+- Updated the OpenCode reader and ChatGPT importer to identify v1.2 output; added `chatgpt` to the v1.2 source-tool enum.
+- ChatGPT imports now omit unavailable timestamps rather than emitting JSON `null`, and are schema-validated by regression tests.
+- Replaced the OpenCode real-sample test's duplicated mapping implementation with a call to the production reader conversion method.
+- Sanitised the OpenCode source fixture's Windows user-profile paths to avoid committing personal filesystem paths.
+- Marked every root-level `wiki/` Markdown page as a deprecated historical copy and redirected README inventory links to `docs/wiki/`.
+- Added a staged C0–C4 cross-harness conformance plan. C2 adapter interoperability, C3 reconstruction and C4 resumption remain unproven.
+
+### Documentation
+- Established the cross-harness session interoperability architecture and separated capture, portability, reconstruction and resumption claims.
+- Recorded ADR-024: canonical v1.2 archive is the JSON session envelope; ADR-015's JSONL-canonical decision is superseded. JSONL stream code remains a separate contract gap.
+- Reconciled README, PRD, operating manual and checked-in wiki mirrors; added semantic-loss accounting, provenance, privacy-safe fixtures and adapter capability labels.
+- Clarified that downstream fine-tuning exports are not lossless session interchange.
+
 ## [0.2.1] - 2026-07-08
+
+> Historical release notes below reflect the decisions recorded at that release. The JSONL-canonical statement is superseded by Specification ADR-024; the current canonical archive is the v1.2 JSON session envelope.
 
 ### Added
 

@@ -1,0 +1,33 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-2",
+    "label": "High",
+    "category": "privacy"
+  },
+  "priority": "P1",
+  "confidence": {
+    "level": "high",
+    "score": 0.92,
+    "source": "provenance.confidence"
+  },
+  "status": "triaged",
+  "impact": {
+    "scope": "multi_session",
+    "dimensions": ["privacy", "accountability"],
+    "description": "Email addresses of multiple users appear in session logs."
+  },
+  "evidence": {
+    "event_ids": ["evt_010", "evt_011", "evt_012"],
+    "session_ids": ["sess_abc123", "sess_def456"],
+    "start_offset": 210,
+    "end_offset": 245,
+    "excerpt": "user@example.com"
+  },
+  "method": "rule",
+  "assessed_at": "2026-11-04T17:05:00Z",
+  "assessed_by": "agentson_platform.classifier",
+  "rule_id": "email-in-log",
+  "rationale": "Direct personal identifiers logged without consent boundary.",
+  "overrides": null
+}

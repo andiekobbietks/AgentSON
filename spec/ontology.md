@@ -49,12 +49,16 @@ browser-use click → action (tool: "browser.click")
 Extension message → observation (source: "extension")
 ```
 
-### Rule 2: Observations always follow actions
+### Rule 2: Record observations when the source provides them
 
-```
-action (browser.navigate) → observation (page loaded)
-action (browser.extract) → observation (content extracted)
-action (browser.evaluate) → observation (result)
+An action may produce an observation, but a result is not guaranteed: the source may omit it, the action may time out, or capture may stop before a result is available. Preserve the action and report the missing/unavailable result; do not manufacture an observation to complete a pair.
+
+When a result is available, represent it as an observation and correlate it with the action where the source provides a correlation identifier.
+
+```text
+action (browser.navigate) → observation (page loaded, when returned)
+action (browser.extract) → observation (content extracted, when returned)
+action (browser.evaluate) → observation (result, when returned)
 ```
 
 ### Rule 3: Handoffs define the execution graph
@@ -143,14 +147,14 @@ overlap only partly, and a value valid in one is not valid in the others.
 
 ### Deterministic Ordering
 
-1. Events are processed in file order (line-by-line JSONL)
-2. `handoff` events define control transfer
-3. `action` events must complete before next `handoff`
-4. `observation` events are causally linked to preceding `action`
+1. In the canonical v1.2 archive, events are processed in the order of the `entries` array.
+2. In a separately defined line-oriented stream profile, record order follows the stream framing contract; JSONL is not the canonical archive container.
+3. `handoff` events define control transfer where collaboration is recorded.
+4. An `observation` is causally linked to a preceding `action` when the source establishes that relationship; absence of an observation is not proof of success.
 
 ### Correlation IDs
 
-Every `action` can include `correlation_id`. The corresponding `observation` MUST reference the same `correlation_id`.
+An `action` can include `correlation_id`. If a corresponding `observation` exists and the source provides the correlation identifier, the observation MUST reference the same identifier. An action without a captured observation is valid when the source did not provide a result or capture was incomplete; the adapter must report that limitation rather than inventing a result.
 
 ```json
 {"type": "action", "correlation_id": "abc-123", "tool": "browser.navigate", ...}
@@ -194,11 +198,11 @@ Streams can branch when agents explore alternatives:
 
 ## Validation Rules
 
-1. Every stream MUST start with `stream-meta`
-2. Every `handoff` MUST reference valid agent IDs
-3. Every `action` SHOULD have a corresponding `observation`
-4. No circular handoffs (A→B→A without completion)
-5. `user-query` MUST appear before first `handoff` from user
+1. The canonical v1.2 archive is validated as a JSON session envelope; its session metadata is carried at the envelope level. A future line-oriented stream profile may require `stream-meta` as its first record, but that is not a v1.2 archive framing rule.
+2. Every recorded `handoff` MUST reference valid agent IDs.
+3. An `action` SHOULD have a corresponding `observation` when the source provides a result; missing results must remain explicit and must not be fabricated.
+4. No circular handoffs (A→B→A without completion) in a stream profile that defines control-transfer semantics.
+5. For user-initiated collaboration, a captured `user-query` precedes the corresponding user-to-agent handoff. System-initiated sessions may begin with a `system-event`.
 
 ---
 
@@ -206,17 +210,17 @@ Streams can branch when agents explore alternatives:
 
 > "Is this the only format solving this problem at the international level?"
 
-AgentSON is the **only** format doing agent session provenance. No other standard — MCP, A2A, AGNTCY, OpenClaw — records what agents actually did in a portable, vendor-neutral file format.
+AgentSON defines an open, vendor-neutral event vocabulary and session archive intended to preserve agent activity and provenance. This is a project design statement, not a claim that no adjacent format or product exists. A comparative standards review is required before making exclusivity or ISO-readiness claims.
 
 ### Five questions for ISO readiness
 
 | # | Question | AgentSON |
 |---|----------|----------|
-| 1 | **Does any ISO standard already cover this?** | ❌ No. ISO has SQL, PDF, Unicode. No agent provenance format. |
-| 2 | **Does any non-ISO standard cover this?** | ❌ No. MCP/A2A/AGNTCY are execution protocols, not provenance formats. |
+| 1 | **Does any ISO standard already cover this?** | No directly equivalent standard has been established by this internal review; external standards research is still required. |
+| 2 | **Does any non-ISO standard cover this?** | MCP, A2A, AGNTCY and observability formats are adjacent; their scope must be compared before asserting a gap. |
 | 3 | **Is this royalty-free and open?** | ✅ Apache 2.0. No patents. |
-| 4 | **Is this stable enough?** | ✅ v1.2 JSONL, 12 primitives, schema validated. |
-| 5 | **Does this have broad industry potential?** | ✅ Every AI agent produces session traces. Every enterprise needs audit trails. |
+| 4 | **Is this stable enough?** | v1.2 envelope and 12 event definitions exist; cross-harness conformance and stream framing remain to be demonstrated. |
+| 5 | **Does this have broad industry potential?** | Potential use cases include portability, debugging, research and audit; demand and adoption require validation. |
 
 ### Why AgentSON and not MCP/A2A/AGNTCY
 
@@ -224,21 +228,21 @@ AgentSON is the **only** format doing agent session provenance. No other standar
 |-------|-------------|----------------|
 | **Execution** | How agents talk (MCP, A2A, AGNTCY) | Maybe — but LF handles it |
 | **Framework** | How agents run (OpenClaw, NemoClaw) | No — vendor-specific |
-| **Provenance** | What agents did (AgentSON) | **Yes — only format in this category** |
+| **Provenance** | Portable records of what agents did (AgentSON's focus) | Potential standards work; uniqueness not established |
 
 MCP, A2A, and AGNTCY are execution protocols. They define how agents communicate. They have the Linux Foundation.
 
-AgentSON is a provenance format. It defines what agents actually did. **No other format does this.** That's not competition — it's a gap in the standardization landscape.
+AgentSON focuses on portable provenance records for agent sessions. Adjacent tools and standards may cover parts of this problem; the boundaries and overlap require a documented comparative review before describing the landscape as a gap.
 
 ### The PDF analogy
 
-PDF got ISO 32000 because it was the only format canonicalising document layout across vendors. AgentSON canonicalises agent session traces across vendors. Same pattern. Same gap. Same opportunity.
+PDF is an analogy for the value of a stable interchange contract, not evidence that AgentSON has the same market position or standards pathway. Any ISO proposal would require demonstrated stability, broad stakeholder support, a comparative landscape review and an appropriate standards process.
 
 ---
 
 ## Next Steps
 
-1. [ ] Implement replay engine that executes .agentson streams
+1. [ ] Define a separately versioned, sandboxed and explicitly authorised execution/resumption profile; read-only inspection remains the default
 2. [ ] Build MCP adapter using this mapping
 3. [ ] Build browser-use adapter using this mapping
 4. [ ] Add validation CLI tool

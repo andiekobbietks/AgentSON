@@ -1,0 +1,1 @@
+"""Versioned AgentSON schema resources."""
