@@ -42,6 +42,7 @@ import sqlite3
 import json
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 
 
 class MiniMaxReader:
@@ -55,7 +56,11 @@ class MiniMaxReader:
         self.conn: Optional[sqlite3.Connection] = None
 
     def connect(self):
-        self.conn = sqlite3.connect(self.db_path)
+        # Session extraction must never mutate the user's Mavis database.
+        if self.db_path == ":memory:":
+            self.conn = sqlite3.connect(self.db_path)
+        else:
+            self.conn = sqlite3.connect(Path(self.db_path).resolve().as_uri() + "?mode=ro", uri=True)
         self.conn.row_factory = sqlite3.Row
 
     def disconnect(self):
