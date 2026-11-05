@@ -65,7 +65,7 @@ def test_import_creates_v2_session_and_inserts_inert_synthetic_message():
     assert message["delivery"] == "queue"
     assert message["description"] == "Imported AgentSON v1.2 archive capsule"
     assert message["text"].startswith("Imported AgentSON v1.2 archive")
-    assert "## Selected continuation context\\n# Screened continuation context" in message["text"]
+    assert "## Selected continuation context\n# Screened continuation context" in message["text"]
     embedded = message["text"].split("<agentson-archive>\n", 1)[1].split(
         "\n</agentson-archive>", 1
     )[0]
@@ -225,8 +225,8 @@ def test_import_accepts_canonical_agentson_jsonl_file(tmp_path):
     assert imported["session_id"] == "ses_from_jsonl"
     assert calls[1][0] == "/api/session/ses_from_jsonl/synthetic"
     capsule = calls[1][1]["text"]
-    embedded = capsule.split("<agentson-archive>\\n", 1)[1].split(
-        "\\n</agentson-archive>", 1
+    embedded = capsule.split("<agentson-archive>\n", 1)[1].split(
+        "\n</agentson-archive>", 1
     )[0]
     projected = json.loads(embedded)
     assert projected["id"] == archive["id"]
@@ -242,7 +242,7 @@ def test_import_rejects_jsonl_stream_with_malformed_event_before_network(tmp_pat
         write_agentson_stream(_archive(), handle, source_tool="opencode")
     lines = source.read_text(encoding="utf-8").splitlines()
     lines.append('"not-an-object"')
-    source.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+    source.write_text("\n".join(lines) + "\n", encoding="utf-8")
     with patch("consumers.opencode._request_json") as request:
         with pytest.raises((OpenCodeImportError, ValueError)):
             import_archive(source)
