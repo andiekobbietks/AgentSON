@@ -2,7 +2,7 @@
 
 **Agent + JSON** — Open interchange for AI-agent sessions across harnesses.
 
-> Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
+> AgentSON aims to make AI-agent session records portable and inspectable across independent harnesses.
 
 ---
 
@@ -64,4 +64,4 @@ Portability, reconstruction and resumption are separate guarantees. See [Session
 
 ---
 
-*"The format that AI companies spend billions to own, AgentSON gives away for free."*
+*"Open interchange for agent sessions, with provenance and limitations made explicit."*
