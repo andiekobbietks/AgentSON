@@ -1,153 +1,58 @@
-# Contributing
+# Contributing to AgentSON
 
-How to add a reader, write tests, or submit a PR.
+## Before changing code or documentation
 
----
+1. Read the root `STATUS.md`.
+2. Read [SOP-016: Work-In-Progress Governance](https://github.com/andiekobbietks/AgentSON/blob/master/SOPs/SOP-016-Work-In-Progress-Governance.md).
+3. Read [SOP-015: Repository Operating Procedure](https://github.com/andiekobbietks/AgentSON/blob/master/SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md).
+4. Read [Coding Standards](Coding-Standards) and the relevant architecture/ADR.
+5. Check open PRs, active branches and current master before creating work.
 
-## Adding a New Reader
+The repository's `master` branch is protected. Use branch → commit → PR; do not push directly to master. Respect the WIP limit and verify repository state between dependent actions.
 
-### 1. Create the Reader
+## Adding a reader or adapter
 
-Create `readers/<tool_name>.py`:
+1. Identify the exact source harness and source-format version.
+2. Document what the source exposes and what it does not expose.
+3. Implement a source-specific adapter that maps into the canonical v1.2 JSON session envelope.
+4. Preserve source identity, ordering, timestamps and provenance where available.
+5. Report data as preserved, normalised, retained as source extension, unavailable, redacted or unsupported.
+6. Add tests for real-world source variations. Use sanitised, provenance-labelled real fixtures only when publication is approved; otherwise use synthetic fixtures and label them honestly.
+7. Test malformed records, unknown fields, missing timestamps, partial exports and version skew.
+8. Update [Readers](Readers) with implementation status, exact tests and limitations.
 
-```python
-"""
-<Tool Name> reader for AgentSON.
+## Cross-harness claims
 
-Converts <Tool Name> session data to AgentSON format.
-"""
+Do not label an adapter "interoperable" simply because it exports a file. State which capabilities are implemented:
 
-import json
-from typing import Dict, List, Optional
+- capture;
+- canonical export;
+- import;
+- validation;
+- inspection;
+- reconstruction;
+- checkpoint-based resumption.
 
+Portability, reconstruction and resumption require separate tests. A receiving harness must not execute imported tool calls during inspection. Resumption requires compatible capabilities, explicit authorisation and safe execution controls.
 
-def read_<tool>_session(session_id: str, db_path: Optional[str] = None) -> Dict:
-    """
-    Read a <Tool Name> session and convert to AgentSON format.
-    
-    Args:
-        session_id: The session identifier
-        db_path: Path to the database file (optional)
-    
-    Returns:
-        AgentSON session dict
-    """
-    entries = []
-    
-    # 1. Connect to database
-    # 2. Query session data
-    # 3. Convert to AgentSON entry format
-    # 4. Return complete session dict
-    
-    return {
-        "$schema": "https://agentson.dev/schema/v1.1.json",
-        "id": f"session-{session_id}",
-        "tool": {"name": "<tool_name>", "session_id": session_id},
-        "entries": entries
-    }
-```
+## Documentation
 
-### 2. Add Test Fixtures
+- Product requirements: [PRD.md](https://github.com/andiekobbietks/AgentSON/blob/master/PRD.md)
+- Architecture: [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- Canonical schema: [spec/v1.2.json](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json)
+- Event ontology: [spec/ontology.md](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md)
+- ADR index: [ADRs](ADRs)
+- Engineering policy: [Coding Standards](Coding-Standards)
 
-Create `tests/fixtures/<tool_name>/` with real session data (anonymized).
+Update the source-of-truth document and the relevant wiki mirror in the same change. Do not leave stale examples, schema versions or feature-status claims behind.
 
-### 3. Write Tests
+## Pull request checklist
 
-Create `tests/test_<tool_name>.py`:
-
-```python
-import pytest
-from readers.<tool_name> import read_<tool>_session
-
-
-def test_read_session():
-    session = read_<tool>_session("test_session", db_path="tests/fixtures/<tool_name>/test.db")
-    assert session["tool"]["name"] == "<tool_name>"
-    assert len(session["entries"]) > 0
-
-
-def test_entry_types():
-    session = read_<tool>_session("test_session", db_path="tests/fixtures/<tool_name>/test.db")
-    valid_types = {"user-query", "context", "querying", "title", "thought", "action", "answer", "side-effect", "observation"}
-    for entry in session["entries"]:
-        assert entry["type"] in valid_types
-```
-
-### 4. Update Documentation
-
-- Add to `wiki/Readers.md`
-- Add to `README.md` if working
-- Update `CHANGELOG.md`
-
-### 5. Submit PR
-
-- Branch: `feat/<tool-name>-reader`
-- Title: `feat(readers): add <Tool Name> reader`
-- Tests must pass
-
----
-
-## Writing Tests
-
-### Test Fixtures
-
-- Use real session data (anonymized)
-- Never use synthetic/hand-crafted data
-- Store in `tests/fixtures/<tool_name>/`
-
-### Running Tests
-
-```bash
-# All tests
-pytest
-
-# Specific reader
-pytest tests/test_opencode.py
-
-# With coverage
-pytest --cov=readers
-```
-
----
-
-## Code Style
-
-- Follow [Coding Standards](Coding-Standards)
-- Type hints on all public functions
-- Docstrings on all public functions
-- No `*` imports
-- f-strings over `.format()`
-
----
-
-## Commit Messages
-
-Format: `type(scope): description`
-
-```
-feat(readers): add Claude Code JSONL session reader
-fix(adr): correct Cursor valuation reasoning
-docs: update landing page with v1.1 trajectory
-```
-
-Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
-
----
-
-## PR Process
-
-1. Fork the repo
-2. Create branch: `git checkout -b feat/my-feature`
-3. Make changes
-4. Run tests: `pytest`
-5. Commit: `git commit -m "feat(readers): add My Tool reader"`
-6. Push: `git push origin feat/my-feature`
-7. Open PR
-
-### PR Checklist
-
-- [ ] Tests pass
-- [ ] No PII in code or fixtures
-- [ ] Documentation updated
-- [ ] CHANGELOG.md updated
-- [ ] Status labels honest (working/planned/tested)
+- [ ] Scope matches an existing requirement or approved ADR.
+- [ ] No secrets, PII or raw private sessions included.
+- [ ] Real and synthetic fixtures are clearly distinguished.
+- [ ] Tests and static checks actually ran; results are reported accurately.
+- [ ] Semantic loss and provenance behaviour are documented.
+- [ ] Feature labels match implementation and evidence.
+- [ ] README, PRD, schema docs and wiki are aligned where affected.
+- [ ] CHANGELOG and STATUS updated where required.
