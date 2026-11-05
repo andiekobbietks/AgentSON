@@ -228,21 +228,21 @@ AgentSON defines an open, vendor-neutral event vocabulary and session archive in
 |-------|-------------|----------------|
 | **Execution** | How agents talk (MCP, A2A, AGNTCY) | Maybe — but LF handles it |
 | **Framework** | How agents run (OpenClaw, NemoClaw) | No — vendor-specific |
-| **Provenance** | What agents did (AgentSON) | **Yes — only format in this category** |
+| **Provenance** | Portable records of what agents did (AgentSON's focus) | Potential standards work; uniqueness not established |
 
 MCP, A2A, and AGNTCY are execution protocols. They define how agents communicate. They have the Linux Foundation.
 
-AgentSON is a provenance format. It defines what agents actually did. **No other format does this.** That's not competition — it's a gap in the standardization landscape.
+AgentSON focuses on portable provenance records for agent sessions. Adjacent tools and standards may cover parts of this problem; the boundaries and overlap require a documented comparative review before describing the landscape as a gap.
 
 ### The PDF analogy
 
-PDF got ISO 32000 because it was the only format canonicalising document layout across vendors. AgentSON canonicalises agent session traces across vendors. Same pattern. Same gap. Same opportunity.
+PDF is an analogy for the value of a stable interchange contract, not evidence that AgentSON has the same market position or standards pathway. Any ISO proposal would require demonstrated stability, broad stakeholder support, a comparative landscape review and an appropriate standards process.
 
 ---
 
 ## Next Steps
 
-1. [ ] Implement replay engine that executes .agentson streams
+1. [ ] Define a separately versioned, sandboxed and explicitly authorised execution/resumption profile; read-only inspection remains the default
 2. [ ] Build MCP adapter using this mapping
 3. [ ] Build browser-use adapter using this mapping
 4. [ ] Add validation CLI tool
