@@ -5,13 +5,13 @@ This page summarises the repository's engineering rules. The canonical detailed 
 ## Privacy and security
 
 - **No PII or secrets in the repository.** Do not commit personal paths, identifiers, access tokens, credentials or confidential session content.
-- **No telemetry by default.** No phone-home, analytics, tracking or error reporting without explicit user opt-in.
+- **No unsolicited telemetry.** No hidden analytics, tracking or background uploads. User-requested source/API integrations are allowed only when documented, scoped and transparent about data leaving the device.
 - **Privacy-safe fixtures.** Real exports are valuable for fidelity but raw sessions must not be committed by default. Use sanitised, provenance-labelled fixtures with documented transformations. Synthetic fixtures are allowed for edge cases but must be labelled synthetic.
 - **Imported data is untrusted.** Parsing and inspection must never execute commands, scripts, URLs or tool calls from an archive.
 
 ## Architecture
 
-- **Vendor-neutral core.** No mandatory dependency on one harness, model provider, cloud or hosted service.
+- **Vendor-neutral core.** The archive and core parse/validate/inspect operations must work without a particular harness, model provider or hosted service. Individual source adapters may have declared source-specific dependencies.
 - **Self-contained archive.** A canonical session archive must be independently parseable and inspectable. Optional external artefacts must be explicit, integrity-verifiable references; never hidden dependencies.
 - **No silent semantic loss.** Distinguish preserved, normalised, source extension, unavailable, redacted and unsupported information.
 - **Separate guarantees.** Capture, portability, reconstruction and resumption are not interchangeable. Do not claim resume support from transcript export alone.
