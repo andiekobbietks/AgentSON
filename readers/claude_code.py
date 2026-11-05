@@ -238,13 +238,18 @@ class ClaudeCodeReader:
                     if block_type == "text":
                         text = block.get("text", "")
                         if text:
+                            # Claude's stop_reason distinguishes a completed
+                            # assistant turn from commentary preceding a tool call.
+                            event_type = "answer" if msg.get("stop_reason") == "end_turn" else "thought"
                             agentson_entries.append({
-                                "type": "thought",
+                                "type": event_type,
                                 "text": text,
                                 "timestamp": timestamp,
                                 "model": model,
                                 "source_payload": {"entry": entry, "block": block},
                             })
+                            if event_type == "answer":
+                                outcome = "success"
 
                     elif block_type == "thinking":
                         thinking = block.get("thinking", "")
