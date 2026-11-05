@@ -29,6 +29,7 @@ def test_export_writes_v12_jsonl_but_keeps_agentson_extension(tmp_path):
     parsed = [json.loads(line) for line in lines]
     assert parsed == events
     assert parsed[0]["type"] == "stream-meta"
+    assert parsed[0]["schema_version"] == "1.2"
     assert parsed[0]["source_session"]["tool"] == "opencode"
     assert parsed[0]["source_session"]["session_id"] == "native-123"
     assert parsed[1]["type"] == "user-query"
