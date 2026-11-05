@@ -1,20 +1,25 @@
-"""Live integration test against a real OpenCode v2 server."""
+"""Live ChatGPT-export -> AgentSON -> OpenCode v2 integration test."""
 from __future__ import annotations
 
 import json
 import os
 from pathlib import Path
 
+from importers.chatgpt import import_chatgpt
 from consumers.opencode import _request_json, import_archive, verify_import
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = ROOT / "tests" / "fixtures" / "conformance" / "cross_harness_session_v1_2.json"
+FIXTURE = ROOT / "tests" / "fixtures" / "chatgpt_synthetic_export.json"
 BASE_URL = os.environ.get("AGENTSON_OPENCODE_URL", "http://127.0.0.1:4096")
 SERVER_PASSWORD = os.environ["OPENCODE_PASSWORD"]
 
 
-def test_live_opencode_import_and_readback():
-    archive = json.loads(FIXTURE.read_text(encoding="utf-8"))
+def test_live_chatgpt_producer_to_opencode_consumer():
+    # Exercise the production ChatGPT importer, not a hand-built AgentSON archive.
+    archive = import_chatgpt(str(FIXTURE))
+    assert archive["tool"]["name"] == "chatgpt"
+    assert len(archive["entries"]) == 2
+
     health = _request_json(
         BASE_URL, "/api/info", {}, "GET", 10.0, password=SERVER_PASSWORD
     )
@@ -37,6 +42,8 @@ def test_live_opencode_import_and_readback():
         print(
             json.dumps(
                 {
+                    "source_producer": "chatgpt",
+                    "source_fixture": "synthetic",
                     "opencode_version": health["version"],
                     "session_id": imported["session_id"],
                     "archive_sha256": verified["archive_sha256"],
