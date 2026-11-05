@@ -46,7 +46,7 @@ The separate Severity v1 specification is a data contract expressed with JSON Sc
 - **The default exported filename remains `.agentson`**, but its contents are canonical v1.2 JSONL, not a pretty-printed session document.
 - Individual events are validated against [`spec/v1.2-entries.json`](spec/v1.2-entries.json).
 - [`spec/v1.2.json`](spec/v1.2.json) remains available for legacy/document-oriented compatibility and existing integrations; it is not the default export representation.
-- Legacy document-style `.agentson` files remain readable by the CLI compatibility loader. New exports are written as JSONL.
+- Legacy document-style `.agentson` files remain readable. The shared compatibility loader supports the CLI renderer, search, Excel export, redaction and registry-publishing metadata paths. New exports are written as JSONL.
 - Source-level session metadata and original reader event records are retained in `source_session` and `source_payload` where available; unsupported event types are preserved and marked as unmapped rather than silently discarded.
 - The ontology defines 12 event primitives. See [`spec/ontology.md`](spec/ontology.md).
 - v1 and v1.1 are legacy schemas; do not use them for new producers.
