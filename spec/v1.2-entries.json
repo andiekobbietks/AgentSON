@@ -170,19 +170,6 @@
             "narrative",
             "live"
           ]
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
-        },
-        "source_session": {
-          "type": "object",
-          "description": "Source session metadata retained during conversion, including source tool identity and session-level fields."
-        },
-        "schema_version": {
-          "type": "string",
-          "const": "1.2",
-          "description": "AgentSON interchange schema version for this JSONL stream."
         }
       },
       "required": [
@@ -277,10 +264,6 @@
         "conch": {
           "type": "string",
           "description": "Which agent holds the speaking token"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -369,10 +352,6 @@
         },
         "message": {
           "type": "string"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -452,10 +431,6 @@
         "capabilities": {
           "type": "object",
           "description": "Agent's self-describing capabilities manifest"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -565,10 +540,6 @@
         },
         "duration_ms": {
           "type": "integer"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -662,10 +633,6 @@
         },
         "attachments": {
           "type": "array"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -745,10 +712,6 @@
         },
         "text": {
           "type": "string"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -844,10 +807,6 @@
         "diff": {
           "type": "string",
           "description": "How the thing at path changed."
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [],
@@ -936,10 +895,6 @@
         },
         "text": {
           "type": "string"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -1021,10 +976,6 @@
         },
         "query": {
           "type": "string"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -1113,10 +1064,6 @@
             "correction",
             "clarification"
           ]
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
@@ -1211,10 +1158,6 @@
         "gap_ms": {
           "type": "integer",
           "description": "Duration of gap if this marks a missing segment"
-        },
-        "source_payload": {
-          "type": "object",
-          "description": "Original reader-level event record retained alongside its canonical AgentSON projection. Preserve source-native fields that are not represented by the canonical event."
         }
       },
       "required": [
