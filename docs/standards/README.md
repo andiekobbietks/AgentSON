@@ -8,7 +8,7 @@
 
 ## What This Is
 
-This is the full operating manual for how I build, think, and work. It covers:
+This is the operating manual for how the project is designed, built, verified and maintained. The product architecture is defined separately in [the session interoperability architecture](../architecture/session-interoperability.md) and its governing [ADR-024](../../spec/ADR-024-canonical-session-archive-and-interoperability.md). This manual covers:
 
 - **Mental Models** — how I approach problems
 - **Coding Standards** — how I write code
@@ -46,8 +46,25 @@ How I write code. Non-negotiable.
 | [Single File Output](coding-standards.md#single-file-output) | One .AgentSON file = one complete session |
 | [Minimal Dependencies](coding-standards.md#minimal-dependencies) | If you can do it in 20 lines, don't import a library |
 | [Test Against Real Data](coding-standards.md#test-against-real-data) | Synthetic test data lies. Real data tells the truth |
+| [Privacy-Safe Test Data](coding-standards.md#privacy-safe-test-data) | Real exports are sanitised and approved before repository use |
+| [Honest Labels](coding-standards.md#honest-labels) | Claims must match implementation and test evidence |
+| [Bug Response Procedure](coding-standards.md#bug-response-procedure) | Reproduce, scope, fix and verify before claiming resolution |
+| [Python Style](coding-standards.md#python-style) | Consistent typed and documented public interfaces |
+| [Commit Messages](coding-standards.md#commit-messages) | Structured messages explain what and why |
 
 → [Read Coding Standards](coding-standards.md)
+
+---
+
+## Session Interoperability Architecture
+
+The product-level contract is not defined by coding standards or by historical wiki examples. It is defined by:
+
+- [Session Interoperability Architecture](../architecture/session-interoperability.md) — capture, canonical representation, validation, exchange, inspection, reconstruction, resumption, provenance and loss accounting.
+- [ADR-024](../../spec/ADR-024-canonical-session-archive-and-interoperability.md) — canonical v1.2 session-envelope decision and the distinction between archive and JSONL stream transport.
+- [ADR-015](../../spec/ADR-015-canonical-schema.md) — historical JSONL decision, now superseded by ADR-024.
+
+The evidence chain is: **Principle → Requirement → Contract → Implementation → Automated verification → Evidence → Known limitation.**
 
 ---
 
