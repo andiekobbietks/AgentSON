@@ -28,7 +28,7 @@ def test_validate_multiline_jsonl_stream(tmp_path):
         {"type": "stream-meta", "stream_id": "s1", "mode": "single", "agents": [{"id": "a1"}]},
         {"type": "user-query", "text": "Check the test"},
     ]
-    source = write(tmp_path / "stream.agentson", "\\n".join(json.dumps(e) for e in events))
+    source = write(tmp_path / "stream.agentson", chr(10).join(json.dumps(e) for e in events))
     cmd_validate(Namespace(input=str(source)))
 
 
