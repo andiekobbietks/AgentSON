@@ -1,6 +1,6 @@
 # Repository status
 
-**Last updated:** 2026-11-05T18:40:00Z  
+**Last updated:** 2026-11-05T18:42:00Z  
 **Branch:** `feat/jsonl-reader-conformance`  
 **Current pull request:** [#62](https://github.com/andiekobbietks/AgentSON/pull/62)
 
@@ -12,7 +12,7 @@ There are **11 open pull requests**, exceeding the SOP-016 work-in-progress limi
 
 Open PRs observed on 05 November 2026:
 
-- **#62** — `feat/jsonl-reader-conformance`: canonical v1.2 JSONL export, reader provenance/conformance, source-evidence preservation, redaction hardening and CI/package checks. Draft; latest head verification pending.
+- **#62** — `feat/jsonl-reader-conformance`: canonical v1.2 JSONL export, reader provenance/conformance, source-evidence preservation, redaction hardening and CI/package checks. Ready for review; latest full CI matrix passed.
 - **#60** — `feat/wiki-mirror`: Severity v1, maintained wiki documentation and session-interoperability documentation. Its ADR-024 currently describes the JSON-object archive as canonical and JSONL as a separate transport, conflicting with #62. Reconcile before merging either branch.
 - **#58** — `feat/severity-v1`: separate Severity v1 implementation; overlaps the Severity work also present in #60. Check overlap before merging.
 - **#57** — `feat/remaining-fixes`: remaining Pyrefly and datetime fixes.
@@ -38,13 +38,13 @@ This list records observed open PRs, not a claim that each is merge-ready. Check
 
 ## Current verification status: PR #62
 
-**Verified head:** `ab0761aa25476df3be9adc99807fc8aef2e19946`  
-**GitHub Actions:** [run 42086195687](https://github.com/andiekobbietks/AgentSON/actions/runs/42086195687)  
+**Verified code head:** `b3cd3059667102eed7d0e92df1c6035c0e131f0c`  
+**GitHub Actions:** [run 42086513220](https://github.com/andiekobbietks/AgentSON/actions/runs/42086513220)  
 **Result:** success on Python 3.9, 3.10, 3.11 and 3.12.
 
 Each matrix job ran the full test suite: **260 passed, 0 failed**. The workflow also completed dependency consistency checks, built the wheel and source distribution, verified that both v1.2 schemas were packaged, and smoke-tested the installed wheel and CLI.
 
-The test run reported existing warnings, including deprecation and packaging/action warnings. They are not test failures and should be reviewed separately rather than silently ignored.
+The test run reported 60 warnings on the Python 3.12 job. These include existing deprecation and pytest warnings; they are not test failures and should be reviewed separately rather than silently ignored.
 
 The CI workflow concurrency group uses the pull request's source branch (or the pushed branch name) so push and pull-request events for the same branch do not run duplicate matrices.
 
@@ -67,7 +67,7 @@ The JSONL-aware `PIIRedactor` recursively scans strings inside `source_payload` 
 
 ## Integration and merge cautions
 
-- PR #62 is not merged. Wait for current-head CI and maintainer review.
+- PR #62 is ready for review and is not merged. Review the remaining fixture gaps before merging.
 - PR #60 contains a conflicting canonical-format decision and unresolved review findings; reconcile and verify it before merging.
 - The checked-in `docs/wiki/` source mirror on #60 has not been synchronised to the separately hosted GitHub Wiki.
 - Do not push directly to protected `master`.
