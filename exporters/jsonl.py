@@ -126,7 +126,7 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
         status = event.get("status")
         if isinstance(status, str) and status in {"completed", "complete", "done"}:
             event["status"] = "success"
-        elif isinstance(status, str) and status in {"failed", "failure"}":
+        elif isinstance(status, str) and status in {"failed", "failure"}:
             event["status"] = "error"
         elif status is not None and (not isinstance(status, str) or status not in {"success", "error", "partial", "pending", "running"}):
             event["status"] = "partial"
