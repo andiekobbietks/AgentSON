@@ -311,7 +311,10 @@ Portability does not imply reconstruction; reconstruction does not imply resumpt
 
 **No silent semantic loss:** adapters must distinguish information preserved exactly, normalised, retained as source-specific extension data, unavailable, redacted or unsupported. See [the interoperability architecture](docs/architecture/session-interoperability.md) and [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md).
 
-## Fine-Tuning Export
+## Downstream Fine-Tuning Export (separate from the canonical interchange contract)
+
+Fine-tuning exports are downstream transformations, not the canonical AgentSON session archive. They may omit provenance and execution semantics; do not use them as a lossless interchange format. The core/downstream scope of `finetune`, `push` and `pull` remains tracked by ADR-013 / issue #26.
+
 
 ```bash
 # Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
