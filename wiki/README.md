@@ -1,6 +1,6 @@
 # Legacy Wiki Directory
 
-<badge>Deprecated source</badge>
+**Deprecated source**
 
 This root-level `wiki/` directory is retained for historical repository references only. It is not the authoritative documentation source and is not the publishing mirror.
 
