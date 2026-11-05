@@ -108,3 +108,36 @@ def test_cli_export_path_writes_jsonl_with_agentson_suffix(tmp_path, monkeypatch
     assert len(lines) == 2
     assert json.loads(lines[0])["type"] == "stream-meta"
     assert json.loads(lines[1])["type"] == "user-query"
+
+
+
+def test_loader_recognises_single_event_jsonl_stream(tmp_path):
+    from cli.main import _load_agentson
+
+    source = tmp_path / "single-event.agentson"
+    source.write_text(json.dumps({
+        "type": "stream-meta",
+        "stream_id": "one-line",
+        "mode": "single",
+        "agents": [{"id": "assistant"}],
+    }), encoding="utf-8")
+
+    loaded = _load_agentson(source)
+    assert loaded["_format"] == "jsonl"
+    assert loaded["id"] == "one-line"
+    assert loaded["entries"][0]["type"] == "stream-meta"
+
+
+def test_loader_keeps_legacy_document_style_agentson_readable(tmp_path):
+    from cli.main import _load_agentson
+
+    source = tmp_path / "legacy.agentson"
+    source.write_text(json.dumps({
+        "id": "legacy-session",
+        "tool": {"name": "opencode", "session_id": "legacy-session"},
+        "entries": [{"type": "answer", "text": "legacy"}],
+    }), encoding="utf-8")
+
+    loaded = _load_agentson(source)
+    assert loaded["id"] == "legacy-session"
+    assert loaded["entries"][0]["text"] == "legacy"
