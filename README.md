@@ -194,6 +194,7 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and [CONTRIBUTING.md]
 - [Event ontology](spec/ontology.md)
 - [Architecture decisions](spec/)
 - [Operating manual](docs/standards/)
+- [Reader conformance matrix](docs/standards/reader-conformance-v1.2.md) — Field-level preservation, normalization, inference, and known adapter gaps
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)
 
