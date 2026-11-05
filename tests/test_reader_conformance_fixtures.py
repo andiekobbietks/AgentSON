@@ -40,6 +40,11 @@ def test_claude_code_native_jsonl_fixture_through_reader(tmp_path):
     assert any(e["type"] == "user-query" for e in session["entries"])
     assert any(e["type"] == "answer" and e["text"] == "The test suite passed." for e in session["entries"])
     assert any(e["type"] == "action" and e.get("tool_call_id") == "toolu_fixture_01" for e in session["entries"])
+    unknown_block = next(e for e in session["entries"] if e["type"] == "system-event" and "future_block_kind" in e["text"])
+    assert unknown_block["source_payload"]["block"]["payload"]["preserve"] is True
+    unknown_record = next(e for e in session["entries"] if e["type"] == "system-event" and "queue-operation" in e["text"])
+    assert unknown_record["source_payload"]["payload"]["id"] == "queued-01"
+    assert session["source_metadata"]["unparsed_lines"][0]["raw_line"].startswith("{malformed")
     observations = [e for e in session["entries"] if e["type"] == "observation" and e.get("correlation_id") == "toolu_fixture_01"]
     assert observations
     assert observations[0]["source_payload"]["block"]["type"] == "tool_result"
