@@ -80,7 +80,17 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
     else:
         event["timestamp"] = timestamp
 
-    event.setdefault("agent", default_agent)
+    event["agent"] = str(event.get("agent") or default_agent)
+    if event.get("correlation_id") is not None:
+        event["correlation_id"] = str(event["correlation_id"])
+    if event.get("duration_ms") is not None:
+        try:
+            event["duration_ms"] = int(event["duration_ms"])
+        except (TypeError, ValueError):
+            event.pop("duration_ms", None)
+    if event.get("tool_call_id") is not None:
+        event["tool_call_id"] = str(event["tool_call_id"])
+
     provenance = dict(_json_object(event.get("provenance")))
     allowed_confidence = {"confirmed", "inferred", "estimated", "ml_generated", "unknown"}
     allowed_sources = {"cdp", "mcp", "extension", "user", "system", "other", "export", "reconstructor"}
@@ -89,6 +99,11 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
     if provenance.get("source") not in allowed_sources:
         provenance["source"] = "export"
     provenance.setdefault("source", "export")
+    if provenance.get("timestamp_ms") is not None:
+        try:
+            provenance["timestamp_ms"] = int(provenance["timestamp_ms"])
+        except (TypeError, ValueError):
+            provenance.pop("timestamp_ms", None)
     event["provenance"] = provenance
 
     if event_type in {"user-query", "thought", "answer", "user-feedback"}:
@@ -96,6 +111,8 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
         if text_value is None:
             text_value = event.get("query", "")
         event["text"] = str(text_value)
+        if event.get("query") is not None and not isinstance(event["query"], str):
+            event["query"] = str(event["query"])
     elif event_type == "action":
         tool = event.get("tool") or event.get("tool_name") or event.get("name")
         event["tool"] = str(tool or "unknown")
@@ -116,11 +133,13 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
     elif event_type == "observation":
         event["text"] = str(event.get("text", event.get("output", "")))
         source = event.get("source", "other")
-        event["source"] = source if source in OBSERVATION_SOURCES else "other"
+        event["source"] = source if isinstance(source, str) and source in OBSERVATION_SOURCES else "other"
+        if event.get("attachments") is not None and not isinstance(event["attachments"], list):
+            event["attachments"] = [event["attachments"]]
     elif event_type == "system-event":
         event["text"] = str(event.get("text", event.get("message", "Source system event")))
         source = event.get("source", "other")
-        event["source"] = source if source in SYSTEM_SOURCES else "other"
+        event["source"] = source if isinstance(source, str) and source in SYSTEM_SOURCES else "other"
     elif event_type == "handoff":
         event["from"] = str(event.get("from") or default_agent)
         event["to"] = str(event.get("to") or "unknown")
@@ -128,14 +147,17 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
     elif event_type == "presence":
         if event.get("status") not in {"online", "offline", "busy", "idle"}:
             event["status"] = "idle"
+        if event.get("message") is not None:
+            event["message"] = str(event["message"])
     elif event_type == "user-feedback":
         if event.get("sentiment") not in {"positive", "negative", "neutral", "correction", "clarification"}:
             event["sentiment"] = "neutral"
     elif event_type == "capabilities":
         event["capabilities"] = _json_object(event.get("capabilities"))
     elif event_type == "side-effect":
-        if event.get("action") is not None:
-            event["action"] = str(event["action"])
+        for field in ("action", "text", "status", "path", "diff"):
+            if event.get(field) is not None and not isinstance(event[field], str):
+                event[field] = json.dumps(event[field], ensure_ascii=False, default=str)
 
     # Preserve the exact reader-level record alongside its canonical projection.
     if "source_payload" not in event and raw != event:
