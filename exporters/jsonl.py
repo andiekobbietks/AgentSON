@@ -190,6 +190,7 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
         events = [dict(item) if isinstance(item, dict) else {"type": "system-event", "text": str(item), "source": "other"}
                   for item in source_entries]
         meta = events[0]
+        meta.setdefault("schema_version", "1.2")
         meta.setdefault("stream_id", sid)
         meta.setdefault("mode", "single")
         meta.setdefault("agents", [{"id": agent_id, "name": agent_name}])
@@ -202,6 +203,7 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
 
     meta: Dict[str, Any] = {
         "type": "stream-meta",
+        "schema_version": "1.2",
         "stream_id": sid,
         "mode": "single",
         "agents": [{"id": agent_id, "name": agent_name}],
