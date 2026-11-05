@@ -6,6 +6,10 @@ on:
       - "spec/**"
       - "tests/conformance/**"
       - "tests/fixtures/conformance/**"
+      - "tests/test_opencode_real_sample.py"
+      - "tests/test_chatgpt_importer.py"
+      - "readers/opencode.py"
+      - "importers/chatgpt.py"
       - ".github/workflows/conformance.yml"
   push:
     branches:
@@ -16,6 +20,10 @@ on:
       - "spec/**"
       - "tests/conformance/**"
       - "tests/fixtures/conformance/**"
+      - "tests/test_opencode_real_sample.py"
+      - "tests/test_chatgpt_importer.py"
+      - "readers/opencode.py"
+      - "importers/chatgpt.py"
       - ".github/workflows/conformance.yml"
   workflow_dispatch:
 
