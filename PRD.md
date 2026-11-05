@@ -5,15 +5,17 @@
 | Field | Value |
 |-------|-------|
 | **Version** | 1.0 |
-| **Date** | 04 July 2026 |
+| **Date** | 05 November 2026 (interoperability revision) |
 | **Author** | Andrea Enning (AndieKobbieTech) |
-| **Status** | Draft — Ready for Review |
+| **Status** | Living draft — architecture baseline recorded in ADR-024; implementation conformance remains to be demonstrated |
 
 ---
 
 ## Executive Summary
 
-**AgentSON** — **Agent + JSON** — is a vendor-neutral, portable session capture format and toolkit that enables developers to export, search, hydrate, and replay AI agent sessions across heterogeneous tooling — without losing structured metadata, tool traces, or reasoning chains.
+**AgentSON** — **Agent + JSON** — is an open, vendor-neutral interchange format and toolchain for AI-agent sessions. Its ambition is to let a session produced by one harness be captured, represented, validated, exchanged and inspected by another without silently losing meaning, structure or provenance. Where the receiving harness supports compatible state, capabilities and permissions, AgentSON should also enable controlled reconstruction and resumption.
+
+Capture, portability, reconstruction and resumption are distinct guarantees. Exporting a transcript does not prove that another harness can recreate the original runtime or continue the same execution. The canonical v1.2 archive is a self-contained JSON session envelope with an ordered `entries` array; line-oriented streaming is a separate transport surface unless and until a dedicated stream contract is specified.
 
 ### What's in a Name
 
@@ -716,3 +718,44 @@ The only thing left is to build it.
 *"Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments."*
 
 *AgentSON is that.*
+
+
+---
+
+## Current interoperability requirements (05 November 2026)
+
+This section is the current product-level interpretation of the original requirements. Where earlier sections use terms such as replay, hydration or portability loosely, this section governs the intended cross-harness contract.
+
+### Product outcome
+
+A user must be able to export a session from a supported source harness, validate and inspect the resulting AgentSON archive, and import it into an independent consumer without requiring the original vendor runtime. Resumption is an additional capability and must be explicitly declared by the receiving adapter.
+
+### Functional requirements
+
+1. **Capture:** source adapters record the session events and source metadata actually exposed by the source. They must not invent missing events or metadata.
+2. **Canonical representation:** v1.2 is the canonical JSON session envelope defined by `spec/v1.2.json`, with ordered entries. The event vocabulary is defined by `spec/ontology.md` and per-entry constraints by `spec/v1.2-entries.json`.
+3. **Validation:** validation reports schema/version errors, malformed entries, invalid references and integrity failures. A schema-valid archive is not automatically complete, authentic or safe to execute.
+4. **Exchange:** canonical archives can be transferred and consumed without a mandatory hosted service, source-vendor account or source runtime.
+5. **Inspection:** consumers can inspect event order, actors, actions, observations, side effects, provenance and declared gaps without executing imported content.
+6. **Loss accounting:** adapters report fields preserved, normalised, retained as source extensions, unavailable, redacted or unsupported. Silent semantic loss is prohibited.
+7. **Provenance:** capture source, source identifiers, capture method, timestamps, adapter/version and transformation lineage remain distinguishable from inferred interpretation.
+8. **Reconstruction:** any reconstruction feature identifies missing or inferred state and must not present a narrative replay as exact runtime restoration.
+9. **Resumption:** any resume feature requires an explicit checkpoint, compatible receiving capabilities, user authorisation and safe execution controls. Credentials and reusable secrets are never embedded in portable archives.
+10. **Conformance:** each adapter declares and tests its own capabilities. Reader, exporter, importer, inspector, reconstruction and resume support are not interchangeable labels.
+
+### Non-functional requirements
+
+- **Vendor neutrality:** the canonical model must not depend on a single harness, model provider, cloud or proprietary API.
+- **Offline-first archive:** parsing and inspection of a canonical archive must not require a hosted service. Optional hosted indexes or collaboration services must remain optional.
+- **Privacy and security:** imported prompts, outputs, commands, links, paths and artefacts are untrusted. Parsing and inspection never execute them. Redaction is explicit and auditable without retaining the redacted secret.
+- **Compatibility:** schema, ontology, adapter and transformation versions are separately identified. Compatibility claims state the tested versions and known losses.
+- **Honest status:** feature claims link to implementation and test evidence and distinguish implemented, experimental, designed, planned and unsupported capabilities.
+
+### Out of scope for the interchange format itself
+
+The archive format does not provide an AI runtime, credentials, tool permissions, a workspace snapshot, a container image, deterministic model behaviour, a security sandbox or a guarantee of identical outputs across harnesses. These may be supplied by external systems under explicit, separately versioned contracts.
+
+### Architecture references
+
+- [Session interoperability architecture](docs/architecture/session-interoperability.md)
+- [ADR-024: Canonical session archive and cross-harness interoperability](spec/ADR-024-canonical-session-archive-and-interoperability.md)
