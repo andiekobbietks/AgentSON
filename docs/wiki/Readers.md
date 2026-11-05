@@ -34,7 +34,7 @@ Consumers accept canonical AgentSON archives and transfer them into a target har
 
 | Target harness | Module | Current profile | Evidence and limitations |
 |---|---|---|---|
-| OpenCode v2 | `consumers/opencode.py` | Experimental archive capsule using a queued synthetic inbox item (`delivery: queue`, `resume: false`) | 32 focused tests and a live OpenCode CLI 2.2.5 import/read-back test pass. Archive is stored as one opaque queued item, not native event reconstruction; it can enter model context when later delivered. Not a C2/C3/C4 claim. |
+| OpenCode v2 | `consumers/opencode.py` | Experimental archive capsule using a queued synthetic inbox item (`delivery: queue`, `resume: false`) | 32 focused tests and a live ChatGPT-export → AgentSON → OpenCode CLI 2.2.5 pipeline test pass using an explicitly synthetic ChatGPT-shaped source fixture. Archive is stored as one opaque queued item, not native event reconstruction; it can enter model context when later delivered. A real-export semantic C2 claim remains outstanding; C3/C4 are unclaimed. |
 
 The consumer profile is documented in [OpenCode Consumer Profile](../architecture/opencode-consumer-profile.md). Use the conformance plan for the distinction between archive storage fidelity, semantic C2 interoperability, reconstruction and resumption.
 
