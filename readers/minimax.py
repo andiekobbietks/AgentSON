@@ -183,6 +183,7 @@ class MiniMaxReader:
                 blob = {}
 
             role = blob.get("role") or msg["role"]
+            entries_before_message = len(entries)
             if role == "user":
                 text = blob.get("msg_content") or ""
                 if text:
@@ -322,6 +323,15 @@ class MiniMaxReader:
                             "source_payload": {"message_row": dict(msg), "message_data": blob},
                         }
                     )
+
+            if len(entries) == entries_before_message:
+                entries.append({
+                    "type": "system-event",
+                    "source": "other",
+                    "timestamp": ts,
+                    "text": "MiniMax message contained no mapped content (role: {})".format(role),
+                    "source_payload": {"message_row": dict(msg), "message_data": blob},
+                })
 
         # Sort entries by timestamp (stream-meta should stay first because it's
         # the session start; keep ties stable)
