@@ -18,6 +18,7 @@ The root-level `wiki/` directory is a historical duplicate and is not the publis
 | [Getting-Started.md](Getting-Started.md) | Install, export your first session, understand the format |
 | [Schema.md](Schema.md) | JSON Schema reference |
 | [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) | Cross-harness capture, exchange, inspection, reconstruction and resumption boundaries |
+| [Cross-Harness Conformance Test Plan](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/conformance-test-plan.md) | Executable conformance levels, adapter pair matrix and known gaps |
 | [Readers.md](Readers.md) | Tool-specific readers |
 | [ADRs.md](ADRs.md) | Architecture Decision Records index |
 | [SOPs.md](SOPs.md) | Standard Operating Procedures |
