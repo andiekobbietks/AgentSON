@@ -27,6 +27,7 @@ on:
       - "tests/fixtures/**"
       - "tests/test_opencode_real_sample.py"
       - "tests/test_opencode_consumer.py"
+      - "tests/integration/**"
       - "tests/test_chatgpt_importer.py"
       - "readers/opencode.py"
       - "importers/chatgpt.py"
