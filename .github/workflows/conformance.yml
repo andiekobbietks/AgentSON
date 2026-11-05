@@ -9,6 +9,7 @@ on:
       - "tests/fixtures/**"
       - "tests/test_opencode_real_sample.py"
       - "tests/test_opencode_consumer.py"
+      - "tests/integration/**"
       - "tests/test_chatgpt_importer.py"
       - "readers/opencode.py"
       - "importers/chatgpt.py"
@@ -51,3 +52,51 @@ jobs:
         run: python -m pip install --upgrade pytest jsonschema
       - name: Validate archive and receiving-consumer contract
         run: python -m pytest -q tests/conformance/test_canonical_archive.py tests/test_opencode_real_sample.py tests/test_opencode_consumer.py tests/test_chatgpt_importer.py
+
+  live-opencode:
+    name: Live OpenCode archive import and read-back
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install OpenCode CLI
+        run: npm install --global @opencode/cli@2.2.5
+      - name: Record OpenCode version
+        run: opencode --version
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pytest jsonschema
+      - name: Start isolated OpenCode server
+        run: |
+          mkdir -p "$RUNNER_TEMP/agentson-opencode"
+          nohup opencode serve --hostname 127.0.0.1 --port 4096 \
+            > "$RUNNER_TEMP/opencode-server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/opencode-server.pid"
+      - name: Wait for OpenCode health endpoint
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4096/global/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/opencode-server.log"
+          exit 1
+      - name: Import archive and verify live read-back
+        env:
+          AGENTSON_OPENCODE_URL: http://127.0.0.1:4096
+        run: python -m pytest -q -s tests/integration/test_opencode_live.py
+      - name: Stop OpenCode server
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/opencode-server.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/opencode-server.pid")" || true
+          fi
+          cat "$RUNNER_TEMP/opencode-server.log" || true
