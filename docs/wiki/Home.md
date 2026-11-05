@@ -1,10 +1,8 @@
 # AgentSON Wiki
 
-> **This wiki is a mirror.** The authoritative source for these pages is `docs/wiki/` in the main [`andiekobbietks/AgentSON`](https://github.com/andiekobbietks/AgentSON) repository.
+**Agent + JSON** — Open interchange for AI-agent sessions across harnesses.
 
-**Agent + JSON** — The open interchange format for AI agent session traces.
-
-> Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
+> AgentSON aims to make AI-agent session records portable and inspectable across independent harnesses.
 
 ---
 
@@ -22,18 +20,24 @@ The same lock-in problem exists everywhere:
 | AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
 | Development | Cursor, Copilot, Claude Code | Code context, edit history |
 
-**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+Data portability and AI transparency obligations depend on the applicable law, role and circumstances. AgentSON is designed to make supported session data exportable and inspectable; adapter coverage and implementation evidence determine what it can actually provide. The format alone does not establish legal compliance.
 
 > **Your health data. Your code sessions. Your data. One format.**
 
 ---
+
+## Product vision
+
+A session produced by one AI coding harness should be capturable, representable, validatable, exchangeable and inspectable in another without silently losing meaning or provenance. Where the receiving harness supports compatible state and permissions, AgentSON should also support controlled reconstruction and resumption.
+
+Portability, reconstruction and resumption are separate guarantees. See [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) and [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md).
 
 ## Wiki Pages
 
 | Page | Description |
 |------|-------------|
 | [Getting Started](Getting-Started) | Install, export your first session, understand the format |
-| [Schema](Schema) | JSON Schema v1.1 reference — entry types, trajectory semantics |
+| [Schema](Schema) | Canonical v1.2 JSON session envelope, event vocabulary and validation |
 | [Readers](Readers) | Tool-specific readers — what works, what's planned |
 | [ADRs](ADRs) | Architecture Decision Records — why decisions were made |
 | [SOPs](SOPs) | Standard Operating Procedures — health data, AI sessions, infra |
@@ -42,6 +46,14 @@ The same lock-in problem exists everywhere:
 | [Contributing](Contributing) | How to add a reader, write tests, submit PRs |
 
 ---
+
+## Source-of-truth documents
+
+- [Product Requirements](https://github.com/andiekobbietks/AgentSON/blob/master/PRD.md)
+- [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- [Canonical Schema v1.2](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json)
+- [Event Ontology](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md)
+- [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md)
 
 ## Quick Links
 
@@ -52,4 +64,4 @@ The same lock-in problem exists everywhere:
 
 ---
 
-*"The format that AI companies spend billions to own, AgentSON gives away for free."*
+*"Open interchange for agent sessions, with provenance and limitations made explicit."*
