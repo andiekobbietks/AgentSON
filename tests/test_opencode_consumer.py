@@ -52,6 +52,8 @@ def test_import_creates_v2_session_and_inserts_inert_synthetic_message():
     assert result["profile"] == "archive-capsule-v1"
     assert result["session_id"] == "ses_imported_123"
     assert result["execution_triggered"] is False
+    assert result["immediate_agent_loop_started"] is False
+    assert result["future_model_context_exposure"] is True
     assert result["native_event_reconstruction"] is False
     assert result["resumption_supported"] is False
     assert len(calls) == 2
