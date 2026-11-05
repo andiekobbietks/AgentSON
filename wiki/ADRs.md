@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/ADRs.md`](../docs/wiki/ADRs.md). This file is retained for historical links only.
+
 # Architecture Decision Records (ADRs)
 
 ADRs capture significant architectural decisions with context and rationale.
