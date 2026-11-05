@@ -122,3 +122,27 @@ def test_packet_redacts_credentials_and_renders_handoff_side_effect_fields(tmp_p
     assert "- conch: build" in packet
     assert "- action: file_write" in packet
     assert "- path: /private/report.txt" in packet
+
+
+def test_cli_resume_rejects_output_alias_of_input(tmp_path, monkeypatch, capsys):
+    import sys
+    from cli.main import main
+
+    source = tmp_path / "same.agentson"
+    source.write_text(json.dumps({
+        "id": "same",
+        "entries": [{"type": "answer", "text": "preserve me"}],
+    }), encoding="utf-8")
+    original = source.read_bytes()
+    monkeypatch.setattr(sys, "argv", [
+        "agentson", "resume", str(source), "--target", "generic",
+        "--output", str(source),
+    ])
+    try:
+        main()
+    except SystemExit as exc:
+        assert exc.code == 1
+    else:
+        raise AssertionError("Expected same-path output to be rejected")
+    assert source.read_bytes() == original
+    assert "must not overwrite" in capsys.readouterr().err
