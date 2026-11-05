@@ -325,3 +325,50 @@ def test_redaction_scans_source_evidence_and_omits_opaque_binary():
     assert payload["binary_column"]["data_omitted"] is True
     assert payload["binary_column"]["sha256"] == "minimax-digest"
     assert sum(item["type"] == "opaque_binary_payload_omitted" for item in changes) == 3
+
+
+def test_redactor_scans_source_session_and_string_lists_in_jsonl_header(tmp_path):
+    from tools.pii_redactor import PIIRedactor
+
+    source = tmp_path / "source-evidence.agentson"
+    output = tmp_path / "source-evidence-redacted.agentson"
+    session = {
+        "id": "source-evidence",
+        "task": "Contact task.owner@example.com",
+        "tool": {"name": "fixture", "session_id": "fixture-session"},
+        "source_metadata": {"recipients": ["private@example.com", "public@example.org"]},
+        "entries": [{"type": "user-query", "text": "Please continue."}],
+    }
+    with source.open("w", encoding="utf-8") as handle:
+        write_agentson_stream(session, handle, source_tool="fixture")
+
+    PIIRedactor(use_model=False).redact_file(str(source), str(output))
+    events = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+    header = events[0]["source_session"]
+    serialised = json.dumps(events, ensure_ascii=False)
+    assert "task.owner@example.com" not in serialised
+    assert "private@example.com" not in serialised
+    assert "[PRIVATE_EMAIL]" in header["task"]
+    assert "[PRIVATE_EMAIL]" in header["source_metadata"]["recipients"][0]
+
+
+def test_redactor_validation_failure_does_not_truncate_source(tmp_path):
+    from tools.pii_redactor import PIIRedactor
+
+    source = tmp_path / "invalid-stream.agentson"
+    source.write_text("\\n".join([
+        json.dumps({
+            "type": "stream-meta", "schema_version": "1.2",
+            "stream_id": "invalid", "mode": "invalid",
+            "agents": [{"id": "assistant", "name": "Assistant"}],
+        }),
+        json.dumps({"type": "user-query", "text": "hello"}),
+    ]) + "\\n", encoding="utf-8")
+    original = source.read_bytes()
+    try:
+        PIIRedactor(use_model=False).redact_file(str(source))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Expected invalid stream validation to fail")
+    assert source.read_bytes() == original
