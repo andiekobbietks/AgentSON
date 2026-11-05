@@ -202,7 +202,30 @@ class ClaudeCodeReader:
                         "type": "user-query",
                         "text": text,
                         "timestamp": timestamp,
+                        "source_payload": entry,
                     })
+
+                # Claude Code commonly embeds tool_result blocks inside a
+                # user message. Preserve and correlate those native blocks;
+                # do not assume tool results are top-level JSONL records.
+                for block in content if isinstance(content, list) else []:
+                    if not isinstance(block, dict) or block.get("type") != "tool_result":
+                        continue
+                    tool_id = block.get("tool_use_id", "")
+                    result_content = block.get("content", "")
+                    if isinstance(result_content, list):
+                        result_content = self._extract_text(result_content)
+                    for existing in reversed(agentson_entries):
+                        if existing.get("type") == "action" and existing.get("tool_call_id") == tool_id:
+                            agentson_entries.append({
+                                "type": "observation",
+                                "text": str(result_content)[:2000] if result_content else "",
+                                "correlation_id": tool_id,
+                                "source": "tool",
+                                "timestamp": timestamp,
+                                "source_payload": {"entry": entry, "block": block},
+                            })
+                            break
 
             elif entry_type == "assistant":
                 msg = entry.get("message", {})
@@ -220,6 +243,18 @@ class ClaudeCodeReader:
                                 "text": text,
                                 "timestamp": timestamp,
                                 "model": model,
+                                "source_payload": {"entry": entry, "block": block},
+                            })
+
+                    elif block_type == "thinking":
+                        thinking = block.get("thinking", "")
+                        if thinking:
+                            agentson_entries.append({
+                                "type": "thought",
+                                "text": thinking,
+                                "timestamp": timestamp,
+                                "model": model,
+                                "source_payload": {"entry": entry, "block": block},
                             })
 
                     elif block_type == "tool_use":
@@ -233,6 +268,7 @@ class ClaudeCodeReader:
                             "tool": mapped_tool,
                             "tool_call_id": tool_id,
                             "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block},
                         }
 
                         # Map tool-specific inputs
@@ -265,6 +301,7 @@ class ClaudeCodeReader:
                         "type": "answer",
                         "text": text,
                         "timestamp": timestamp,
+                        "source_payload": entry,
                     })
                     outcome = "success"
 
@@ -283,6 +320,7 @@ class ClaudeCodeReader:
                             "correlation_id": tool_id,
                             "source": "tool",
                             "timestamp": timestamp,
+                            "source_payload": entry,
                         })
                         break
 
