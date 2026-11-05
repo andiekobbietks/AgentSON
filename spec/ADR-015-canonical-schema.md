@@ -110,5 +110,5 @@ The current codebase produces **both shapes**:
 
 - `spec/v1.json` — Single-document schema (deprecated)
 - `spec/v1.1.json` — Single-document schema with trajectory (deprecated)
-- `spec/v1.2.json` — JSONL streaming schema (canonical)
+- `spec/v1.2.json` — current JSON session-envelope schema (canonical under ADR-024)
 - `spec/ontology.md` — 12-primitive formal ontology (source of truth for types)
