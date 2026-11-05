@@ -1,6 +1,6 @@
 # OpenCode Consumer Profile: Archive Capsule v1
 
-**Status:** Experimental consumer adapter; live OpenCode v2 integration test added  
+**Status:** Experimental consumer adapter; live OpenCode CLI 2.2.5 archive-capsule integration test passed  
 **Target:** OpenCode HTTP API v2 (pinned CI target: `@opencode/cli@2.2.5`)  
 **AgentSON input:** v1.2 canonical JSON session envelope  
 **Implementation:** `consumers/opencode.py`
@@ -56,7 +56,7 @@ The archive digest is SHA-256 over the adapter's deterministic compact JSON seri
 
 Automated mock tests verify schema rejection, v2 session creation, synthetic-message insertion with `resume: false`, archive read-back comparison, endpoint restrictions, best-effort cleanup and explicit future-model-context exposure.
 
-A separate live integration test starts a real OpenCode server, records its reported version, imports the synthetic conformance fixture, reads the queued synthetic item back through the v2 inbox API, compares the embedded JSON and digest, and deletes the test session. CI pins `@opencode/cli@2.2.5` so the API target is reproducible.
+A live integration test passed against OpenCode CLI 2.2.5. It started a real server with Basic authentication, imported the synthetic conformance fixture, read the queued synthetic item back through the v2 inbox API, compared the embedded JSON and digest, and deleted the test session. The recorded archive digest was `60c88f52174f7fa2a76a5eca11e0443a4113eac4cfc95d903f1fb95a73a1ceb3`.
 
 A passing live test establishes archive-capsule storage fidelity against that OpenCode version. It does **not** establish native event reconstruction or session resumption. It is not, by itself, full semantic C2 conformance: the source producer must also be exercised end-to-end with a version-identified source session and semantic comparison.
 
