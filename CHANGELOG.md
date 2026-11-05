@@ -12,6 +12,8 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 
 ## [0.2.1] - 2026-07-08
 
+> Historical release notes below reflect the decisions recorded at that release. The JSONL-canonical statement is superseded by Specification ADR-024; the current canonical archive is the v1.2 JSON session envelope.
+
 ### Added
 
 - **`agentson validate` command** — Validates .agentson files against v1.2 schema. Supports JSONL and single-document JSON. Entry-level validation via flattened schema.
