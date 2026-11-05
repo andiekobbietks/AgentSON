@@ -1,5 +1,5 @@
 # AgentSON — v1.2.0 (Canonical Schema, 2026-10-23)
-# Release: full session-debug (browser panel inspection). Reader modules and verification status are tracked in [wiki/Readers.md](wiki/Readers.md).
+# Release: full session-debug (browser panel inspection). Reader modules and verification status are tracked in [Reader and Adapter Inventory](docs/wiki/Readers.md).
 # Design-level: ClickOps NOT BUILT; full MCP capture (ADR-022) design-only.
 # AKCloud managed service stays separate — banner / tagline AKCloud-only.
 # AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
@@ -96,7 +96,7 @@ The planning landscape surveys 33 tools across 7 tiers; this is a market/priorit
 
 ### Reader Coverage
 
-The chart below is a historical v0.1.0 planning snapshot, not the current implementation inventory. The current repository module list and dedicated test-file presence are recorded in [wiki/Readers.md](wiki/Readers.md). A module's presence does not by itself establish that it is working, conformant or resumable.
+The chart below is a historical v0.1.0 planning snapshot, not the current implementation inventory. The current repository module list and dedicated test-file presence are recorded in [Reader and Adapter Inventory](docs/wiki/Readers.md). A module's presence does not by itself establish that it is working, conformant or resumable.
 
 ```mermaid
 pie title Historical reader roadmap snapshot (v0.1.0)
@@ -118,7 +118,7 @@ xychart-beta
 
 ### Historical market and priority roadmap
 
-The tier tables below are planning context, not the authoritative inventory of implemented reader modules or tested capabilities. See [wiki/Readers.md](wiki/Readers.md) for the repository snapshot and evidence status.
+The tier tables below are planning context, not the authoritative inventory of implemented reader modules or tested capabilities. See [Reader and Adapter Inventory](docs/wiki/Readers.md) for the repository snapshot and evidence status.
 
 ### Tier 1: Core Market
 
@@ -394,7 +394,7 @@ agentson/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the reader-priority planning snapshot. It is not the authoritative implementation inventory; see [wiki/Readers.md](wiki/Readers.md) for repository modules and available test files.
+See [ROADMAP.md](ROADMAP.md) for the reader-priority planning snapshot. It is not the authoritative implementation inventory; see [Reader and Adapter Inventory](docs/wiki/Readers.md) for repository modules and available test files.
 
 **Roadmap candidates:** OpenClaw and additional harnesses not yet represented by a supported, verified adapter.
 
