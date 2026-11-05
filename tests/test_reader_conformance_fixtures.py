@@ -249,9 +249,16 @@ def test_opencode_sqlite_native_fixture_through_reader(tmp_path):
     assert session["metadata"]["messages"] == 2
     assert session["metadata"]["parts"] == 4
     assert session["context"]["working_directory"] == "/workspace/agentson"
-    assert any(e["type"] == "user-query" and e["text"] == "Run the project tests." for e in session["entries"])
-    assert any(e["type"] == "thought" and "test configuration" in e["text"] for e in session["entries"])
+    user_event = next(e for e in session["entries"] if e["type"] == "user-query")
+    assert user_event["text"] == "Run the project tests."
+    assert user_event["source_payload"]["message"]["id"] == "msg-user"
+    assert json.loads(user_event["source_payload"]["part"]["data"])["text"] == "Run the project tests."
+    thought = next(e for e in session["entries"] if e["type"] == "thought")
+    assert "test configuration" in thought["text"]
+    assert thought["source_payload"]["part"]["id"] == "part-reasoning"
     action = next(e for e in session["entries"] if e["type"] == "action")
+    assert action["source_payload"]["part"]["id"] == "part-tool"
+    assert json.loads(action["source_payload"]["part"]["data"])["callID"] == "call_fixture_01"
     assert action["tool"] == "bash"
     assert json.loads(action["code"]) == {"command": "pytest -q"}
     assert action["output"] == "5 passed"
@@ -259,11 +266,15 @@ def test_opencode_sqlite_native_fixture_through_reader(tmp_path):
     assert any(e["type"] == "answer" and e["text"] == "All five tests passed." for e in session["entries"])
     todo = next(e for e in session["entries"] if e["type"] == "side-effect")
     assert todo["action"] == "todo_update"
+    assert todo["source_payload"]["todo"]["content"] == "Add native SQLite regression coverage"
     assert "timestamp" not in todo
 
     events = _export_and_validate(session, tmp_path / "opencode.agentson", "opencode")
     assert events[0]["source_session"]["metadata"]["total_tokens"] == 200
     assert events[0]["source_session"]["context"]["working_directory"] == "/workspace/agentson"
+    assert events[0]["source_session"]["source_metadata"]["session_row"]["id"] == "opencode-fixture-001"
+    exported_action = next(e for e in events if e["type"] == "action" and e.get("tool") == "bash")
+    assert exported_action["source_payload"]["part"]["id"] == "part-tool"
     assert any(e["type"] == "action" and e.get("tool") == "bash" for e in events)
     assert any(e["type"] == "side-effect" and e.get("action") == "todo_update" for e in events)
 
