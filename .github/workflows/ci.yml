@@ -78,4 +78,5 @@ jobs:
         run: |
           python -m pip install --force-reinstall --no-deps dist/*.whl
           python -c "from importlib.resources import files; assert files('spec').joinpath('v1.2.json').is_file(); assert files('spec').joinpath('v1.2-entries.json').is_file()"
+          python -c "from cli.main import main; from tools.distribute import publish; from tools.pii_redactor import PIIRedactor"
           agentson --help
