@@ -20,11 +20,17 @@ import os
 import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 
 # Default Antigravity IDE path
 DEFAULT_DB_PATH = os.path.expanduser(
     r"~\.gemini\antigravity-ide\conversations"
 )
+
+
+def _connect_readonly(db_path: str):
+    """Open the source conversation database without permitting writes."""
+    return sqlite3.connect(Path(db_path).resolve().as_uri() + "?mode=ro", uri=True)
 
 
 def get_antigravity_sessions(db_path: Optional[str] = None) -> List[Dict]:
@@ -44,7 +50,7 @@ def get_antigravity_sessions(db_path: Optional[str] = None) -> List[Dict]:
     # Use the most recent one
     db_path = max(db_files, key=os.path.getmtime)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect_readonly(db_path)
     cursor = conn.cursor()
 
     # Get trajectory metadata
