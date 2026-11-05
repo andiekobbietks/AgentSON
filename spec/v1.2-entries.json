@@ -178,6 +178,11 @@
         "source_session": {
           "type": "object",
           "description": "Source session metadata retained during conversion, including source tool identity and session-level fields."
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "1.2",
+          "description": "AgentSON interchange schema version for this JSONL stream."
         }
       },
       "required": [
