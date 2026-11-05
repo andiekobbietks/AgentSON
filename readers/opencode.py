@@ -10,6 +10,7 @@ import json
 import os
 import platform
 import sqlite3
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -24,7 +25,13 @@ class OpencodeReader:
 
     def connect(self):
         """Open the database and detect its schema without modifying it."""
-        self.conn = sqlite3.connect(self.db_path)
+        # OpenCode may keep WAL files active. Read-only mode prevents the
+        # exporter from mutating the user's database or creating a new DB.
+        if self.db_path == ":memory:":
+            self.conn = sqlite3.connect(self.db_path)
+        else:
+            database_uri = Path(self.db_path).resolve().as_uri() + "?mode=ro"
+            self.conn = sqlite3.connect(database_uri, uri=True)
         self.conn.row_factory = sqlite3.Row
         if self._table_exists("session_v2") and self._table_exists("session_message"):
             self.schema_generation = "2.x"
