@@ -1,4 +1,4 @@
-# Status (last updated: 2026-11-05T11:33:00Z, by: AgentSON interoperability and conformance work)
+# Status (last updated: 2026-11-05T11:34:20Z, by: AgentSON interoperability and conformance work)
 
 ## Pull request queue
 
@@ -51,7 +51,8 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - `spec/v1.2.json` parses as valid JSON.
 - Repository-relative Markdown links were checked across the documentation set; no broken repository links were found. Short links such as `ADR-001` and `SOP-001` are intentional links to separately hosted wiki pages.
 - The OpenCode reader and ChatGPT importer now emit the v1.2 schema identifier. The v1.2 `tool.name` enum includes `chatgpt`; missing ChatGPT timestamps are omitted rather than emitted as null.
-- GitHub Actions run [42019565524](https://github.com/andiekobbietks/AgentSON/actions/runs/42019565524) passed **20 tests** in 0.33s: canonical archive contract, production OpenCode conversion regression and ChatGPT importer tests.
+- Sanitised Windows user-profile paths in `tests/fixtures/opencode_real_sample.json` to align with the no-personal-paths repository rule.
+- GitHub Actions run [42019990061](https://github.com/andiekobbietks/AgentSON/actions/runs/42019990061) passed **20 tests** in 0.30s: canonical archive contract, production OpenCode conversion regression and ChatGPT importer tests.
 - This was a focused conformance/regression run, not the full repository test suite. C2 cross-harness consumer interoperability, C3 reconstruction and C4 resumption remain unproven. PR #60 must remain under review until the wider suite and maintainer review are complete.
 
 
