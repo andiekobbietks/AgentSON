@@ -138,6 +138,7 @@ def import_archive(
             {
                 "text": capsule,
                 "description": "Imported AgentSON v1.2 archive capsule",
+                "delivery": "queue",
                 "resume": False,
             },
             "POST",
