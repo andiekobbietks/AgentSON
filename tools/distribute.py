@@ -38,7 +38,7 @@ def publish_docker(
     if not session_path.exists():
         raise FileNotFoundError(f"Session not found: {session_path}")
 
-    with open(session_path, "r") as f:
+    with open(session_path, "r", encoding='utf-8') as f:
         session = json.load(f)
 
     session_id = session.get("id", session_path.stem)
@@ -119,7 +119,7 @@ def publish_lxd(
     if not session_path.exists():
         raise FileNotFoundError(f"Session not found: {session_path}")
 
-    with open(session_path, "r") as f:
+    with open(session_path, "r", encoding='utf-8') as f:
         session = json.load(f)
 
     session_id = session.get("id", session_path.stem)
