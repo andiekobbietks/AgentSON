@@ -36,6 +36,7 @@ def test_claude_code_native_jsonl_fixture_through_reader(tmp_path):
     session = ClaudeCodeReader(config_dir=str(tmp_path)).read_session("claude-fixture-001")
     assert session["tool"]["name"] == "claude-code"
     assert any(e["type"] == "user-query" for e in session["entries"])
+    assert any(e["type"] == "answer" and e["text"] == "The test suite passed." for e in session["entries"])
     assert any(e["type"] == "action" and e.get("tool_call_id") == "toolu_fixture_01" for e in session["entries"])
     observations = [e for e in session["entries"] if e["type"] == "observation" and e.get("correlation_id") == "toolu_fixture_01"]
     assert observations
