@@ -799,7 +799,7 @@ def cmd_validate(args):
 
     def describe_errors(errors):
         messages = []
-        for error in sorted(errors, key=lambda item: list(item.absolute_path)):
+        for error in sorted(errors, key=lambda item: str(list(item.absolute_path))):
             location = ".".join(str(part) for part in error.absolute_path) or "$"
             messages.append(f"{location}: {error.message}")
         return messages
