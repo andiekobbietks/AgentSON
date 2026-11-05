@@ -1,0 +1,45 @@
+[
+  {
+    "id": "synthetic-chatgpt-session-2026-11",
+    "title": "SYNTHETIC: ChatGPT to AgentSON interoperability fixture",
+    "create_time": 1793880000.0,
+    "update_time": 1793880012.0,
+    "mapping": {
+      "root": {
+        "id": "root",
+        "message": null,
+        "parent": null,
+        "children": ["user-node"]
+      },
+      "user-node": {
+        "id": "user-node",
+        "message": {
+          "id": "chatgpt-user-message-001",
+          "author": {"role": "user"},
+          "content": {
+            "content_type": "text",
+            "parts": ["Explain how a portable AI coding session archive should preserve tool provenance."]
+          },
+          "create_time": 1793880000.0
+        },
+        "parent": "root",
+        "children": ["assistant-node"]
+      },
+      "assistant-node": {
+        "id": "assistant-node",
+        "message": {
+          "id": "chatgpt-assistant-message-001",
+          "author": {"role": "assistant"},
+          "content": {
+            "content_type": "text",
+            "parts": ["A portable archive should retain the source tool identity, event ordering, tool attribution, timestamps, and explicit links between actions and their observations. Unsupported state should be reported rather than invented."]
+          },
+          "create_time": 1793880012.0,
+          "metadata": {"model_slug": "gpt-4o"}
+        },
+        "parent": "user-node",
+        "children": []
+      }
+    }
+  }
+]
