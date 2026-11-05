@@ -2,6 +2,29 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- `agentson validate` now distinguishes a one-event JSONL stream from a session document, validates JSONL events against the flattened v1.2 event schema, validates document files against the complete v1.2 schema, checks declared formats, and returns a failing exit status for invalid input or empty directories.
+- `agentson export` now creates its output directory before writing exported sessions.
+- CLI imports for PII redaction and registry publishing now use packaged `tools` modules instead of relying on a source-checkout-only `sys.path` insertion.
+
+### Build and verification
+
+- Include all versioned schema JSON files in wheel and source distributions.
+- Package the CLI helper modules required by installed commands.
+- Add wheel/sdist schema-content checks and installed-wheel CLI/helper import smoke tests to CI.
+- Run CI on feature-branch pushes as well as pull requests targeting `master`.
+- Declare PyYAML and cryptography in development dependencies; expose cryptography as the optional `signing` extra for secure evidence export.
+- Use SPDX license metadata and a current setuptools build requirement.
+
+### Documentation
+
+- Replace stale README claims with an evidence-led description of the Alpha project, the v1.2 JSONL contract, adapter maturity boundaries and the Core/Platform separation.
+- Link the production-readiness assessment and ADR-023.
+- Replace stale repository-agent instructions and add ADR-023 to the operating-manual index.
+
 ## [0.2.1] - 2026-07-08
 
 ### Added
