@@ -84,6 +84,14 @@ Every dependency is a liability. It can be abandoned, hacked, or become incompat
 
 ---
 
+## Privacy-Safe Test Data
+
+Real exports are important for reader fidelity, but raw sessions must never be committed by default. Prompts, code, file paths, tool output, URLs, account identifiers and credentials may contain personal or confidential data.
+
+**Rule:** Keep raw real exports outside the public repository unless the data owner has explicitly approved publication and a documented review confirms that disclosure is safe. Prefer a sanitised, provenance-labelled fixture derived from a real export. Record the sanitisation method and what was changed. Synthetic fixtures remain useful for edge cases, but must be labelled synthetic and must not be presented as real-world evidence.
+
+**Why:** Real-data coverage must not become a route for publishing secrets or personal data.
+
 ## Test Against Real Data
 
 **Synthetic test data lies. Real data tells the truth.**
@@ -140,3 +148,13 @@ add chrome devtools reader
 ---
 
 *These standards are not suggestions. They are the price of entry.*
+
+
+## Interoperability and Honest Claims
+
+- Do not describe an adapter as cross-harness compatible merely because it can export or parse a session.
+- Report semantic loss, unavailable source data, redactions and unsupported event types.
+- Distinguish capture, portability, reconstruction and resumption.
+- Imported session content is untrusted; inspection must not execute commands or tool calls.
+- Link claims such as 'working', 'validated', 'reconstructable' or 'resumable' to the exact implementation and tests that support them.
+- Treat the canonical session archive as the v1.2 JSON envelope defined by spec/v1.2.json; JSONL stream code is a separate interface until it has its own contract.
