@@ -1088,6 +1088,10 @@ TOPICS:
         "--title", default="AgentSON continuation",
         help="Title for the new native OpenCode session",
     )
+    resume_parser.add_argument(
+        "--allow-remote", action="store_true",
+        help="Allow an explicit HTTPS OpenCode server outside localhost",
+    )
 
     # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
     browser_parser = subparsers.add_parser(
@@ -1293,19 +1297,33 @@ def cmd_resume(args):
         if args.launch:
             if args.target != "opencode":
                 raise ValueError("--launch is currently supported only with --target opencode")
-            from importers.opencode_resume import create_opencode_session
-            session_id = create_opencode_session(
-                packet, server_url=args.server_url, title=args.title
+            from consumers.opencode import import_archive, verify_import
+            password = os.environ.get("OPENCODE_SERVER_PASSWORD")
+            imported = import_archive(
+                args.input,
+                base_url=args.server_url,
+                allow_remote=args.allow_remote,
+                password=password,
             )
+            verified = verify_import(
+                imported,
+                args.input,
+                base_url=args.server_url,
+                allow_remote=args.allow_remote,
+                password=password,
+            )
+            if not verified.get("verified"):
+                raise RuntimeError("OpenCode archive read-back verification failed")
+            session_id = imported["session_id"]
     except (OSError, ValueError, json.JSONDecodeError, RuntimeError) as exc:
         print(f"Error creating continuation: {exc}", file=sys.stderr)
         sys.exit(1)
 
     print(f"Continuation packet created: {destination}")
     if args.launch:
-        print(f"Native OpenCode session created and context verified: {session_id}")
+        print(f"Native OpenCode archive imported and verified: {session_id}")
         print(f"Open it with: opencode --session {session_id}")
-        print("The packet was queued with resume=false; no model turn or historical tool call was run.")
+        print("The complete archive was queued as an inert synthetic item with resume=false; no model turn or historical tool call was run.")
     else:
         print("Open it in the destination harness as context for a new session.")
     print("This restores portable working context, not private runtime state or tool permissions.")
