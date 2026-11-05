@@ -82,7 +82,7 @@ AgentSON is designed to capture an AI-assisted session as a self-contained, vers
 │               ▼              ▼              ▼                   │
 │  ┌─────────────────┐ ┌──────────────┐ ┌──────────────────┐    │
 │  │   Local CLI     │ │   Supabase   │ │  Web Viewer      │    │
-│  │  (search/replay)│ │  (optional)  │ │  (shared replay) │    │
+│  │ (search/inspect)│ │  (optional)  │ │   (inspection)   │    │
 │  └─────────────────┘ └──────────────┘ └──────────────────┘    │
 │                                                                   │
 └───────────────────────────────────────────────────────────────────┘
@@ -96,13 +96,15 @@ AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
 
 ### Reader Coverage
 
+The chart below is a historical v0.1.0 planning snapshot, not the current implementation inventory. The current repository module list and dedicated test-file presence are recorded in [wiki/Readers.md](wiki/Readers.md). A module's presence does not by itself establish that it is working, conformant or resumable.
+
 ```mermaid
-pie title Reader Coverage (v0.1.0)
-    "Working (6)" : 6
-    "Planned (27)" : 27
+pie title Historical reader roadmap snapshot (v0.1.0)
+    "Marked working at the time (6)" : 6
+    "Planned at the time (27)" : 27
 ```
 
-### RICE Priority (Top 10 Readers)
+### Historical RICE Priority Snapshot (not a current capability inventory)
 
 ```mermaid
 xychart-beta
@@ -113,6 +115,10 @@ xychart-beta
 ```
 
 > opencode (RICE: ∞) already works — zero effort, full reach.
+
+### Historical market and priority roadmap
+
+The tier tables below are planning context, not the authoritative inventory of implemented reader modules or tested capabilities. See [wiki/Readers.md](wiki/Readers.md) for the repository snapshot and evidence status.
 
 ### Tier 1: Core Market
 
@@ -207,7 +213,7 @@ Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 
 ### For Developers
 
-Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, Aider, Cline, Gemini CLI — becomes one searchable, portable, analysable record. Switch runtimes without losing your operational history. Every `.AgentSON` file is a personal engineering journal that follows you.
+For supported source adapters, your AI work can be preserved as a searchable, portable and analysable record. Move the archive between tools without losing the recorded history; whether another harness can reconstruct or resume the work depends on its adapter, available state and permissions. Every `.agentson` archive is a portable engineering record.
 
 - **Portability** — Switch tools without losing context
 - **Search** — Full-text search across all your sessions
@@ -218,7 +224,7 @@ Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, A
 
 As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows?
 
-Memory systems (MCP, bespoke databases) don't give you portable answers to those questions. AgentSON does.
+Memory systems and bespoke databases solve different problems. AgentSON is designed to provide a portable session record; its current coverage and limits are documented per adapter.
 
 - **Institutional knowledge** — Preserve the operational life of every agent independently of where it ran
 - **Vendor independence** — Change runtimes, keep the record
