@@ -137,3 +137,8 @@ For each interoperability requirement, maintain this chain:
 **Principle → Requirement → Contract → Implementation → Automated verification → Evidence → Known limitation.**
 
 This is the basis for conformance reporting, release notes, standards mapping and future assurance work.
+
+
+## 13. Conformance test programme
+
+The executable test baseline and staged producer/consumer requirements are defined in [Cross-Harness Conformance Test Plan](conformance-test-plan.md). A successful C0 archive test is not evidence of C2 adapter interoperability or C4 resumption.
