@@ -1,6 +1,6 @@
 # Repository status
 
-**Last updated:** 2026-11-05T18:35:00Z  
+**Last updated:** 2026-11-05T18:40:00Z  
 **Branch:** `feat/jsonl-reader-conformance`  
 **Current pull request:** [#62](https://github.com/andiekobbietks/AgentSON/pull/62)
 
@@ -38,11 +38,15 @@ This list records observed open PRs, not a claim that each is merge-ready. Check
 
 ## Current verification status: PR #62
 
-Current branch head observed: `97593a3fc223312ade55ea0e165189a26d6b840c`. The latest workflow run for that head, [42085407683](https://github.com/andiekobbietks/AgentSON/actions/runs/42085407683), was pending when this file was updated. Do not claim the latest head has passed CI until that run or a later run completes successfully.
+**Verified head:** `ab0761aa25476df3be9adc99807fc8aef2e19946`  
+**GitHub Actions:** [run 42086195687](https://github.com/andiekobbietks/AgentSON/actions/runs/42086195687)  
+**Result:** success on Python 3.9, 3.10, 3.11 and 3.12.
 
-An earlier code checkpoint, `c2856fe49a02095dd09a1dbbfb48d53f90299e96`, passed [run 42083776918](https://github.com/andiekobbietks/AgentSON/actions/runs/42083776918) on Python 3.9–3.12 with **260 passed, 0 failed**. It also passed dependency consistency checks, wheel/source-distribution builds, schema inclusion checks and an installed-wheel/CLI smoke test. That result predates the later OpenCode 2.x fidelity fixture, raw binary provenance, and nested-evidence redaction changes; it is not final verification for the current head.
+Each matrix job ran the full test suite: **260 passed, 0 failed**. The workflow also completed dependency consistency checks, built the wheel and source distribution, verified that both v1.2 schemas were packaged, and smoke-tested the installed wheel and CLI.
 
-The CI workflow concurrency group now uses the pull request's source branch (or the pushed branch name) so push and pull-request events for the same branch do not run duplicate matrices.
+The test run reported existing warnings, including deprecation and packaging/action warnings. They are not test failures and should be reviewed separately rather than silently ignored.
+
+The CI workflow concurrency group uses the pull request's source branch (or the pushed branch name) so push and pull-request events for the same branch do not run duplicate matrices.
 
 ## Reader conformance evidence and limits
 
@@ -59,7 +63,7 @@ Remaining reader gaps include OpenCode blob attachments, event-table semantics a
 
 ## Privacy boundary
 
-The JSONL-aware `PIIRedactor` recursively scans strings inside `source_payload` and `source_metadata`, including JSON-encoded source rows and preserved Markdown. Non-empty opaque fields ending in `_base64` are omitted from redacted copies, marked with a corresponding `_base64_omitted` flag, and adjacent SHA-256 digests are retained where present. This is conservative data minimisation, not a guarantee that all personal data is detected. The regex fallback has limited coverage; review redacted output before sharing.
+The JSONL-aware `PIIRedactor` recursively scans strings inside `source_payload` and `source_metadata`, including JSON-encoded source rows and preserved Markdown. Non-empty opaque fields ending in `_base64`, and binary envelopes marked `encoding: base64`, are omitted from redacted copies with explicit omission markers; adjacent SHA-256 digests are retained where present. This is conservative data minimisation, not a guarantee that all personal data is detected. The regex fallback has limited coverage; review redacted output before sharing.
 
 ## Integration and merge cautions
 
