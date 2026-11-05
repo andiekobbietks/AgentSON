@@ -307,6 +307,7 @@ class OpencodeReader:
                     "source_payload": {"message": msg, "message_data": data},
                 })
 
+        entries.sort(key=lambda item: item.get("timestamp") or 0)
         for todo_row in todos:
             todo = self._dict(todo_row)
             entries.append({
@@ -314,7 +315,6 @@ class OpencodeReader:
                 "text": todo.get("content", ""), "status": todo.get("status", "unknown"),
                 "source_payload": {"todo": todo},
             })
-        entries.sort(key=lambda item: item.get("timestamp") or 0)
         return self._session_document(session, entries, len(messages), len(parts), "1.x")
 
     def _convert_v2(self, session: Dict, messages, parts, inbox) -> Dict:
@@ -398,6 +398,10 @@ class OpencodeReader:
                 "source_payload": {"inbox": row},
             })
         entries.sort(key=lambda item: item.get("timestamp") or 0)
+        timestamped = [item for item in entries if item.get("timestamp") is not None]
+        untimestamped = [item for item in entries if item.get("timestamp") is None]
+        timestamped.sort(key=lambda item: item.get("timestamp"))
+        entries = timestamped + untimestamped
         return self._session_document(session, entries, len(messages), len(parts), "2.x")
 
     @staticmethod
