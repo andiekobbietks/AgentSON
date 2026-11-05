@@ -1,4 +1,4 @@
-# Status (last updated: 2026-11-05T11:34:20Z, by: AgentSON interoperability and conformance work)
+# Status (last updated: 2026-11-05T11:35:30Z, by: AgentSON interoperability and conformance work)
 
 ## Pull request queue
 
@@ -18,7 +18,7 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - `docs/` is authoritative for product and engineering documentation.
 - `docs/wiki/` is the checked-in source for the published GitHub Wiki mirror.
 - The separately hosted GitHub Wiki repository is a distinct Git remote and has not been pushed by this change.
-- The older root `wiki/` directory is marked as a legacy duplicate on this branch; do not treat it as a second source of truth. Reconcile or retire it after the `docs/wiki/` source is merged and the hosted wiki is synced.
+- Every root-level `wiki/` Markdown page is marked as a deprecated historical copy linking to its `docs/wiki/` counterpart; README reader-inventory links now point to `docs/wiki/Readers.md`. Do not treat the root directory as a second source of truth. Retire it after the hosted wiki is synced and references have migrated.
 
 ## Current architecture decisions
 
