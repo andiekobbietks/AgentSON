@@ -137,5 +137,5 @@ The 12-primitive ontology is AgentSON's chosen event model and the source of tru
 
 - `spec/ontology.md` — 12-primitive formal ontology (source of truth)
 - `spec/v1.json` lines 111-121 — Current 8-type enum
-- `spec/v1.2.json` lines 23-36 — Current `oneOf` with 10 types
+- `spec/v1.2.json` — current `oneOf` definitions for the 12 ontology primitives
 - `spec/adapter-spec.md` — Adapter mapping tables (uses ontology types)
