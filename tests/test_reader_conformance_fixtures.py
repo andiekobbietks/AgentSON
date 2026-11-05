@@ -37,9 +37,13 @@ def test_claude_code_native_jsonl_fixture_through_reader(tmp_path):
     assert session["tool"]["name"] == "claude-code"
     assert any(e["type"] == "user-query" for e in session["entries"])
     assert any(e["type"] == "action" and e.get("tool_call_id") == "toolu_fixture_01" for e in session["entries"])
-    assert any(e["type"] == "observation" and e.get("correlation_id") == "toolu_fixture_01" for e in session["entries"])
+    observations = [e for e in session["entries"] if e["type"] == "observation" and e.get("correlation_id") == "toolu_fixture_01"]
+    assert observations
+    assert observations[0]["source_payload"]["block"]["type"] == "tool_result"
     events = _export_and_validate(session, tmp_path / "claude.agentson", "claude-code")
     assert any(e["type"] == "action" and e.get("tool_call_id") == "toolu_fixture_01" for e in events)
+    exported_observation = next(e for e in events if e["type"] == "observation")
+    assert exported_observation["source_payload"]["block"]["tool_use_id"] == "toolu_fixture_01"
 
 
 def test_chrome_devtools_markdown_fixture_through_reader(tmp_path):
