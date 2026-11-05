@@ -227,3 +227,24 @@ def test_opencode_real_reader_shape_round_trips_through_canonical_stream(tmp_pat
     assert parsed[2]["source_payload"]["status"] == "success"
     assert parsed[0]["source_session"]["metadata"]["message_id"] == message["id"]
     validate_v1_2_events(parsed)
+
+
+def test_claude_reader_direct_export_uses_canonical_jsonl(tmp_path, monkeypatch):
+    from readers.claude_code import ClaudeCodeReader
+
+    reader = ClaudeCodeReader(config_dir=str(tmp_path / "claude"))
+    monkeypatch.setattr(reader, "read_session", lambda _session_id: {
+        "id": "claude-session",
+        "tool": {"name": "claude-code", "session_id": "claude-session"},
+        "agent": {"name": "claude-sonnet"},
+        "entries": [{"type": "user-query", "text": "Inspect this repository"}],
+    })
+    output = reader.export_session("claude-session", str(tmp_path / "exports"))
+    assert output is not None
+    assert output.endswith("claude-code-claude-session.agentson")
+    events = [json.loads(line) for line in open(output, encoding="utf-8") if line.strip()]
+    assert events[0]["type"] == "stream-meta"
+    assert events[0]["schema_version"] == "1.2"
+    assert events[0]["source_session"]["tool"] == "claude-code"
+    assert events[1]["type"] == "user-query"
+    validate_v1_2_events(events)
