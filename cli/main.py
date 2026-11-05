@@ -42,7 +42,7 @@ def cmd_export(args):
     from readers.minimax import read as read_minimax, list_sessions as list_minimax
     from readers.antigravity import read_antigravity_session, get_antigravity_sessions
     from readers.libre import read_libre_csv
-    from exporters.jsonl import write_agentson_stream
+    from exporters.jsonl import write_agentson_stream_file
     
     db_paths = get_default_db_paths()
     Path(args.output).mkdir(parents=True, exist_ok=True)
@@ -59,8 +59,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['title']} ({session['id']})")
                 data = read_opencode(str(db_path), session["id"])
                 output_path = Path(args.output) / f"opencode_{session['id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -68,8 +67,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_opencode(str(db_path), args.session)
             output_path = Path(args.output) / f"opencode_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
             
     elif args.tool == "minimax":
@@ -84,8 +82,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['title']} ({session['id']})")
                 data = read_minimax(str(db_path), session["id"])
                 output_path = Path(args.output) / f"minimax_{session['id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -93,8 +90,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_minimax(str(db_path), args.session)
             output_path = Path(args.output) / f"minimax_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
             
     elif args.tool == "antigravity":
@@ -114,8 +110,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['session_id']}")
                 data = read_antigravity_session(session)
                 output_path = Path(args.output) / f"antigravity_{session['session_id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -125,8 +120,7 @@ def cmd_export(args):
                     print(f"Exporting: {session['session_id']}")
                     data = read_antigravity_session(session)
                     output_path = Path(args.output) / f"antigravity_{session['session_id']}.agentson"
-                    with open(output_path, "w", encoding="utf-8") as f:
-                        write_agentson_stream(data, f, source_tool=args.tool)
+                    write_agentson_stream_file(data, output_path, source_tool=args.tool)
                     print(f"Exported to {output_path}")
                 else:
                     print("Error: No sessions found", file=sys.stderr)
@@ -140,8 +134,7 @@ def cmd_export(args):
                 session = found[0]
                 data = read_antigravity_session(session)
                 output_path = Path(args.output) / f"antigravity_{args.session}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
                 print(f"Exported to {output_path}")
     elif args.tool == "gemini":
         from readers.gemini import read as read_gemini, list_sessions as list_gemini
@@ -154,16 +147,14 @@ def cmd_export(args):
             for s in sessions:
                 data = read_gemini(str(inp), s["id"])
                 out = Path(args.output) / f"gemini_{s['id']}.agentson"
-                with open(out, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, out, source_tool=args.tool)
                 print(f"Exported: {out}")
             print(f"Exported {len(sessions)} sessions")
         else:
             sid = args.session or "gemini-export"
             data = read_gemini(str(inp), sid)
             out = Path(args.output) / f"gemini_{sid}.agentson"
-            with open(out, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, out, source_tool=args.tool)
             print(f"Exported to {out}")
     elif args.tool == "chrome-devtools":
         from readers.chrome_devtools import read as read_chrome, list_exports as list_chrome
@@ -183,8 +174,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['id']}")
                 data = read_chrome(session['path'])
                 output_path = Path(args.output) / f"chrome_{session['id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -192,8 +182,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_chrome(args.session)
             output_path = Path(args.output) / f"chrome_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "libre":
         if not args.input:
@@ -207,8 +196,7 @@ def cmd_export(args):
             
         data = read_libre_csv(csv_path)
         output_path = Path(args.output) / f"libre_{Path(csv_path).stem}.agentson"
-        with open(output_path, "w", encoding="utf-8") as f:
-            write_agentson_stream(data, f, source_tool=args.tool)
+        write_agentson_stream_file(data, output_path, source_tool=args.tool)
         print(f"Exported to {output_path}")
     elif args.tool == "cursor":
         from readers.cursor import list_sessions as list_cursor, read as read_cursor
@@ -223,8 +211,7 @@ def cmd_export(args):
                 print(f"Exporting: {session.get('title', sid)} ({sid})")
                 data = read_cursor(str(db_path), sid)
                 output_path = Path(args.output) / f"cursor_{sid}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -232,8 +219,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_cursor(str(db_path), args.session)
             output_path = Path(args.output) / f"cursor_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "cline":
         from readers.cline import list_sessions as list_cline, read as read_cline
@@ -248,8 +234,7 @@ def cmd_export(args):
                 print(f"Exporting: {session.get('title', sid)} ({sid})")
                 data = read_cline(str(tasks_dir), sid)
                 output_path = Path(args.output) / f"cline_{sid}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -257,8 +242,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_cline(str(tasks_dir), args.session)
             output_path = Path(args.output) / f"cline_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "aider":
         from readers.aider import list_sessions as list_aider, read as read_aider
@@ -273,14 +257,12 @@ def cmd_export(args):
                 print(f"Exporting: {session.get('title', sid)} ({sid})")
                 data = read_aider(str(repo_dir), sid)
                 output_path = Path(args.output) / f"aider_{sid}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             data = read_aider(str(repo_dir), args.session)
             output_path = Path(args.output) / f"aider_{args.session or 'session'}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "claude-code":
         from readers.claude_code import ClaudeCodeReader
@@ -295,8 +277,7 @@ def cmd_export(args):
                 data = reader.read_session(sid)
                 if data:
                     output_path = Path(args.output) / f"claude-code_{sid}.agentson"
-                    with open(output_path, "w", encoding="utf-8") as f:
-                        write_agentson_stream(data, f, source_tool=args.tool)
+                    write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -307,8 +288,7 @@ def cmd_export(args):
                 print(f"Error: Session {args.session} not found", file=sys.stderr)
                 sys.exit(1)
             output_path = Path(args.output) / f"claude-code_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                write_agentson_stream(data, f, source_tool=args.tool)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "vibeedge":
         from readers.vibeedge import VibeedgeReader
@@ -336,8 +316,7 @@ def cmd_export(args):
                     if data:
                         output_path = (Path(args.output) /
                                        f"vibeedge_{sid}.agentson")
-                        with open(output_path, "w", encoding="utf-8") as f:
-                            write_agentson_stream(data, f, source_tool=args.tool)
+                        write_agentson_stream_file(data, output_path, source_tool=args.tool)
                 print(f"Exported {len(sessions)} sessions")
             else:
                 if not args.session:
@@ -351,8 +330,7 @@ def cmd_export(args):
                     sys.exit(1)
                 output_path = (Path(args.output) /
                                f"vibeedge_{args.session}.agentson")
-                with open(output_path, "w", encoding="utf-8") as f:
-                    write_agentson_stream(data, f, source_tool=args.tool)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
                 print(f"Exported to {output_path}")
         finally:
             reader.disconnect()
