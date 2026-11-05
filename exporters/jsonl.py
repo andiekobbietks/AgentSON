@@ -94,9 +94,9 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
     provenance = dict(_json_object(event.get("provenance")))
     allowed_confidence = {"confirmed", "inferred", "estimated", "ml_generated", "unknown"}
     allowed_sources = {"cdp", "mcp", "extension", "user", "system", "other", "export", "reconstructor"}
-    if provenance.get("confidence") not in allowed_confidence:
+    if not isinstance(provenance.get("confidence"), str) or provenance.get("confidence") not in allowed_confidence:
         provenance["confidence"] = "inferred" if provenance else "unknown"
-    if provenance.get("source") not in allowed_sources:
+    if not isinstance(provenance.get("source"), str) or provenance.get("source") not in allowed_sources:
         provenance["source"] = "export"
     provenance.setdefault("source", "export")
     if provenance.get("timestamp_ms") is not None:
@@ -124,11 +124,11 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
         if event.get("output") is not None and not isinstance(event["output"], str):
             event["output"] = json.dumps(event["output"], ensure_ascii=False, default=str)
         status = event.get("status")
-        if status in {"completed", "complete", "done"}:
+        if isinstance(status, str) and status in {"completed", "complete", "done"}:
             event["status"] = "success"
-        elif status in {"failed", "failure"}:
+        elif isinstance(status, str) and status in {"failed", "failure"}":
             event["status"] = "error"
-        elif status not in {None, "success", "error", "partial", "pending", "running"}:
+        elif status is not None and (not isinstance(status, str) or status not in {"success", "error", "partial", "pending", "running"}):
             event["status"] = "partial"
     elif event_type == "observation":
         event["text"] = str(event.get("text", event.get("output", "")))
@@ -145,12 +145,12 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
         event["to"] = str(event.get("to") or "unknown")
         event["conch"] = str(event.get("conch") or event["to"])
     elif event_type == "presence":
-        if event.get("status") not in {"online", "offline", "busy", "idle"}:
+        if not isinstance(event.get("status"), str) or event.get("status") not in {"online", "offline", "busy", "idle"}:
             event["status"] = "idle"
         if event.get("message") is not None:
             event["message"] = str(event["message"])
     elif event_type == "user-feedback":
-        if event.get("sentiment") not in {"positive", "negative", "neutral", "correction", "clarification"}:
+        if not isinstance(event.get("sentiment"), str) or event.get("sentiment") not in {"positive", "negative", "neutral", "correction", "clarification"}:
             event["sentiment"] = "neutral"
     elif event_type == "capabilities":
         event["capabilities"] = _json_object(event.get("capabilities"))
