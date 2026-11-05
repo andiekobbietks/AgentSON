@@ -231,3 +231,18 @@ def test_import_accepts_canonical_agentson_jsonl_file(tmp_path):
     assert projected["id"] == archive["id"]
     assert projected["metadata"]["agentson_wire_format"] == "v1.2-jsonl"
     assert len(projected["entries"]) == len(archive["entries"]) + 1
+
+
+def test_import_rejects_jsonl_stream_with_malformed_event_before_network(tmp_path):
+    from exporters.jsonl import write_agentson_stream
+
+    source = tmp_path / "bad.agentson"
+    with source.open("w", encoding="utf-8") as handle:
+        write_agentson_stream(_archive(), handle, source_tool="opencode")
+    lines = source.read_text(encoding="utf-8").splitlines()
+    lines.append('"not-an-object"')
+    source.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+    with patch("consumers.opencode._request_json") as request:
+        with pytest.raises((OpenCodeImportError, ValueError)):
+            import_archive(source)
+    request.assert_not_called()
