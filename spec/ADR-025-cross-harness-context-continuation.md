@@ -22,7 +22,7 @@ Implement cross-harness continuation in capability layers:
 3. **Destination adapter:** where a harness provides a documented, stable import or session-creation interface, implement a separate adapter that validates the target capability and reports exactly what it restores.
 4. **Runtime checkpoint restoration:** only claim this when the destination can safely and verifiably restore the required native runtime state. This is not implied by levels 1–3.
 
-The CLI implementation is the agentson resume INPUT --target TARGET [--output FILE] command. It always creates a portable Markdown continuation packet. The first native destination adapter is OpenCode: agentson resume INPUT --target opencode --launch connects to an already-running OpenCode HTTP server, creates a new session, queues the packet with resume=false, and reads the session messages back to verify the handoff. The adapter does not start an agent turn or execute historical tool calls. Other target profiles remain packet-only until their own adapters are implemented.
+The CLI implementation is the agentson resume INPUT --target TARGET [--output FILE] command. It always creates a portable Markdown continuation packet. The first native destination adapter is OpenCode: agentson resume INPUT --target opencode --launch connects to an already-running OpenCode HTTP server, creates a new session, queues the packet with resume=false, and reads the session inbox back to verify the handoff. The adapter does not start an agent turn or execute historical tool calls. Other target profiles remain packet-only until their own adapters are implemented.
 
 ## Safety and trust boundary
 
