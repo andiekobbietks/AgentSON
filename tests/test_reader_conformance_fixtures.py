@@ -86,7 +86,7 @@ def test_libre_csv_fixture_through_reader(tmp_path):
     observations = [e for e in events if e["type"] == "observation"]
     assert len(observations) == 3
     assert events[0]["source_session"]["source_metadata"]["metrics"]["total_readings"] == 3
-    assert len(events[0]["source_session"]["source_metadata"]["source_metadata"]["rejected_rows"]) == 1
+    assert len(events[0]["source_session"]["source_metadata"]["rejected_rows"]) == 1
     exported_reading = next(e for e in events if e["type"] == "observation")
     assert exported_reading["source_payload"]["raw_row"]["Type"] == "CGM"
 
