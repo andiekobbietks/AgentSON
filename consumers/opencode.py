@@ -1,16 +1,16 @@
 """OpenCode v2 archive-capsule consumer.
 
-Stores a validated AgentSON v1.2 archive as one synthetic OpenCode message.
-The synthetic message is admitted with resume=False, so the agent loop is not
-scheduled. This preserves the archive as opaque context; it does not recreate
-native events, workspace state, model state or checkpoints.
+Stores a validated AgentSON v1.2 archive as one queued synthetic OpenCode
+inbox item. The item is admitted with resume=False, so the agent loop is not
+scheduled immediately. It can enter model context on a later turn.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, Mapping, Union
+from typing import Any, Dict, Mapping, Optional, Union
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -70,13 +70,24 @@ def _validate_endpoint(base_url: str, allow_remote: bool) -> str:
 
 
 def _request_json(
-    base_url: str, path: str, payload: Dict[str, Any], method: str, timeout: float
+    base_url: str,
+    path: str,
+    payload: Dict[str, Any],
+    method: str,
+    timeout: float,
+    password: Optional[str] = None,
 ) -> Any:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8") if payload else None
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    if password is not None:
+        if not password:
+            raise ValueError("password must not be empty")
+        token = base64.b64encode(f"opencode:{password}".encode("utf-8")).decode("ascii")
+        headers["Authorization"] = f"Basic {token}"
     request = Request(
         f"{base_url}{path}",
         data=body,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        headers=headers,
         method=method,
     )
     try:
@@ -92,6 +103,19 @@ def _request_json(
         raise OpenCodeImportError(f"OpenCode returned invalid JSON for {path}") from exc
 
 
+def _api_request(
+    base_url: str,
+    path: str,
+    payload: Dict[str, Any],
+    method: str,
+    timeout: float,
+    password: Optional[str],
+) -> Any:
+    if password is None:
+        return _request_json(base_url, path, payload, method, timeout)
+    return _request_json(base_url, path, payload, method, timeout, password)
+
+
 def _archive_digest(archive: Mapping[str, Any]) -> str:
     canonical = json.dumps(
         archive, ensure_ascii=False, separators=(",", ":")
@@ -104,11 +128,14 @@ def import_archive(
     *,
     base_url: str = DEFAULT_BASE_URL,
     allow_remote: bool = False,
+    password: Optional[str] = None,
     timeout: float = 15.0,
 ) -> Dict[str, Any]:
-    """Import a v1.2 archive as an inert synthetic context message."""
+    """Import a v1.2 archive as an inert-at-import synthetic context item."""
     if timeout <= 0:
         raise ValueError("timeout must be greater than zero")
+    if password == "":
+        raise ValueError("password must not be empty")
     archive = _load_archive(source)
     endpoint = _validate_endpoint(base_url, allow_remote)
     encoded = json.dumps(archive, ensure_ascii=False, indent=2)
@@ -117,8 +144,8 @@ def import_archive(
     source_id = archive.get("tool", {}).get("session_id", archive.get("id", "unknown"))
     title = f"Imported AgentSON: {source_tool} / {source_id}"[:120]
 
-    created = _request_json(
-        endpoint, f"{API_PREFIX}/session", {"title": title}, "POST", timeout
+    created = _api_request(
+        endpoint, f"{API_PREFIX}/session", {"title": title}, "POST", timeout, password
     )
     session_info = created.get("data") if isinstance(created, dict) else None
     if not isinstance(session_info, dict) or not isinstance(session_info.get("id"), str):
@@ -132,7 +159,7 @@ def import_archive(
         "<agentson-archive>\n" + encoded + "\n</agentson-archive>"
     )
     try:
-        _request_json(
+        _api_request(
             endpoint,
             f"{API_PREFIX}/session/{session_id}/synthetic",
             {
@@ -143,11 +170,17 @@ def import_archive(
             },
             "POST",
             timeout,
+            password,
         )
     except OpenCodeImportError:
         try:
-            _request_json(
-                endpoint, f"{API_PREFIX}/session/{session_id}", {}, "DELETE", timeout
+            _api_request(
+                endpoint,
+                f"{API_PREFIX}/session/{session_id}",
+                {},
+                "DELETE",
+                timeout,
+                password,
             )
         except OpenCodeImportError:
             pass
@@ -168,8 +201,8 @@ def import_archive(
         "native_event_reconstruction": False,
         "resumption_supported": False,
         "losses": [
-            "The archive is stored as one opaque synthetic message, not native OpenCode events.",
-            "The synthetic message can enter model context on a later turn; resume=False prevents immediate execution only.",
+            "The archive is stored as one opaque synthetic inbox item, not native OpenCode events.",
+            "The synthetic item can enter model context on a later turn; resume=False prevents immediate execution only.",
             "OpenCode-specific tool state, workspace state and model checkpoint are not restored.",
         ],
     }
@@ -181,6 +214,7 @@ def verify_import(
     *,
     base_url: str = DEFAULT_BASE_URL,
     allow_remote: bool = False,
+    password: Optional[str] = None,
     timeout: float = 15.0,
 ) -> Dict[str, Any]:
     """Read an imported capsule back from OpenCode and compare it to its source.
@@ -190,18 +224,21 @@ def verify_import(
     """
     if timeout <= 0:
         raise ValueError("timeout must be greater than zero")
+    if password == "":
+        raise ValueError("password must not be empty")
     archive = _load_archive(source)
     endpoint = _validate_endpoint(base_url, allow_remote)
     session_id = result.get("session_id")
     if not isinstance(session_id, str) or not session_id:
         raise OpenCodeImportError("Import result does not contain a valid OpenCode session_id")
 
-    response = _request_json(
+    response = _api_request(
         endpoint,
         f"{API_PREFIX}/session/{session_id}/inbox",
         {},
         "GET",
         timeout,
+        password,
     )
     messages = response.get("data") if isinstance(response, dict) else None
     if not isinstance(messages, list):
