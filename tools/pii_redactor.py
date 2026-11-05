@@ -244,14 +244,29 @@ class PIIRedactor:
 
         def redact_nested(value, redact_all_strings=False):
             if isinstance(value, dict):
-                for key, child in value.items():
-                    if isinstance(child, str) and (redact_all_strings or key in sensitive_fields):
+                for key, child in list(value.items()):
+                    # Opaque binary evidence cannot be reliably PII-redacted
+                    # in place. Omit it from redacted copies but retain its
+                    # adjacent digest and an explicit omission marker.
+                    if isinstance(child, str) and key.endswith("_base64") and child:
+                        value[key] = None
+                        value[key + "_omitted"] = True
+                        all_redactions.append({
+                            "type": "opaque_binary_payload_omitted",
+                            "text": "[OPAQUE_BINARY_OMITTED]",
+                            "start": 0,
+                            "end": 0,
+                        })
+                    elif isinstance(child, str) and (redact_all_strings or key in sensitive_fields):
                         redacted_text, redactions = self.redact_text(child)
                         if redactions:
                             value[key] = redacted_text
                             all_redactions.extend(redactions)
                     elif isinstance(child, (dict, list)):
-                        redact_nested(child, redact_all_strings or key == "args")
+                        redact_nested(
+                            child,
+                            redact_all_strings or key in {"args", "source_payload", "source_metadata"},
+                        )
             elif isinstance(value, list):
                 for child in value:
                     if isinstance(child, (dict, list)):
