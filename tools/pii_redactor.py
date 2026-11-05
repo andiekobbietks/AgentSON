@@ -5,6 +5,9 @@ Automatically detects and redacts PII from .agentson files before exporting or s
 
 import json
 import re
+import io
+import os
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -239,7 +242,7 @@ class PIIRedactor:
         sensitive_fields = {
             "text", "code", "output", "query", "content", "prompt",
             "message", "command", "path", "file_path", "project_path",
-            "working_directory", "directory", "cwd", "diff",
+            "working_directory", "directory", "cwd", "diff", "task", "title",
         }
 
         def redact_nested(value, redact_all_strings=False):
@@ -280,11 +283,18 @@ class PIIRedactor:
                             redact_all_strings or key in {"args", "source_payload", "source_metadata"},
                         )
             elif isinstance(value, list):
-                for child in value:
-                    if isinstance(child, (dict, list)):
+                for index, child in enumerate(value):
+                    if isinstance(child, str) and redact_all_strings:
+                        redacted_text, redactions = self.redact_text(child)
+                        if redactions:
+                            value[index] = redacted_text
+                            all_redactions.extend(redactions)
+                    elif isinstance(child, (dict, list)):
                         redact_nested(child, redact_all_strings)
 
-        redact_nested(redacted_data.get("source_session", {}))
+        # Every string beneath source_session is source evidence, including
+        # metadata keys not yet known to this version of the reader.
+        redact_nested(redacted_data.get("source_session", {}), redact_all_strings=True)
         for entry in redacted_data.get("entries", []):
             if isinstance(entry, dict):
                 redact_nested(entry)
@@ -315,12 +325,30 @@ class PIIRedactor:
         if output_path is None:
             output_path = input_path
         
-        with open(output_path, 'w', encoding='utf-8') as f:
-            if output_format == "jsonl":
-                write_agentson_stream(redacted_data, f, source_tool=source_tool)
-            else:
-                redacted_data.pop("_format", None)
-                json.dump(redacted_data, f, indent=2, ensure_ascii=False)
+        # Serialise and validate completely before touching the destination.
+        buffer = io.StringIO()
+        if output_format == "jsonl":
+            write_agentson_stream(redacted_data, buffer, source_tool=source_tool)
+        else:
+            redacted_data.pop("_format", None)
+            json.dump(redacted_data, buffer, indent=2, ensure_ascii=False)
+
+        output_path = str(output_path)
+        output_dir = os.path.dirname(os.path.abspath(output_path))
+        temporary_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                "w", encoding="utf-8", dir=output_dir, delete=False
+            ) as temporary:
+                temporary_path = temporary.name
+                temporary.write(buffer.getvalue())
+                temporary.flush()
+                os.fsync(temporary.fileno())
+            os.replace(temporary_path, output_path)
+            temporary_path = None
+        finally:
+            if temporary_path and os.path.exists(temporary_path):
+                os.unlink(temporary_path)
 
         # Return statistics
         stats = {
