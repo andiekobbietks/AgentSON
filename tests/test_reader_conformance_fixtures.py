@@ -71,12 +71,19 @@ def test_libre_csv_fixture_through_reader(tmp_path):
     session = read_libre_csv(str(FIXTURES / "libre_sensor_native_synthetic.csv"))
     assert len(session["entries"]) == 3
     assert session["entries"][0]["data"]["reading_type"] == "CGM"
+    assert session["entries"][0]["source_payload"]["raw_row"]["Glucose (mmol/L)"] == "5.5"
+    assert session["source_metadata"]["source_headers"][0] == "Timestamp"
+    assert len(session["source_metadata"]["rejected_rows"]) == 1
+    assert session["source_metadata"]["rejected_rows"][0]["row"]["Timestamp"] == "not-a-timestamp"
     assert session["entries"][1]["data"]["source_raw"] == "Manual"
     assert session["entries"][1]["status"] == "low"
     events = _export_and_validate(session, tmp_path / "libre.agentson", "libre")
     observations = [e for e in events if e["type"] == "observation"]
     assert len(observations) == 3
     assert events[0]["source_session"]["source_metadata"]["metrics"]["total_readings"] == 3
+    assert len(events[0]["source_session"]["source_metadata"]["source_metadata"]["rejected_rows"]) == 1
+    exported_reading = next(e for e in events if e["type"] == "observation")
+    assert exported_reading["source_payload"]["raw_row"]["Type"] == "CGM"
 
 
 def test_minimax_sqlite_fixture_through_reader(tmp_path):
