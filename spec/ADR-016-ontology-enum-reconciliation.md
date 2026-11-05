@@ -64,7 +64,7 @@ capabilities          side-effect
 
 3. **`title`** → Remove from entry types. Titles are display metadata. If a step needs a label, use `thought` with a structured `text` field, or add an optional `label` field to any entry type.
 
-4. **`observation`** → Add to v1.json enum (currently missing). This is the counterpart to `action` — every action produces an observation.
+4. **`observation`** → Add to v1.json enum (currently missing). This is the result counterpart to `action` when the source provides a result. An action may have no captured observation because the source omitted it, the action failed or capture was incomplete; do not invent an observation.
 
 5. **`user-feedback`** → Add to all schemas. This is distinct from `user-query` — it's a correction or clarification, not an initial request.
 
@@ -123,7 +123,7 @@ capabilities          side-effect
 - Higher fidelity (every event type has clear semantics)
 - Better analyzability (consumers know exactly what 12 types exist)
 - Better replayability (replay engine can handle all 12 types deterministically)
-- Same portability (JSONL format unchanged)
+- Same portability (the canonical v1.2 JSON envelope is unchanged; JSONL stream transport is separate)
 
 ### ISO Litmus Test
 
