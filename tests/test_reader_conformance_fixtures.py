@@ -175,7 +175,7 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
     assert json.loads(session["source_metadata"]["token_usage_rows"][0]["raw"])["billing"] == "recorded"
     assert session["source_metadata"]["peer_rows"][0]["task_tree_id"] == "tree-001"
     events = _export_and_validate(session, tmp_path / "minimax.agentson", "minimax")
-    assert events[0]["mode"] == "single"
+    assert events[0]["mode"] == "collab"
     assert events[0]["stream_id"] == "mavis-fixture-001"
 
 
@@ -213,7 +213,7 @@ def test_antigravity_sqlite_fixture_through_reader(tmp_path):
     assert session["entries"][0]["code"] == "pytest -q"
     events = _export_and_validate(session, tmp_path / "antigravity.agentson", "antigravity")
     assert events[0]["source_session"]["source_metadata"]["variant"]["name"] == "Antigravity IDE"
-    assert events[1]["source_payload"]["type"] == 21
+    assert events[1]["source_payload"]["step_row"]["step_type"] == 21
     raw_step = base64.b64decode(events[1]["source_payload"]["step_payload_base64"])
     assert raw_step == payload
     assert events[1]["source_payload"]["step_payload_sha256"] == hashlib.sha256(payload).hexdigest()
