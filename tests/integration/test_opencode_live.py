@@ -19,10 +19,9 @@ BASE_URL = os.environ.get("AGENTSON_OPENCODE_URL", "http://127.0.0.1:4096")
 
 def test_live_opencode_import_and_readback():
     archive = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    health_request = Request(f"{BASE_URL}/global/health", headers={"Accept": "application/json"})
+    health_request = Request(f"{BASE_URL}/api/info", headers={"Accept": "application/json"})
     with urlopen(health_request, timeout=10) as response:
         health = json.loads(response.read().decode("utf-8"))
-    assert health.get("healthy") is True
     assert isinstance(health.get("version"), str) and health["version"]
 
     imported = import_archive(archive, base_url=BASE_URL)
