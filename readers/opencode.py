@@ -259,6 +259,7 @@ class OpencodeReader:
             msg = self._dict(msg_row)
             data = self._json(msg.get("data"))
             role = data.get("role", "unknown")
+            entries_before_message = len(entries)
             for part_row in parts_by_message.get(msg.get("id"), []):
                 part = self._dict(part_row)
                 pdata = self._json(part.get("data"))
@@ -298,6 +299,13 @@ class OpencodeReader:
                         base, type="system-event", source="other",
                         text="Unmapped OpenCode part: {}".format(part_type or "unknown"),
                     ))
+            if len(entries) == entries_before_message:
+                entries.append({
+                    "type": "system-event", "source": "other",
+                    "timestamp": msg.get("time_created"),
+                    "text": "OpenCode message contained no mapped parts (role: {})".format(role),
+                    "source_payload": {"message": msg, "message_data": data},
+                })
 
         for todo_row in todos:
             todo = self._dict(todo_row)
@@ -324,6 +332,7 @@ class OpencodeReader:
                 "timestamp": msg.get("time_created"),
                 "source_payload": {"message": msg, "message_data": data},
             }
+            entries_before_message = len(entries)
             if msg_type == "user":
                 entries.append(dict(common, type="user-query", text=data.get("text", "")))
             elif msg_type == "assistant":
@@ -373,6 +382,11 @@ class OpencodeReader:
                 entries.append(dict(
                     common, type="system-event", source="other",
                     text=text_value or "OpenCode message type: {}".format(msg_type or "unknown"),
+                ))
+            if len(entries) == entries_before_message:
+                entries.append(dict(
+                    common, type="system-event", source="other",
+                    text="OpenCode message contained no mapped content (type: {})".format(msg_type or "unknown"),
                 ))
 
         for inbox_row in inbox:
