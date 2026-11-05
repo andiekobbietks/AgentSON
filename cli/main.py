@@ -1073,12 +1073,12 @@ TOPICS:
         "--target",
         choices=["generic", "opencode", "claude-code", "codex", "cursor", "cline"],
         default="generic",
-        help="Destination harness profile (packet remains portable)",
+        help="Destination harness profile for the portable context packet",
     )
     resume_parser.add_argument("--output", help="Output Markdown packet (default: <input>.resume-<target>.md)")
     resume_parser.add_argument(
         "--launch", action="store_true",
-        help="For --target opencode, create a native session and queue the packet without running the agent",
+        help="For --target opencode, import and verify the archive in a new session without starting the agent",
     )
     resume_parser.add_argument(
         "--server-url", default="http://127.0.0.1:4096",
