@@ -22,7 +22,7 @@ Implement cross-harness continuation in capability layers:
 3. **Destination adapter:** where a harness provides a documented, stable import or session-creation interface, implement a separate adapter that validates the target capability and reports exactly what it restores.
 4. **Runtime checkpoint restoration:** only claim this when the destination can safely and verifiably restore the required native runtime state. This is not implied by levels 1–3.
 
-The initial CLI implementation is the agentson resume INPUT --target TARGET [--output FILE] command. It creates a portable Markdown continuation packet. It does not invoke the destination harness, execute historical tool calls or write to a destination database.
+The CLI implementation is the agentson resume INPUT --target TARGET [--output FILE] command. It always creates a portable Markdown continuation packet. The first native destination adapter is OpenCode: agentson resume INPUT --target opencode --launch connects to an already-running OpenCode HTTP server, creates a new session, queues the packet with resume=false, and reads the session messages back to verify the handoff. The adapter does not start an agent turn or execute historical tool calls. Other target profiles remain packet-only until their own adapters are implemented.
 
 ## Safety and trust boundary
 
@@ -47,11 +47,12 @@ The packet must not claim restoration of hidden prompts, credentials, tool permi
 - Assert that the packet contains a clear untrusted-data boundary and no auto-execution instruction.
 - Test CLI invocation through the public entry point.
 - For each destination adapter, use a disposable test workspace and verify the resulting session via the destination's own read API.
+- OpenCode adapter tests must verify session creation, packet admission with resume=false, basic-auth handling, and read-back confirmation. The live integration check must use a disposable OpenCode server and session.
 - Publish a per-adapter capability matrix; never generalise one adapter's success to all harnesses.
 
 ## Consequences
 
-The first implementation makes practical context transfer possible today through a new destination session, while preserving an honest boundary between transcript portability and runtime restoration. Native session import, workspace checkpointing and exact runtime resumption remain separate future capabilities.
+The first implementation supports practical context transfer into a new destination session. OpenCode has a native API adapter that stores the AgentSON packet in a fresh session without triggering an agent turn; the other destinations use the portable packet workflow only. This is not full transcript-role reconstruction, workspace checkpointing or exact runtime resumption. Those remain separate capabilities requiring destination-specific import contracts and round-trip verification.
 
 ## Canonical archive decision dependency
 
