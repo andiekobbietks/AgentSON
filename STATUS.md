@@ -1,4 +1,4 @@
-# Status (last updated: 2026-11-05T11:35:30Z, by: AgentSON interoperability and conformance work)
+# Status (last updated: 2026-11-05T17:54:00Z, by: AgentSON OpenCode v2 consumer integration work)
 
 ## Pull request queue
 
@@ -11,7 +11,7 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 ## Active documentation branch
 
 - **`feat/wiki-mirror` / PR #60**: contains the checked-in `docs/wiki/` mirror, canonical session interoperability architecture, ADR-024, v1.2 schema clarification, aligned ontology/adapter/replay semantics, and coordinated README/PRD/standards updates.
-- The PR also contains its pre-existing Severity v1 implementation. Interoperability work now includes documentation/specification updates, v1.2 schema source-name extension, OpenCode reader and ChatGPT importer compatibility changes, regression tests and a dedicated CI workflow.
+- The PR also contains its pre-existing Severity v1 implementation. Interoperability work now includes documentation/specification updates, v1.2 schema source-name extension, OpenCode reader and ChatGPT importer compatibility changes, regression tests, an experimental OpenCode v2 receiving adapter and a pinned live-integration CI job.
 
 ## Documentation source of truth
 
@@ -52,8 +52,9 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - Repository-relative Markdown links were checked across the documentation set; no broken repository links were found. Short links such as `ADR-001` and `SOP-001` are intentional links to separately hosted wiki pages.
 - The OpenCode reader and ChatGPT importer now emit the v1.2 schema identifier. The v1.2 `tool.name` enum includes `chatgpt`; missing ChatGPT timestamps are omitted rather than emitted as null.
 - Sanitised Windows user-profile paths in `tests/fixtures/opencode_real_sample.json` to align with the no-personal-paths repository rule.
-- GitHub Actions run [42019990061](https://github.com/andiekobbietks/AgentSON/actions/runs/42019990061) passed **20 tests** in 0.30s: canonical archive contract, production OpenCode conversion regression and ChatGPT importer tests.
-- This was a focused conformance/regression run, not the full repository test suite. C2 cross-harness consumer interoperability, C3 reconstruction and C4 resumption remain unproven. PR #60 must remain under review until the wider suite and maintainer review are complete.
+- GitHub Actions canonical archive job in run [42078774232](https://github.com/andiekobbietks/AgentSON/actions/runs/42078774232) passed **31 tests** in 0.74s across canonical archive validation, the production OpenCode conversion regression, the OpenCode v2 consumer contract and ChatGPT importer tests.
+- A separate live OpenCode v2 integration job is running against pinned `@opencode/cli@2.2.5`; it starts a server, imports the synthetic archive, reads the durable synthetic inbox item back and compares the payload and digest. Its result is pending; do not report a live pass yet.
+- The live consumer test verifies archive-capsule storage only. It does not demonstrate source-producer-to-consumer semantic C2, native event reconstruction (C3) or resumption (C4). The full repository test suite has not been run.
 
 
 ## Cross-harness conformance programme (05 November 2026)
@@ -64,3 +65,13 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - **CI evidence:** GitHub Actions run [42019565524](https://github.com/andiekobbietks/AgentSON/actions/runs/42019565524) completed successfully; 20 focused tests passed in 0.33s on 05 November 2026.
 - This provides C0 archive validity and production producer-conversion evidence for the OpenCode and ChatGPT paths. It is not C2 cross-harness adapter interoperability, C3 reconstruction or C4 resumption. The full project test suite has not been run as part of this work.
 - Remaining blockers: no canonical archive consumer import matrix, no normative machine-readable loss-report contract, and no demonstrated cross-harness checkpoint/resume profile.
+
+
+## OpenCode v2 receiving adapter (05 November 2026)
+
+- Added `consumers/opencode.py`: validates AgentSON v1.2, creates an OpenCode v2 session, and queues one synthetic archive item with `delivery: "queue"` and `resume: false`.
+- Added `verify_import()`: reads the durable session inbox and compares the embedded archive and SHA-256 digest with the source.
+- Added mocked API contract tests and `tests/integration/test_opencode_live.py`; CI pins OpenCode CLI `@opencode/cli@2.2.5`.
+- Security boundary: `resume: false` prevents immediate agent-loop execution, but the synthetic content can enter model context on a later turn. The adapter reports `future_model_context_exposure: true`; this is not isolated archive storage.
+- **Latest focused test evidence:** 31 tests passed in 0.74s in the canonical archive job of run [42078774232](https://github.com/andiekobbietks/AgentSON/actions/runs/42078774232).
+- **Live OpenCode v2 run:** pending. A passing archive read-back is not a C2 semantic interoperability claim because the source producer and native event reconstruction are not yet exercised end-to-end.
