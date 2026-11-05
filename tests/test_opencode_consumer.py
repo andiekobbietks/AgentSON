@@ -129,18 +129,17 @@ def test_verify_import_reads_back_and_compares_synthetic_archive():
             {
                 "id": "msg_synthetic",
                 "type": "synthetic",
-                "text": _capsule(archive),
-                "time": {"created": 1793880004000},
+                "payload": {"text": _capsule(archive)},
+                "delivery": "queue",
             }
-        ],
-        "cursor": {"previous": None, "next": None},
+        ]
     }
     result = {"session_id": "ses_readback"}
     with patch("consumers.opencode._request_json", return_value=response) as request:
         verified = verify_import(result, archive)
     request.assert_called_once_with(
         "http://127.0.0.1:4096",
-        "/api/session/ses_readback/message",
+        "/api/session/ses_readback/inbox",
         {},
         "GET",
         15.0,
@@ -148,6 +147,7 @@ def test_verify_import_reads_back_and_compares_synthetic_archive():
     assert verified["verified"] is True
     assert verified["verification"] == "opencode-v2-live-readback"
     assert verified["entry_count"] == len(archive["entries"])
+    assert verified["inbox_item_count"] == 1
 
 
 def test_verify_import_rejects_changed_stored_archive():
@@ -155,8 +155,7 @@ def test_verify_import_rejects_changed_stored_archive():
     changed = dict(archive)
     changed["task"] = "tampered"
     response = {
-        "data": [{"type": "synthetic", "text": _capsule(changed)}],
-        "cursor": {"previous": None, "next": None},
+        "data": [{"type": "synthetic", "payload": {"text": _capsule(changed)}, "delivery": "queue"}]
     }
     with patch("consumers.opencode._request_json", return_value=response):
         with pytest.raises(OpenCodeImportError, match="differs"):
@@ -166,7 +165,7 @@ def test_verify_import_rejects_changed_stored_archive():
 def test_verify_import_rejects_missing_capsule():
     with patch(
         "consumers.opencode._request_json",
-        return_value={"data": [], "cursor": {"previous": None, "next": None}},
+        return_value={"data": []},
     ):
         with pytest.raises(OpenCodeImportError, match="No AgentSON archive capsule"):
             verify_import({"session_id": "ses_readback"}, _archive())
