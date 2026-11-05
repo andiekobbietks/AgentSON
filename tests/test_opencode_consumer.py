@@ -1,6 +1,7 @@
 """Tests for the OpenCode v2 archive-capsule consumer."""
 from __future__ import annotations
 
+import base64
 import json
 from pathlib import Path
 from unittest.mock import patch
@@ -170,3 +171,32 @@ def test_verify_import_rejects_missing_capsule():
     ):
         with pytest.raises(OpenCodeImportError, match="No AgentSON archive capsule"):
             verify_import({"session_id": "ses_readback"}, _archive())
+
+
+def test_http_requests_use_basic_auth_header_without_url_credentials():
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return b"{}"
+
+    from consumers.opencode import _request_json
+
+    with patch("consumers.opencode.urlopen", return_value=FakeResponse()) as urlopen:
+        _request_json(
+            "http://127.0.0.1:4096",
+            "/api/info",
+            {},
+            "GET",
+            10.0,
+            password="ci-test-password",
+        )
+
+    request = urlopen.call_args.args[0]
+    expected = base64.b64encode(b"opencode:ci-test-password").decode("ascii")
+    assert request.get_header("Authorization") == f"Basic {expected}"
+    assert "ci-test-password" not in request.full_url
