@@ -244,6 +244,18 @@ class PIIRedactor:
 
         def redact_nested(value, redact_all_strings=False):
             if isinstance(value, dict):
+                # MiniMax source rows represent binary SQLite values as
+                # {"encoding": "base64", "data": "...", "sha256": "..."}.
+                # Omit that payload too, not just fields named *_base64.
+                if value.get("encoding") == "base64" and isinstance(value.get("data"), str) and value["data"]:
+                    value["data"] = None
+                    value["data_omitted"] = True
+                    all_redactions.append({
+                        "type": "opaque_binary_payload_omitted",
+                        "text": "[OPAQUE_BINARY_OMITTED]",
+                        "start": 0,
+                        "end": 0,
+                    })
                 for key, child in list(value.items()):
                     # Opaque binary evidence cannot be reliably PII-redacted
                     # in place. Omit it from redacted copies but retain its
