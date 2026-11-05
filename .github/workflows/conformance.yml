@@ -83,14 +83,14 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/agentson-opencode"
           cd "$RUNNER_TEMP/agentson-opencode"
-          OPENCODE_PURE=1 OPENCODE_DISABLE_PROJECT_CONFIG=1 \
+          OPENCODE_PASSWORD=agentson-ci-only-password OPENCODE_PURE=1 OPENCODE_DISABLE_PROJECT_CONFIG=1 \
             nohup opencode serve --hostname 127.0.0.1 --port 4096 \
             > "$RUNNER_TEMP/opencode-server.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/opencode-server.pid"
       - name: Wait for OpenCode health endpoint
         run: |
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4096/api/info; then
+            if curl --fail --silent --user opencode:agentson-ci-only-password http://127.0.0.1:4096/api/info; then
               exit 0
             fi
             sleep 2
@@ -100,6 +100,7 @@ jobs:
       - name: Import archive and verify live read-back
         env:
           AGENTSON_OPENCODE_URL: http://127.0.0.1:4096
+          OPENCODE_PASSWORD: agentson-ci-only-password
         run: python -m pytest -q -s tests/integration/test_opencode_live.py
       - name: Stop OpenCode server
         if: always()
