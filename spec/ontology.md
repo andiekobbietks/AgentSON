@@ -210,17 +210,17 @@ Streams can branch when agents explore alternatives:
 
 > "Is this the only format solving this problem at the international level?"
 
-AgentSON is the **only** format doing agent session provenance. No other standard — MCP, A2A, AGNTCY, OpenClaw — records what agents actually did in a portable, vendor-neutral file format.
+AgentSON defines an open, vendor-neutral event vocabulary and session archive intended to preserve agent activity and provenance. This is a project design statement, not a claim that no adjacent format or product exists. A comparative standards review is required before making exclusivity or ISO-readiness claims.
 
 ### Five questions for ISO readiness
 
 | # | Question | AgentSON |
 |---|----------|----------|
-| 1 | **Does any ISO standard already cover this?** | ❌ No. ISO has SQL, PDF, Unicode. No agent provenance format. |
-| 2 | **Does any non-ISO standard cover this?** | ❌ No. MCP/A2A/AGNTCY are execution protocols, not provenance formats. |
+| 1 | **Does any ISO standard already cover this?** | No directly equivalent standard has been established by this internal review; external standards research is still required. |
+| 2 | **Does any non-ISO standard cover this?** | MCP, A2A, AGNTCY and observability formats are adjacent; their scope must be compared before asserting a gap. |
 | 3 | **Is this royalty-free and open?** | ✅ Apache 2.0. No patents. |
-| 4 | **Is this stable enough?** | v1.2 JSON session envelope with 12 event primitives; stream framing remains a separate contract. |
-| 5 | **Does this have broad industry potential?** | ✅ Every AI agent produces session traces. Every enterprise needs audit trails. |
+| 4 | **Is this stable enough?** | v1.2 envelope and 12 event definitions exist; cross-harness conformance and stream framing remain to be demonstrated. |
+| 5 | **Does this have broad industry potential?** | Potential use cases include portability, debugging, research and audit; demand and adoption require validation. |
 
 ### Why AgentSON and not MCP/A2A/AGNTCY
 
