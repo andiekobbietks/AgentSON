@@ -14,6 +14,8 @@ Usage:
 
 import sqlite3
 import json
+import base64
+import hashlib
 import os
 import re
 from datetime import datetime, timezone
@@ -192,6 +194,21 @@ def read_antigravity_session(session: Dict) -> Dict:
         elif step_type == 99:
             entry["role"] = "assistant"  # Unknown
 
+        # Preserve the exact protobuf/binary payload before heuristic text
+        # extraction. A decoded snippet is a projection, not a substitute.
+        raw_payload = bytes(payload) if payload is not None else b""
+        entry["source_payload"] = {
+            "step_row": {
+                "idx": idx,
+                "step_type": step_type,
+                "status": status,
+                "has_subtrajectory": has_sub,
+                "step_format": fmt,
+            },
+            "step_payload_base64": base64.b64encode(raw_payload).decode("ascii") if raw_payload else None,
+            "step_payload_sha256": hashlib.sha256(raw_payload).hexdigest() if raw_payload else None,
+            "decoded_json": json_data if payload and json_data else None,
+        }
         entries.append(entry)
 
     return {
@@ -214,6 +231,24 @@ def read_antigravity_session(session: Dict) -> Dict:
         },
         # Extraction time is metadata, never a fabricated source event time.
         "metadata": {"extracted_at": extracted_at},
+        "source_metadata": {
+            "trajectory_metadata_blobs": [
+                {
+                    "id": row[0],
+                    "data_base64": base64.b64encode(bytes(row[1] or b"")).decode("ascii"),
+                    "sha256": hashlib.sha256(bytes(row[1] or b"")).hexdigest(),
+                }
+                for row in meta_blobs
+            ],
+            "generation_metadata_rows": [
+                {
+                    "idx": row[0],
+                    "data_base64": base64.b64encode(bytes(row[1] or b"")).decode("ascii"),
+                    "sha256": hashlib.sha256(bytes(row[1] or b"")).hexdigest(),
+                }
+                for row in gen_meta
+            ],
+        },
         "entries": entries,
         "metrics": {
             "total_tokens": total_tokens,
