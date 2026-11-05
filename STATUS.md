@@ -1,6 +1,6 @@
 # Repository status
 
-**Last updated:** 2026-11-05T19:03:00Z  
+**Last updated:** 2026-11-05T19:06:00Z  
 **Branch:** `feat/jsonl-reader-conformance`  
 **Current pull request:** [#62](https://github.com/andiekobbietks/AgentSON/pull/62)
 
@@ -55,7 +55,9 @@ The CI workflow concurrency group uses the pull request's source branch (or the 
 - The packet preserves available conversation text, event types, tool names, timestamps, source identity and correlation identifiers.
 - Raw tool arguments, code and source payloads are excluded by default to reduce accidental secret disclosure. Conversation text can still contain sensitive material; review/redact before sharing externally.
 - The packet explicitly marks transcript content as untrusted historical data and does not replay commands or restore private runtime state.
-- This is context continuation into a new harness session, not native session import or exact runtime resumption. Destination-specific import adapters and checkpoint restoration remain future work.
+- OpenCode is now the first native destination adapter: `agentson resume INPUT --target opencode --launch` connects to an already-running OpenCode server, creates a new session, queues the packet with `resume=false`, then reads the session messages back to verify storage. It does not start an agent turn or replay tool calls.
+- Set `OPENCODE_SERVER_USERNAME` / `OPENCODE_SERVER_PASSWORD` for server basic auth; use `--server-url` for a non-default endpoint. The user opens the returned session with `opencode --session <id>`.
+- This is verified context continuation into a new harness session, not full reconstruction of source speaker roles, exact runtime resumption or workspace checkpointing. Other destination profiles remain packet-only.
 - ADR-025 records the safety and fidelity contract. The existing ADR-024 canonical-envelope versus JSONL conflict with PR #60 remains unresolved.
 
 ## Reader conformance evidence and limits
