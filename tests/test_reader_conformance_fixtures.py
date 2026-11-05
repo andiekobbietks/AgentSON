@@ -51,7 +51,7 @@ def test_chrome_devtools_markdown_fixture_through_reader(tmp_path):
     assert any(e["type"] == "action" and e.get("code") for e in session["entries"])
     assert any(e["type"] == "answer" for e in session["entries"])
     events = _export_and_validate(session, tmp_path / "chrome.agentson", "chrome-devtools")
-    assert events[0]["source_session"]["context"]["url"] is None
+    assert events[0]["source_session"]["metadata"]["source_filename"].endswith("chrome_devtools_native_synthetic.md")
 
 
 def test_libre_csv_fixture_through_reader(tmp_path):
