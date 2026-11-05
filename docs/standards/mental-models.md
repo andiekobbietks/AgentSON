@@ -66,16 +66,16 @@ I have a GTX 1050 with 2GB VRAM. That means I can't run 7B models locally. That 
 
 ## One File, One Truth
 
-**A single file should contain everything needed.**
+**A canonical archive should be independently readable and inspectable.**
 
-A .AgentSON file has the schema, the entries, the metadata, the context. You don't need a database, a config file, and a log. One file. One truth.
+A .agentson archive contains the session envelope, ordered entries and the metadata needed to interpret the recorded session. It must not depend on a hidden database, config file or service. Large or separately governed artefacts may be external references only when the reference is explicit, integrity-verifiable and the archive clearly reports when the artefact is unavailable. One archive remains the portable record; external infrastructure is optional.
 
 **In practice:**
-- One .AgentSON = one complete session
+- One .agentson archive = one independently readable session record
 - One SOP = one complete procedure
 - One HTML file = one complete viewer
 
-**The test:** Can you send someone one file and have everything they need?
+**The test:** Can a recipient inspect the session record from one archive, identify every external dependency, and detect any missing referenced artefact?
 
 ---
 
