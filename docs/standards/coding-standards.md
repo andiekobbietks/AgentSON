@@ -42,13 +42,13 @@ If OpenAI shuts down tomorrow, AgentSON still works. If GitHub goes down, the CL
 
 ## Single File Output
 
-**One .agentson file = one complete session.**
+**One canonical .agentson archive = one independently readable session record.**
 
-No sidecar files, no database entries, no config dependencies. One file has everything: schema, entries, metadata, context.
+The archive contains its session envelope, ordered entries and the metadata needed to interpret the recorded session. It must not depend on a hidden database, config file or service. Large or separately governed artefacts may be external references only when explicit and integrity-verifiable; the archive must report when an artefact is unavailable.
 
-**Rule:** If you need a second file to understand the first file, the format is broken.
+**Rule:** A recipient must be able to parse and inspect the session record from the archive alone. External infrastructure must never be a hidden dependency.
 
-**Why:** A single file can be emailed, shared, archived, version-controlled. Multiple files create sync problems.
+**Why:** A self-contained archive can be transferred, shared, archived and version-controlled without silently losing its meaning.
 
 ---
 
