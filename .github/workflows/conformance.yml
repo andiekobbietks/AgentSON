@@ -82,7 +82,9 @@ jobs:
       - name: Start isolated OpenCode server
         run: |
           mkdir -p "$RUNNER_TEMP/agentson-opencode"
-          nohup opencode serve --hostname 127.0.0.1 --port 4096 \
+          cd "$RUNNER_TEMP/agentson-opencode"
+          OPENCODE_PURE=1 OPENCODE_DISABLE_PROJECT_CONFIG=1 \
+            nohup opencode serve --hostname 127.0.0.1 --port 4096 \
             > "$RUNNER_TEMP/opencode-server.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/opencode-server.pid"
       - name: Wait for OpenCode health endpoint
