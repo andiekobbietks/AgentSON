@@ -74,7 +74,7 @@ def create_opencode_session(
     Uses the documented OpenCode v2 HTTP API:
       POST /api/session
       POST /api/session/{sessionID}/prompt with resume=false
-      GET  /api/session/{sessionID}/message
+      GET  /api/session/{sessionID}/inbox
     """
     if not isinstance(packet, str) or not packet.strip():
         raise ValueError("Continuation packet must be a non-empty string")
@@ -105,7 +105,7 @@ def create_opencode_session(
 
     messages = _request(
         server_url,
-        f"/api/session/{encoded_id}/message",
+        f"/api/session/{encoded_id}/inbox",
         timeout=timeout,
     )
     serialised = json.dumps(messages, ensure_ascii=False, sort_keys=True)
@@ -113,7 +113,7 @@ def create_opencode_session(
     if marker not in serialised:
         raise OpenCodeResumeError(
             f"OpenCode accepted the handoff for session {session_id}, but the "
-            "read-back did not contain the packet marker. Inspect the session "
+            "inbox read-back did not contain the packet marker. Inspect the session "
             "before relying on this transfer."
         )
     return session_id
