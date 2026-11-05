@@ -12,8 +12,8 @@
 
 The 12 ontology primitives split naturally into two groups:
 
-### Core Primitives (9) — Always Present
-These exist in every .agentson stream, whether single-agent or multi-agent:
+### Core Primitives (9) — Available Across Session Modes
+These event types may occur in either single-agent or multi-agent sessions. They are not a checklist of entries that every session must contain; capture only events the source actually exposes.
 
 | Primitive | Layer | Purpose |
 |-----------|-------|---------|
@@ -27,8 +27,8 @@ These exist in every .agentson stream, whether single-agent or multi-agent:
 | `system-event` | Input | External trigger |
 | `stream-meta` | Coordination | Session header |
 
-### Streaming Primitives (3) — Multi-Agent Only
-These only appear in multi-agent collaboration streams:
+### Collaboration Primitives (3) — Multi-Agent Semantics
+These describe collaboration events and should be retained when the source records them. They must not be synthesised merely to make a session appear complete.
 
 | Primitive | Layer | Purpose |
 |-----------|-------|---------|
@@ -44,7 +44,7 @@ Should streaming primitives be **optional** (only in multi-agent streams) or **a
 
 ## Decision
 
-**Streaming primitives are OPTIONAL in single-agent streams, REQUIRED in multi-agent streams.**
+**Collaboration primitives are optional when the corresponding event did not occur or was not exposed.** In multi-agent sessions, preserve actual handoffs and presence transitions; include capability declarations when the source provides or negotiates them. Do not require all three event types to appear in every multi-agent session.
 
 ### Rationale
 
@@ -54,19 +54,19 @@ Should streaming primitives be **optional** (only in multi-agent streams) or **a
 
 3. **Capabilities are useful but not required.** A single-agent stream from OpenCode doesn't need to advertise "I can use bash" — the consumer already knows what OpenCode can do.
 
-4. **stream-meta is always required.** Even single-agent streams need a header declaring the tool, agent, and session ID.
+4. **stream-meta is a stream-profile header, not a required entry in every canonical archive.** The v1.2 JSON envelope carries session identity and tool metadata at the top level. A future JSONL stream profile may require a `stream-meta` first record.
 
 ### Validation Rules
 
-| Scenario | Required Primitives |
-|----------|-------------------|
-| Single-agent stream | `stream-meta` + 9 core primitives |
-| Multi-agent stream | `stream-meta` + 9 core + 3 streaming |
-| Collaboration stream | All 12, with `handoff` chain |
+| Scenario | Event requirements |
+|----------|--------------------|
+| Single-agent archive | Capture only source-observed events; no collaboration events are required. |
+| Multi-agent archive | Preserve actual collaboration events and actor references; do not fabricate missing event types. |
+| Line-oriented stream profile | Framing/header requirements must be defined by a separate stream contract. |
 
 ### Detection Rule
 
-A stream is "multi-agent" if `stream-meta.agents` has more than 1 agent (excluding `user`). If `agents.length <= 1`, streaming primitives are optional.
+For a line-oriented stream profile, participant metadata may identify multi-agent operation. For the canonical archive, use the envelope and recorded actor references. Do not infer collaboration events solely from a participant count.
 
 ---
 
@@ -75,18 +75,18 @@ A stream is "multi-agent" if `stream-meta.agents` has more than 1 agent (excludi
 ### Positive
 - (+) Single-agent exports stay simple (no meaningless handoff/presence entries)
 - (+) Multi-agent streams get full coordination primitives
-- (+) Validation can auto-detect stream type from `stream-meta`
+- (+) A future stream profile can declare participant/mode metadata without changing the canonical archive envelope
 - (+) Backward compatible with existing single-agent exports
 
 ### Negative
 - (-) Two validation modes (single vs multi-agent) adds complexity
-- (-) Consumers must check `stream-meta.agents.length` to know which primitives to expect
+- (-) Consumers must distinguish event vocabulary from stream framing and must not assume every primitive occurs
 - (-) Edge case: stream starts single-agent, becomes multi-agent mid-stream
 
 ### Mitigations
-- Define a `mode` field in `stream-meta`: `"single" | "multi" | "collab"`
-- Validation uses `mode` to determine required primitives
-- Edge case handled by: if a `handoff` appears, stream is implicitly multi-agent
+- A future stream profile may define `mode` in its stream header.
+- Stream-level validation may check consistency between declared mode and actual collaboration events.
+- The canonical archive validator checks the envelope and entries; it does not impose unimplemented stream-wide cardinality rules.
 
 ---
 
