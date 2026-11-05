@@ -2,9 +2,9 @@
 
 ## Canonical representation
 
-The canonical v1.2 archive is a **single JSON session envelope** defined by [`spec/v1.2.json`](../spec/v1.2.json). It contains session-level metadata and an ordered `entries` array. The individual entry contract is [`spec/v1.2-entries.json`](../spec/v1.2-entries.json); the event vocabulary is defined by [`spec/ontology.md`](../spec/ontology.md).
+The canonical v1.2 archive is a **single JSON session envelope** defined by [`spec/v1.2.json`](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json). It contains session-level metadata and an ordered `entries` array. The individual entry contract is [`spec/v1.2-entries.json`](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2-entries.json); the event vocabulary is defined by [`spec/ontology.md`](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md).
 
-This is not a JSONL schema. The earlier [ADR-015](../spec/ADR-015-canonical-schema.md) declared JSONL canonical, but that decision was superseded by [ADR-024](../spec/ADR-024-canonical-session-archive-and-interoperability.md) because the v1.2 schema itself defines a JSON object envelope. Existing JSONL exporters/stream code are separate stream or transport implementations until a dedicated stream contract is published.
+This is not a JSONL schema. The earlier [ADR-015](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md) declared JSONL canonical, but that decision was superseded by [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md) because the v1.2 schema itself defines a JSON object envelope. Existing JSONL exporters/stream code are separate stream or transport implementations until a dedicated stream contract is published.
 
 ## Version history
 
@@ -81,8 +81,8 @@ A JSON Schema document does not, by itself, validate a multi-line JSONL stream. 
 
 ## Related documents
 
-- [Session Interoperability Architecture](../docs/architecture/session-interoperability.md)
-- [ADR-024: Canonical Session Archive and Interoperability](../spec/ADR-024-canonical-session-archive-and-interoperability.md)
-- [ADR-015: Historical Canonical Schema Decision](../spec/ADR-015-canonical-schema.md)
+- [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- [ADR-024: Canonical Session Archive and Interoperability](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md)
+- [ADR-015: Historical Canonical Schema Decision](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md)
 - [Readers and adapter inventory](Readers)
 - [Coding Standards](Coding-Standards)
