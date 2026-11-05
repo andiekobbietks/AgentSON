@@ -57,13 +57,13 @@ Issues = "https://github.com/andiekobbietks/AgentSON/issues"
 agentson = "cli.main:main"
 
 [tool.setuptools.package-data]
-"spec" = ["v1.json"]
+"spec" = ["*.json"]
 "supabase" = ["schema.sql"]
 "examples" = ["*.AgentSON"]
 "pwa" = ["manifest.json", "sw.js", "*.html", "*.png", "*.ico"]
 
 [tool.setuptools.packages.find]
-include = ["readers*", "exporters*", "importers*", "cli*", "agentson_platform*", "agentson_mcp*"]
+include = ["readers*", "exporters*", "importers*", "cli*", "spec*", "agentson_platform*", "agentson_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
