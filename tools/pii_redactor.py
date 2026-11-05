@@ -295,10 +295,22 @@ class PIIRedactor:
         # Every string beneath source_session is source evidence, including
         # metadata keys not yet known to this version of the reader.
         redact_nested(redacted_data.get("source_session", {}), redact_all_strings=True)
+        for key in ("task", "title"):
+            value = redacted_data.get(key)
+            if isinstance(value, str):
+                redacted_text, redactions = self.redact_text(value)
+                if redactions:
+                    redacted_data[key] = redacted_text
+                    all_redactions.extend(redactions)
         for entry in redacted_data.get("entries", []):
             if isinstance(entry, dict):
                 redact_nested(entry)
 
+        # JSONL streams keep their authoritative session metadata in the first event.
+        if redacted_data.get("_format") == "jsonl":
+            entries = redacted_data.get("entries", [])
+            if entries and isinstance(entries[0], dict) and entries[0].get("type") == "stream-meta":
+                entries[0]["source_session"] = redacted_data.get("source_session", {})
         return redacted_data, all_redactions
     
     def redact_file(self, input_path: str, output_path: str = None) -> Dict:
@@ -335,6 +347,7 @@ class PIIRedactor:
 
         output_path = str(output_path)
         output_dir = os.path.dirname(os.path.abspath(output_path))
+        os.makedirs(output_dir, exist_ok=True)
         temporary_path = None
         try:
             with tempfile.NamedTemporaryFile(
