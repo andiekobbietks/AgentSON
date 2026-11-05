@@ -44,7 +44,7 @@ The same lock-in problem exists everywhere:
 | AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
 | Development | Cursor, Copilot, Claude Code | Code context, edit history |
 
-**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. AgentSON is designed to make data from supported sources exportable and inspectable. Actual coverage depends on each source adapter; the format alone does not establish legal compliance.
 
 The FreeStyle Libre reader (`readers/libre.py`) was the first reader built — not because glucose data is the most important, but because it's the most personal. If the format can handle medical time-series data, it can handle anything.
 
@@ -92,7 +92,7 @@ AgentSON is designed to capture an AI-assisted session as a self-contained, vers
 
 ## Tool Landscape
 
-AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
+The planning landscape surveys 33 tools across 7 tiers; this is a market/priority roadmap, not a claim of complete integration coverage.
 
 ### Reader Coverage
 
@@ -286,7 +286,7 @@ agentson validate ./sessions/
 
 | Type | Description |
 |------|-------------|
-| `stream-meta` | Session header; first entry of a JSONL stream |
+| `stream-meta` | Session/stream metadata header; line-oriented framing is a separate transport contract |
 | `user-query` | User's input or question |
 | `thought` | Agent's reasoning |
 | `action` | Tool execution (code + output) |
@@ -408,6 +408,8 @@ See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tool
 ## Standards
 
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
+- [Session Interoperability Architecture](docs/architecture/session-interoperability.md) — Cross-harness capture, exchange, inspection and resumption boundaries
+- [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md) — Canonical archive decision
 - [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
 - [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
 
