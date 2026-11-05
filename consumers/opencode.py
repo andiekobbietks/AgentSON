@@ -169,7 +169,7 @@ def _load_agentson_input(source: Union[str, Path, Mapping[str, Any]]) -> Dict[st
             **(document.get("metadata") if isinstance(document.get("metadata"), dict) else {}),
             "agentson_source_session": source_session,
             "agentson_original_tool_name": raw_tool_name,
-            "agentson_wire_format": document.get("_format", "legacy-document"),
+            "agentson_wire_format": "v1.2-jsonl" if document.get("_format") == "jsonl" else "legacy-document",
         },
     }
     archive = {key: value for key, value in archive.items() if value is not None}
