@@ -61,3 +61,27 @@ def test_packet_rejects_non_list_entries(tmp_path):
         assert "entries must be a list" in str(exc)
     else:
         raise AssertionError("Expected malformed session to be rejected")
+
+
+def test_public_cli_resume_command_creates_packet(tmp_path, monkeypatch, capsys):
+    import sys
+    from cli.main import main
+
+    source = tmp_path / "cli-session.agentson"
+    source.write_text(json.dumps({
+        "id": "cli-session",
+        "tool": {"name": "chatgpt", "session_id": "native-cli"},
+        "entries": [{"type": "user-query", "text": "Continue this task"}],
+    }), encoding="utf-8")
+    output = tmp_path / "cli-resume.md"
+    monkeypatch.setattr(sys, "argv", [
+        "agentson", "resume", str(source), "--target", "opencode",
+        "--output", str(output),
+    ])
+
+    main()
+
+    assert output.exists()
+    assert "Continue this task" in output.read_text(encoding="utf-8")
+    assert "new OpenCode session" in output.read_text(encoding="utf-8")
+    assert "Continuation packet created" in capsys.readouterr().out
