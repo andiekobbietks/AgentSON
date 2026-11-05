@@ -292,6 +292,7 @@ class PIIRedactor:
             if output_format == "jsonl":
                 write_agentson_stream(redacted_data, f, source_tool=source_tool)
             else:
+                redacted_data.pop("_format", None)
                 json.dump(redacted_data, f, indent=2, ensure_ascii=False)
 
         # Return statistics
