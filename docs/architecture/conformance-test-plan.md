@@ -38,12 +38,13 @@ The suite and fixtures are:
 - `.github/workflows/conformance.yml`
 - Production-reader regression: `tests/test_opencode_real_sample.py`
 - OpenCode consumer contract tests: `tests/test_opencode_consumer.py`
+- Live OpenCode v2 integration: `tests/integration/test_opencode_live.py`
 - ChatGPT importer v1.2 conformance: `tests/test_chatgpt_importer.py`
 - Receiving adapter: `consumers/opencode.py`
 
 The canonical fixture is deliberately synthetic and labelled as such. It exercises the v1.2 envelope, the 12-primitive entry validator, source identifiers, source sequence, correlation, source-specific extensions, action-without-observation semantics and the absence of a mandatory `stream-meta` event.
 
-The OpenCode consumer creates a session and injects the full archive as one user context message with `noReply: true`. Its tests mock the HTTP API and verify validation, no-reply insertion, payload preservation, endpoint restrictions and cleanup. This establishes an implemented receiving adapter and API-contract tests, **not** a live OpenCode import or C2 conformance result. The archive is opaque context, not native OpenCode event history. See [OpenCode Consumer Profile](opencode-consumer-profile.md).
+The OpenCode consumer targets HTTP API v2. It creates a session and injects the full archive as one synthetic message with `resume: false`, so the agent loop is not scheduled. Mock tests verify validation, synthetic insertion, payload preservation, endpoint restrictions and cleanup. A live integration test starts pinned OpenCode CLI 2.2.5, imports the fixture, reads the synthetic message back through the v2 API and compares the embedded archive and digest. This establishes archive-capsule storage fidelity against the tested OpenCode version, not native event reconstruction or full semantic C2 interoperability. See [OpenCode Consumer Profile](opencode-consumer-profile.md).
 
 ## 4. Required adapter test contract
 
@@ -109,7 +110,7 @@ Normalisation must be declared. For example, a source timestamp converted to UTC
 
 ## 8. Known gaps to close
 
-1. **Live consumer integration:** the OpenCode consumer is implemented, but only mocked API tests exist. A live OpenCode versioned import/read-back test is required.
+1. **Live consumer integration:** the OpenCode v2 live import/read-back is now covered against pinned CLI 2.2.5. The test proves opaque capsule storage fidelity only; it does not establish native event reconstruction or full semantic C2.
 2. **Native event mapping:** the first OpenCode profile stores the complete canonical archive as one opaque context message. It does not reconstruct native message/tool events, so it is not yet a semantic C2 mapping.
 3. **Source capture depth:** the OpenCode producer regression invokes the production conversion method, but its single-message fixture does not exercise complete SQLite discovery/read or multi-message ordering under source-version skew.
 4. **Loss-report representation:** ADR-024 requires semantic-loss accounting, but v1.2 does not define a normative machine-readable loss-report structure.
