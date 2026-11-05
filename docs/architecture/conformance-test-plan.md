@@ -74,7 +74,7 @@ The following matrix is a test programme, not a claim that these pairs currently
 
 | Producer | Consumer | Current evidence | Next requirement |
 |---|---|---|---|
-| OpenCode | AgentSON OpenCode consumer | OpenCode reader and consumer adapter exist; consumer tests use a mocked API and store the archive as one opaque context message. | Run against a version-identified live OpenCode server, read the stored message back, compare the embedded archive, then assess semantic/native event mapping before C2. |
+| OpenCode | AgentSON OpenCode consumer | OpenCode reader and v2 consumer adapter exist; 31 focused tests pass and a pinned CLI 2.2.5 live import/read-back job is running. | Capture a version-identified source session through the production reader, then compare producer semantics against the consumer archive; native event mapping remains a separate gap. |
 | ChatGPT export | OpenCode | ChatGPT importer emits schema-tested v1.2; OpenCode archive-capsule consumer exists. | Add a source-backed ChatGPT fixture through the receiving adapter and live read-back. |
 | Claude Code | OpenCode | Dedicated source reader exists; no consumer pair test. | Add a sanitised source fixture and live receiving-harness test. |
 | Aider | Cline | Dedicated readers exist; no canonical archive consumer import path. | Implement and test a receiving adapter; do not treat reader presence as import support. |
