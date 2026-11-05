@@ -24,11 +24,11 @@ The formal ontology (`spec/ontology.md`) defines 12 primitives. The v1.json sche
 | `presence` | ✅ | ❌ | ✅ |
 | `capabilities` | ✅ | ❌ | ✅ |
 | `observation` | ✅ | ❌ | ✅ |
-| `user-feedback` | ✅ | ❌ | ❌ |
-| `system-event` | ✅ | ❌ | ❌ |
+| `user-feedback` | ✅ | ❌ | ✅ |
+| `system-event` | ✅ | ❌ | ✅ |
 | `stream-meta` | ✅ | ❌ | ✅ |
 
-**The v1.2 schema partially fixes this** — it has `handoff`, `presence`, `observation`, `stream-meta` in `$defs`. But it's still missing `user-feedback`, `system-event`, and `capabilities` (as a standalone entry type).
+**Historical context:** the initial v1.2 schema work was incomplete. The current v1.2 schema defines all 12 ontology primitives in `$defs`; this ADR records the reconciliation decision and the requirement that the schema remain aligned with the ontology. Verify that alignment through the schema consistency tests.
 
 ### The 3 types in enum but NOT in ontology
 
