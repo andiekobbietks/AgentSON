@@ -40,6 +40,8 @@ User messages have `msg_content` (the raw user text) and no tool_calls.
 
 import sqlite3
 import json
+import base64
+import hashlib
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -133,7 +135,7 @@ class MiniMaxReader:
 
         msg_rows = self._safe_select(
             "session_messages",
-            preferred=["msg_id", "role", "data", "timestamp"],
+            preferred=self._table_columns("session_messages"),
             where="session_id = ?",
             order_by="timestamp",
             params=(session_id,),
@@ -141,10 +143,7 @@ class MiniMaxReader:
 
         token_rows = self._safe_select(
             "token_usage",
-            preferred=[
-                "input_tokens", "output_tokens", "reasoning_tokens",
-                "cache_read_tokens", "cache_write_tokens", "cost_usd", "ts",
-            ],
+            preferred=self._table_columns("token_usage"),
             where="session_id = ?",
             order_by="ts",
             params=(session_id,),
@@ -152,7 +151,7 @@ class MiniMaxReader:
 
         peer_rows = self._safe_select(
             "session_peers",
-            preferred=["parent_session_id", "agent_name", "task_tree_id", "created_at"],
+            preferred=self._table_columns("session_peers"),
             where="session_id = ?",
             order_by="created_at",
             params=(session_id,),
@@ -202,7 +201,7 @@ class MiniMaxReader:
                                 "ai_generated": False,
                                 "detectable": False,
                             },
-                            "source_payload": {"message_row": dict(msg), "message_data": blob},
+                            "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                         }
                     )
             elif role == "assistant":
@@ -383,9 +382,9 @@ class MiniMaxReader:
             },
             "entries": entries,
             "source_metadata": {
-                "session_row": dict(sess),
-                "token_usage_rows": [dict(row) for row in token_rows],
-                "peer_rows": [dict(row) for row in peer_rows],
+                "session_row": self._source_row(sess),
+                "token_usage_rows": [self._source_row(row) for row in token_rows],
+                "peer_rows": [self._source_row(row) for row in peer_rows],
             },
             "metadata": {
                 "total_tokens": total_input + total_output,
@@ -419,6 +418,23 @@ class MiniMaxReader:
         }
 
     # --- helpers ---
+
+    @staticmethod
+    def _source_row(row) -> Dict[str, Any]:
+        """Make a complete SQLite row JSON-safe without discarding binary columns."""
+        result = {}
+        for key, value in dict(row).items():
+            if isinstance(value, memoryview):
+                value = value.tobytes()
+            if isinstance(value, bytes):
+                result[key] = {
+                    "encoding": "base64",
+                    "data": base64.b64encode(value).decode("ascii"),
+                    "sha256": hashlib.sha256(value).hexdigest(),
+                }
+            else:
+                result[key] = value
+        return result
 
     @staticmethod
     def _stream_meta_entry(sess: sqlite3.Row, peer_rows: List[sqlite3.Row]) -> Dict[str, Any]:
