@@ -4,6 +4,13 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 
 ## [Unreleased]
 
+### Interoperability and conformance
+- Added an executable canonical archive conformance suite and GitHub Actions workflow; the latest run passed 20 tests across archive validation, the production OpenCode conversion path and ChatGPT importer output.
+- Updated the OpenCode reader and ChatGPT importer to identify v1.2 output; added `chatgpt` to the v1.2 source-tool enum.
+- ChatGPT imports now omit unavailable timestamps rather than emitting JSON `null`, and are schema-validated by regression tests.
+- Replaced the OpenCode real-sample test's duplicated mapping implementation with a call to the production reader conversion method.
+- Added a staged C0–C4 cross-harness conformance plan. C2 adapter interoperability, C3 reconstruction and C4 resumption remain unproven.
+
 ### Documentation
 - Established the cross-harness session interoperability architecture and separated capture, portability, reconstruction and resumption claims.
 - Recorded ADR-024: canonical v1.2 archive is the JSON session envelope; ADR-015's JSONL-canonical decision is superseded. JSONL stream code remains a separate contract gap.
