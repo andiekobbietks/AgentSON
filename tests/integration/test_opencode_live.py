@@ -26,6 +26,8 @@ def test_live_opencode_import_and_readback():
 
     imported = import_archive(archive, base_url=BASE_URL)
     assert imported["execution_triggered"] is False
+    assert imported["immediate_agent_loop_started"] is False
+    assert imported["future_model_context_exposure"] is True
     try:
         verified = verify_import(imported, archive, base_url=BASE_URL)
         assert verified["verified"] is True
@@ -39,6 +41,8 @@ def test_live_opencode_import_and_readback():
                     "archive_sha256": verified["archive_sha256"],
                     "entry_count": verified["entry_count"],
                     "readback": verified["verification"],
+                    "immediate_agent_loop_started": imported["immediate_agent_loop_started"],
+                    "future_model_context_exposure": imported["future_model_context_exposure"],
                     "native_event_reconstruction": False,
                     "resumption_supported": False,
                 },
