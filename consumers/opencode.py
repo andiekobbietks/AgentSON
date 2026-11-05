@@ -171,6 +171,7 @@ def import_archive(
     allow_remote: bool = False,
     password: Optional[str] = None,
     timeout: float = 15.0,
+    title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Import a v1.2 archive as an inert-at-import synthetic context item."""
     if timeout <= 0:
@@ -183,7 +184,7 @@ def import_archive(
     digest = _archive_digest(archive)
     source_tool = archive.get("tool", {}).get("name", "unknown")
     source_id = archive.get("tool", {}).get("session_id", archive.get("id", "unknown"))
-    title = f"Imported AgentSON: {source_tool} / {source_id}"[:120]
+    title = str(title or f"Imported AgentSON: {source_tool} / {source_id}")[:120]
 
     created = _api_request(
         endpoint, f"{API_PREFIX}/session", {"title": title}, "POST", timeout, password
