@@ -20,7 +20,7 @@ The adapter is deliberately an **archive capsule**, not a claim that OpenCode na
 5. Submit one synthetic message to `POST /api/session/{sessionID}/synthetic`, setting `resume: false`.
 6. If message insertion fails after session creation, attempt to delete the newly created empty session.
 7. Return the OpenCode session ID, source identifiers, entry count, a deterministic archive digest, and declared limitations.
-8. Verify read-back through `GET /api/session/{sessionID}/message`, extracting the synthetic message and comparing the embedded archive and digest.
+8. Verify read-back from `GET /api/session/{sessionID}/inbox`, extracting the synthetic message and comparing the embedded archive and digest.
 
 No model response is requested during import. Imported actions, commands, prompts and tool outputs are not executed by the adapter. The `resume: false` API behaviour is the no-execution control for this profile.
 
