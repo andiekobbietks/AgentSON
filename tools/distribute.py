@@ -49,7 +49,7 @@ def publish_docker(
 COPY {session_path.name} /session.agentson
 LABEL agentson.session.id="{session_id}"
 LABEL agentson.tool="{session.get('tool', {}).get('name', 'unknown')}"
-LABEL agentson.entries="{len(session.get('entries', []))}"
+LABEL agentson.entries="{sum(1 for entry in session.get('entries', []) if entry.get('type') != 'stream-meta')}"
 LABEL org.opencontainers.image.title="AgentSON Session"
 LABEL org.opencontainers.image.description="Agent session provenance artifact"
 LABEL org.opencontainers.image.created="{datetime.now(timezone.utc).isoformat()}"
