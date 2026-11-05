@@ -109,7 +109,11 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
         CREATE TABLE token_usage (
             session_id TEXT, input_tokens INTEGER, output_tokens INTEGER,
             reasoning_tokens INTEGER, cache_read_tokens INTEGER,
-            cache_write_tokens INTEGER, cost_usd REAL, ts INTEGER
+            cache_write_tokens INTEGER, cost_usd REAL, ts INTEGER, raw TEXT
+        );
+        CREATE TABLE session_peers (
+            session_id TEXT, parent_session_id TEXT, agent_name TEXT,
+            task_tree_id TEXT, created_at INTEGER
         );
     """)
     conn.execute(
@@ -125,6 +129,14 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
             "tool_name": "bash", "tool_call_id": "mavis_tool_01",
             "tool_call_status": 2, "tool_call_args": json.dumps({"command": "pytest -q"}),
             "tool_call_result_data": "5 passed",
+        }, {
+            "tool_name": "bash", "tool_call_id": "mavis_tool_partial",
+            "tool_call_status": 1, "tool_call_args": "not-json",
+            "tool_call_result_data": "",
+        }, {
+            "tool_name": "bash", "tool_call_id": "mavis_tool_error",
+            "tool_call_status": 3, "tool_call_args": json.dumps({"command": "false"}),
+            "tool_call_result_data": "exit code 1",
         }],
         "msg_content": "The tests passed.",
     }
@@ -132,14 +144,20 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
                  ("msg-user", "mavis-fixture-001", "user", json.dumps(user_blob), 1793869201000))
     conn.execute("INSERT INTO session_messages VALUES (?,?,?,?,?)",
                  ("msg-assistant", "mavis-fixture-001", "assistant", json.dumps(assistant_blob), 1793869202000))
-    conn.execute("INSERT INTO token_usage VALUES (?,?,?,?,?,?,?,?)",
-                 ("mavis-fixture-001", 100, 50, 20, 10, 5, 0.01, 1793869202000))
+    conn.execute("INSERT INTO token_usage VALUES (?,?,?,?,?,?,?,?,?)",
+                 ("mavis-fixture-001", 100, 50, 20, 10, 5, 0.01, 1793869202000,
+                  json.dumps({"source": "mavis", "billing": "recorded"})))
+    conn.execute("INSERT INTO session_peers VALUES (?,?,?,?,?)",
+                 ("mavis-fixture-001", "parent-session", "planner", "tree-001", 1793869201500))
     conn.commit()
     conn.close()
 
     reader = MiniMaxReader(str(db_path))
     reader.connect()
     try:
+        import pytest
+        with pytest.raises(sqlite3.OperationalError):
+            reader.conn.execute("CREATE TABLE should_not_be_created (id TEXT)")
         session = reader.read_session("mavis-fixture-001")
     finally:
         reader.disconnect()
@@ -147,9 +165,15 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
     mavis_action = next(e for e in session["entries"] if e["type"] == "action" and e.get("tool_call_id") == "mavis_tool_01")
     assert mavis_action["source_payload"]["tool_call"]["tool_call_args"] == json.dumps({"command": "pytest -q"})
     assert mavis_action["source_payload"]["tool_call_args_raw"] == json.dumps({"command": "pytest -q"})
+    mavis_actions = {e.get("tool_call_id"): e for e in session["entries"] if e["type"] == "action"}
+    assert mavis_actions["mavis_tool_partial"]["status"] == "partial"
+    assert mavis_actions["mavis_tool_partial"]["source_payload"]["tool_call_args_raw"] == "not-json"
+    assert mavis_actions["mavis_tool_error"]["status"] == "error"
     assert any(e["type"] == "observation" and e.get("correlation_id") == "mavis_tool_01" for e in session["entries"])
     assert session["source_metadata"]["session_row"]["framework_session_id"] == "native-framework-session"
     assert session["source_metadata"]["token_usage_rows"][0]["reasoning_tokens"] == 20
+    assert json.loads(session["source_metadata"]["token_usage_rows"][0]["raw"])["billing"] == "recorded"
+    assert session["source_metadata"]["peer_rows"][0]["task_tree_id"] == "tree-001"
     events = _export_and_validate(session, tmp_path / "minimax.agentson", "minimax")
     assert events[0]["mode"] == "single"
     assert events[0]["stream_id"] == "mavis-fixture-001"
