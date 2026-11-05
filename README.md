@@ -108,12 +108,9 @@ python -m build
 
 ## CLI quick start
 
-Create the output directory before exporting:
+Export a session from a locally available OpenCode database:
 
 ```bash
-mkdir -p sessions
-
-# Export a session from a locally available OpenCode database
 agentson export --tool opencode --session <session-id> --output ./sessions/
 
 # List locally available sessions
