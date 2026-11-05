@@ -220,6 +220,12 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
             "outcome": session.get("outcome"),
             "context": session.get("context"),
             "metadata": session.get("metadata"),
+            # Preserve reader-specific session fields (for example Antigravity
+            # variant/metrics/version) instead of silently dropping them.
+            "source_metadata": {
+                key: value for key, value in session.items()
+                if key not in {"entries", "id", "tool", "agent", "started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata"}
+            },
         },
     }
     events = [meta]
