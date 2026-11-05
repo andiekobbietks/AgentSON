@@ -202,10 +202,12 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
         for field in ("started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata"):
             if field not in source_session and session.get(field) is not None:
                 source_session[field] = session[field]
-        source_session.setdefault("source_metadata", {
+        reader_source_metadata = _json_object(session.get("source_metadata"))
+        reader_source_metadata.update({
             key: value for key, value in session.items()
-            if key not in {"entries", "id", "tool", "agent", "started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata"}
+            if key not in {"entries", "id", "tool", "agent", "started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata", "source_metadata"}
         })
+        source_session.setdefault("source_metadata", reader_source_metadata)
         meta["source_session"] = source_session
         return events
 
@@ -231,8 +233,11 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
             # Preserve reader-specific session fields (for example Antigravity
             # variant/metrics/version) instead of silently dropping them.
             "source_metadata": {
-                key: value for key, value in session.items()
-                if key not in {"entries", "id", "tool", "agent", "started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata"}
+                **_json_object(session.get("source_metadata")),
+                **{
+                    key: value for key, value in session.items()
+                    if key not in {"entries", "id", "tool", "agent", "started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata", "source_metadata"}
+                },
             },
         },
     }
