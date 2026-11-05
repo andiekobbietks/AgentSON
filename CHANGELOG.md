@@ -10,6 +10,8 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 - Preserve source session metadata in the `stream-meta.source_session` field and original reader-level event records in `source_payload`.
 - Retain legacy document-style `.agentson` files as a supported read/compatibility path; new exports no longer write pretty-printed session documents.
 - Recognise one-event `.agentson` JSONL streams in the general CLI loader.
+- Route rendering, searching, Excel export, redaction and registry-publishing metadata reads through a shared JSONL/document compatibility loader.
+- Keep redacted canonical streams in JSONL form and redact text-bearing fields inside preserved source payloads and source-session metadata.
 
 ### Added
 
