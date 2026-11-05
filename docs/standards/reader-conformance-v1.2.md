@@ -61,7 +61,7 @@ Native source evidence may contain personal data, credentials, private paths, or
 
 The JSONL-aware `PIIRedactor` now:
 - recursively scans string values inside `source_payload` and `source_metadata`, including JSON-encoded native row data and preserved Markdown;
-- removes non-empty opaque fields whose names end in `_base64` from a redacted copy, sets a matching `_base64_omitted` marker, and retains adjacent SHA-256 digests where present;
+- removes non-empty opaque fields whose names end in `_base64`, and binary envelopes marked `encoding: base64`, from a redacted copy; it sets explicit omission markers and retains adjacent SHA-256 digests where present;
 - preserves the original source file unless the caller explicitly chooses the same path as the redaction output.
 
 This is a conservative omission policy, not a guarantee that all sensitive information is detected. The regex-based fallback has limited coverage; the optional model path is not a substitute for human review. Keep original native exports access-controlled, review redacted output before sharing, and do not treat a successful redaction run as proof that a file is free of personal data.
