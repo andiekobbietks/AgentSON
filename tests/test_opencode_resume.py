@@ -21,8 +21,8 @@ def test_creates_session_queues_context_without_resuming_agent(monkeypatch):
             assert body["resume"] is False
             assert "AgentSON continuation packet" in body["text"]
             payload = {"data": {"id": "inbox_test123"}}
-        elif path == "/api/session/ses_test123/message":
-            payload = {"data": [{"info": {"text": "# AgentSON continuation packet"}}]}
+        elif path == "/api/session/ses_test123/inbox":
+            payload = {"data": [{"type": "user", "payload": {"text": "# AgentSON continuation packet"}}]}
         else:
             raise AssertionError("Unexpected request: " + path)
         return BytesIO(json.dumps(payload).encode("utf-8"))
@@ -47,7 +47,7 @@ def test_uses_basic_auth_from_environment(monkeypatch):
         elif path.endswith("/prompt"):
             payload = {"data": {"id": "queued"}}
         else:
-            payload = {"data": [{"info": {"text": "AgentSON continuation packet"}}]}
+            payload = {"data": [{"type": "user", "payload": {"text": "AgentSON continuation packet"}}]}
         return BytesIO(json.dumps(payload).encode("utf-8"))
 
     monkeypatch.setenv("OPENCODE_SERVER_USERNAME", "operator")
