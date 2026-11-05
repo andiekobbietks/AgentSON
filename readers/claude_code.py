@@ -161,8 +161,11 @@ class ClaudeCodeReader:
         output_path.mkdir(parents=True, exist_ok=True)
         out_file = output_path / f"claude-code-{session_id}.agentson"
 
+        # Keep the reader's direct export path on the same canonical v1.2
+        # serializer as the CLI. The .agentson extension remains unchanged.
+        from exporters.jsonl import write_agentson_stream
         with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(session, f, indent=2, ensure_ascii=False)
+            write_agentson_stream(session, f, source_tool=self.TOOL_NAME)
 
         return str(out_file)
 
