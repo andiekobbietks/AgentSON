@@ -755,131 +755,119 @@ def cmd_finetune(args):
 
 
 def cmd_validate(args):
-    """Validate AgentSON file(s) against v1.2 schema."""
+    """Validate AgentSON JSONL streams and session documents against v1.2."""
     import glob as globmod
-    from jsonschema import Draft202012Validator
-    
-    schema_path = Path(__file__).parent.parent / "spec" / "v1.2.json"
-    entries_path = Path(__file__).parent.parent / "spec" / "v1.2-entries.json"
-    
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    root = Path(__file__).resolve().parent.parent
+    schema_path = root / "spec" / "v1.2.json"
+    entries_path = root / "spec" / "v1.2-entries.json"
+
+    with open(schema_path, "r", encoding="utf-8") as f:
+        document_schema = json.load(f)
     with open(entries_path, "r", encoding="utf-8") as f:
         entry_schema = json.load(f)
-    
-    entry_validator = Draft202012Validator(entry_schema)
-    
-    search_dir = Path(args.input)
-    
-    if search_dir.is_file():
-        files = [search_dir]
+
+    format_checker = FormatChecker()
+    document_validator = Draft202012Validator(
+        document_schema, format_checker=format_checker
+    )
+    entry_validator = Draft202012Validator(
+        entry_schema, format_checker=format_checker
+    )
+
+    search_path = Path(args.input)
+    if search_path.is_file():
+        files = [search_path]
+    elif search_path.is_dir():
+        files = sorted({
+            Path(p)
+            for pattern in ("*.agentson", "*.AgentSON")
+            for p in globmod.glob(str(search_path / "**" / pattern), recursive=True)
+        })
     else:
-        files = []
-        for ext in ["*.agentson", "*.AgentSON"]:
-            pattern = str(search_dir / "**" / ext)
-            files += [Path(p) for p in globmod.glob(pattern, recursive=True)]
-    
+        print(f"Input path does not exist: {search_path}", file=sys.stderr)
+        sys.exit(1)
+
     if not files:
-        print(f"No .agentson files found in {search_dir}")
-        return
-    
-    total = 0
+        print(f"No .agentson files found in {search_path}", file=sys.stderr)
+        sys.exit(1)
+
     passed = 0
     failed = 0
     errors_by_type = {}
-    
-    def validate_entry(entry):
-        """Validate a single entry against the flattened entry schema."""
-        errors = list(entry_validator.iter_errors(entry))
-        return [e.message for e in errors]
-    
+
+    def describe_errors(errors):
+        messages = []
+        for error in sorted(errors, key=lambda item: list(item.absolute_path)):
+            location = ".".join(str(part) for part in error.absolute_path) or "$"
+            messages.append(f"{location}: {error.message}")
+        return messages
+
     for filepath in files:
-        total += 1
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                content = f.read().strip()
-            
-            lines = [l.strip() for l in content.split("\n") if l.strip()]
-            
-            # Detect format
-            is_jsonl = False
-            if len(lines) > 1:
-                try:
-                    json.loads(lines[0])
-                    json.loads(lines[1])
-                    is_jsonl = True
-                except json.JSONDecodeError:
-                    pass
-            
+            content = filepath.read_text(encoding="utf-8").strip()
+            if not content:
+                raise ValueError("File is empty")
+
+            lines = [line.strip() for line in content.splitlines() if line.strip()]
+            try:
+                first_value = json.loads(lines[0])
+            except json.JSONDecodeError:
+                first_value = None
+
+            # A one-line stream is still JSONL when its object is an event.
+            is_jsonl = isinstance(first_value, dict) and "type" in first_value
+
             if is_jsonl:
-                entries = [json.loads(l) for l in lines]
-                
+                entries = [json.loads(line) for line in lines]
+                messages = []
                 if entries[0].get("type") != "stream-meta":
-                    print(f"  WARN {filepath.name}: First entry is not stream-meta")
-                
-                entry_errors = []
-                for i, entry in enumerate(entries):
-                    errors = validate_entry(entry)
-                    for msg in errors:
-                        entry_errors.append((i + 1, msg))
-                
-                if entry_errors:
-                    print(f"  FAIL {filepath.name}: {len(entry_errors)} validation error(s)")
-                    for line_num, msg in entry_errors[:3]:
-                        print(f"    Entry {line_num}: {msg[:100]}")
-                    if len(entry_errors) > 3:
-                        print(f"    ... and {len(entry_errors) - 3} more")
-                    failed += 1
-                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
-                else:
-                    print(f"  PASS {filepath.name} ({len(entries)} entries, JSONL)")
-                    passed += 1
+                    messages.append("1: first JSONL event must be stream-meta")
+                for index, entry in enumerate(entries, start=1):
+                    if not isinstance(entry, dict):
+                        messages.append(f"{index}: event must be a JSON object")
+                        continue
+                    for message in describe_errors(entry_validator.iter_errors(entry)):
+                        messages.append(f"{index}: {message}")
+                format_name = "JSONL"
+                entry_count = len(entries)
             else:
                 data = json.loads(content)
-                
-                top_errors = []
-                for field in ["id", "tool", "entries"]:
-                    if field not in data:
-                        top_errors.append(f"Missing required field: {field}")
-                
-                if top_errors:
-                    print(f"  FAIL {filepath.name}: {'; '.join(top_errors)}")
-                    failed += 1
-                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
-                    continue
-                
-                entries = data.get("entries", [])
-                entry_errors = []
-                for i, entry in enumerate(entries):
-                    errors = validate_entry(entry)
-                    for msg in errors:
-                        entry_errors.append((i + 1, msg))
-                
-                if entry_errors:
-                    print(f"  FAIL {filepath.name}: {len(entry_errors)} validation error(s)")
-                    for line_num, msg in entry_errors[:3]:
-                        print(f"    Entry {line_num}: {msg[:100]}")
-                    if len(entry_errors) > 3:
-                        print(f"    ... and {len(entry_errors) - 3} more")
-                    failed += 1
-                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
-                else:
-                    print(f"  PASS {filepath.name} ({len(entries)} entries, JSON)")
-                    passed += 1
-                    
-        except json.JSONDecodeError as e:
-            print(f"  FAIL {filepath.name}: Invalid JSON — {e}")
+                if not isinstance(data, dict):
+                    raise ValueError("Session document must be a JSON object")
+                messages = describe_errors(document_validator.iter_errors(data))
+                format_name = "JSON document"
+                entry_count = len(data.get("entries", [])) if isinstance(data.get("entries"), list) else 0
+
+            if messages:
+                print(f"  FAIL {filepath.name}: {len(messages)} validation error(s)")
+                for message in messages[:5]:
+                    print(f"    {message[:180]}")
+                if len(messages) > 5:
+                    print(f"    ... and {len(messages) - 5} more")
+                failed += 1
+                errors_by_type["validation"] = errors_by_type.get("validation", 0) + 1
+            else:
+                print(f"  PASS {filepath.name} ({entry_count} entries, {format_name})")
+                passed += 1
+
+        except json.JSONDecodeError as error:
+            print(f"  FAIL {filepath.name}: invalid JSON — {error}")
             failed += 1
             errors_by_type["json_parse"] = errors_by_type.get("json_parse", 0) + 1
-        except Exception as e:
-            print(f"  FAIL {filepath.name}: {e}")
+        except (OSError, UnicodeError, ValueError) as error:
+            print(f"  FAIL {filepath.name}: {error}")
             failed += 1
-            errors_by_type["other"] = errors_by_type.get("other", 0) + 1
-    
-    print(f"\n{'='*60}")
+            errors_by_type["input"] = errors_by_type.get("input", 0) + 1
+
+    total = passed + failed
+    print(f"\n{'=' * 60}")
     print(f"Results: {passed}/{total} passed, {failed} failed")
     if errors_by_type:
         print(f"Errors by type: {errors_by_type}")
-    
-    if failed > 0:
+
+    if failed:
         sys.exit(1)
 
 
