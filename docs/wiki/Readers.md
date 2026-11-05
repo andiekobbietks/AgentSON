@@ -23,6 +23,10 @@ The repository contains the following reader modules. This is a source-tree inve
 
 The source tree also contains importers for A2A, AGNTCY, ChatGPT and MCP under `importers/`. These are importer integrations and should not be counted as source readers without a clearly defined inventory rule.
 
+## Cross-harness conformance
+
+The executable baseline, conformance levels, producer/consumer test requirements and known gaps are maintained in the [Cross-Harness Conformance Test Plan](../architecture/conformance-test-plan.md). Do not infer interoperability from the presence of two reader modules or two independent reader test files.
+
 ## Capability labels
 
 Use these labels per adapter and per operation:
