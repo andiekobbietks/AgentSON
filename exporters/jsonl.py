@@ -228,6 +228,75 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
     return events
 
 
+
+def load_agentson_document(path: Any) -> Dict[str, Any]:
+    """Load canonical JSONL or a legacy document into the shared session view.
+
+    The returned view keeps original stream events in entries and restores
+    source-session metadata when it was recorded in stream-meta.
+    """
+    source_path = Path(path)
+    content = source_path.read_text(encoding="utf-8").strip()
+    if not content:
+        raise ValueError("AgentSON file is empty")
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    try:
+        first_value = json.loads(lines[0])
+    except json.JSONDecodeError:
+        first_value = None
+
+    is_jsonl = (
+        isinstance(first_value, dict) and first_value.get("type") == "stream-meta"
+    )
+    if not is_jsonl and len(lines) > 1:
+        try:
+            for line in lines:
+                json.loads(line)
+            is_jsonl = True
+        except json.JSONDecodeError:
+            is_jsonl = False
+
+    if is_jsonl:
+        events = [json.loads(line) for line in lines]
+        meta = events[0] if events and isinstance(events[0], dict) else {}
+        source = _json_object(meta.get("source_session"))
+        tool_data = _json_object(source.get("tool_metadata"))
+        if not tool_data:
+            tool_data = {
+                "name": source.get("tool", "other"),
+                "session_id": source.get("session_id", source_path.stem),
+            }
+        agent_data = _json_object(source.get("agent_metadata"))
+        return {
+            "id": meta.get("stream_id", source_path.stem),
+            "tool": tool_data,
+            "agent": agent_data,
+            "started_at": source.get("started_at"),
+            "ended_at": source.get("ended_at"),
+            "heartbeat": source.get("heartbeat"),
+            "task": source.get("task"),
+            "outcome": source.get("outcome"),
+            "context": source.get("context"),
+            "metadata": source.get("metadata") or {},
+            "source_session": source,
+            "entries": events,
+            "_format": "jsonl",
+        }
+
+    data = json.loads(content)
+    if isinstance(data, list):
+        return {
+            "id": source_path.stem,
+            "tool": {"name": "other", "session_id": source_path.stem},
+            "entries": data,
+            "_format": "legacy-list",
+        }
+    if not isinstance(data, dict):
+        raise ValueError("Legacy AgentSON document must be a JSON object or event list")
+    data.setdefault("_format", "document")
+    return data
+
+
 def validate_v1_2_events(events: Iterable[Dict[str, Any]]) -> None:
     """Validate event structure and stream ordering against the packaged schema."""
     try:
