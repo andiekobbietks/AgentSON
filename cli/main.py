@@ -1281,7 +1281,13 @@ def cmd_resume(args):
     from importers.continuation import build_continuation_packet, write_continuation_packet
 
     output = args.output or (str(Path(args.input).with_suffix("")) + f".resume-{args.target}.md")
+    input_path = Path(args.input)
+    output_path = Path(output)
     try:
+        if input_path.resolve(strict=True) == output_path.resolve(strict=False):
+            raise ValueError("Continuation output must not overwrite the input AgentSON archive")
+        if output_path.exists() and input_path.exists() and os.path.samefile(input_path, output_path):
+            raise ValueError("Continuation output must not overwrite the input AgentSON archive")
         packet = build_continuation_packet(args.input, target=args.target)
         destination = write_continuation_packet(args.input, output, target=args.target)
         if args.launch:
