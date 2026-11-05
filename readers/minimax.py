@@ -196,6 +196,7 @@ class MiniMaxReader:
                                 "ai_generated": False,
                                 "detectable": False,
                             },
+                            "source_payload": {"message_row": dict(msg), "message_data": blob},
                         }
                     )
             elif role == "assistant":
@@ -218,6 +219,7 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
+                            "source_payload": {"message_row": dict(msg), "message_data": blob},
                         }
                     )
 
@@ -264,6 +266,10 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
+                            "source_payload": {
+                                "message_row": dict(msg), "message_data": blob,
+                                "tool_call": tc, "tool_call_args_raw": args_raw,
+                            },
                         }
                     )
 
@@ -281,6 +287,10 @@ class MiniMaxReader:
                                     "confidence": "confirmed",
                                     "source": "mcp",
                                     "timestamp_ms": ts,
+                                },
+                                "source_payload": {
+                                    "message_row": dict(msg), "message_data": blob,
+                                    "tool_call": tc, "tool_call_result_raw": tc.get("tool_call_result_data"),
                                 },
                             }
                         )
@@ -304,6 +314,7 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
+                            "source_payload": {"message_row": dict(msg), "message_data": blob},
                         }
                     )
 
@@ -356,6 +367,11 @@ class MiniMaxReader:
                 "shell": "powershell",
             },
             "entries": entries,
+            "source_metadata": {
+                "session_row": dict(sess),
+                "token_usage_rows": [dict(row) for row in token_rows],
+                "peer_rows": [dict(row) for row in peer_rows],
+            },
             "metadata": {
                 "total_tokens": total_input + total_output,
                 "input_tokens": total_input,
