@@ -146,3 +146,41 @@ def test_cli_resume_rejects_output_alias_of_input(tmp_path, monkeypatch, capsys)
         raise AssertionError("Expected same-path output to be rejected")
     assert source.read_bytes() == original
     assert "must not overwrite" in capsys.readouterr().err
+
+
+def test_cli_launch_imports_and_verifies_opencode_archive(tmp_path, monkeypatch, capsys):
+    import sys
+    from cli.main import main
+    import consumers.opencode as opencode_consumer
+
+    source = tmp_path / "launch.agentson"
+    source.write_text(json.dumps({
+        "id": "launch-session",
+        "tool": {"name": "other", "session_id": "native-launch"},
+        "entries": [{"type": "user-query", "text": "Continue safely."}],
+    }), encoding="utf-8")
+    output = tmp_path / "launch-handoff.md"
+    calls = {}
+
+    def fake_import(path, **kwargs):
+        calls["import"] = (path, kwargs)
+        return {"session_id": "ses_live_test", "archive_sha256": "digest"}
+
+    def fake_verify(result, path, **kwargs):
+        calls["verify"] = (result, path, kwargs)
+        return {"verified": True, "archive_sha256": "digest"}
+
+    monkeypatch.setattr(opencode_consumer, "import_archive", fake_import)
+    monkeypatch.setattr(opencode_consumer, "verify_import", fake_verify)
+    monkeypatch.setattr(sys, "argv", [
+        "agentson", "resume", str(source), "--target", "opencode",
+        "--output", str(output), "--launch",
+    ])
+
+    main()
+
+    assert output.exists()
+    assert "Continue safely." in output.read_text(encoding="utf-8")
+    assert calls["import"][1]["context_packet"]
+    assert calls["verify"][0]["session_id"] == "ses_live_test"
+    assert "archive imported and verified" in capsys.readouterr().out
