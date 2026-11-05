@@ -160,3 +160,136 @@ def test_antigravity_sqlite_fixture_through_reader(tmp_path):
     events = _export_and_validate(session, tmp_path / "antigravity.agentson", "antigravity")
     assert events[0]["source_session"]["source_metadata"]["variant"]["name"] == "Antigravity IDE"
     assert events[1]["source_payload"]["type"] == 21
+
+
+def test_opencode_sqlite_native_fixture_through_reader(tmp_path):
+    from readers.opencode import OpencodeReader
+
+    db_path = tmp_path / "opencode-synthetic.sqlite"
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        CREATE TABLE session (
+            id TEXT PRIMARY KEY, title TEXT, time_created INTEGER, time_updated INTEGER,
+            model TEXT, agent TEXT, tokens_input INTEGER, tokens_output INTEGER,
+            cost REAL, directory TEXT
+        );
+        CREATE TABLE message (
+            id TEXT PRIMARY KEY, session_id TEXT, time_created INTEGER,
+            time_updated INTEGER, data TEXT
+        );
+        CREATE TABLE part (
+            id TEXT PRIMARY KEY, session_id TEXT, message_id TEXT,
+            time_created INTEGER, time_updated INTEGER, data TEXT
+        );
+        CREATE TABLE todo (
+            session_id TEXT, content TEXT, status TEXT, priority TEXT, position INTEGER
+        );
+    """)
+    created = 1793869200000
+    updated = 1793869500000
+    conn.execute(
+        "INSERT INTO session VALUES (?,?,?,?,?,?,?,?,?,?)",
+        ("opencode-fixture-001", "Fixture task", created, updated,
+         json.dumps({"id": "openai/gpt-test", "providerID": "openai", "variant": "high"}),
+         "build", 120, 80, 0.02, "/workspace/agentson"),
+    )
+    conn.execute(
+        "INSERT INTO message VALUES (?,?,?,?,?)",
+        ("msg-user", "opencode-fixture-001", created + 1000, created + 1000,
+         json.dumps({"role": "user", "agent": "build", "model": {"id": "openai/gpt-test"}})),
+    )
+    conn.execute(
+        "INSERT INTO message VALUES (?,?,?,?,?)",
+        ("msg-assistant", "opencode-fixture-001", created + 2000, created + 5000,
+         json.dumps({"role": "assistant", "agent": "build", "model": {"id": "openai/gpt-test"},
+                     "tokens": {"input": 120, "output": 80}, "cost": 0.02,
+                     "finish": "tool-calls"})),
+    )
+    parts = [
+        ("part-user", "msg-user", created + 1000,
+         {"type": "text", "text": "Run the project tests."}),
+        ("part-reasoning", "msg-assistant", created + 2100,
+         {"type": "reasoning", "text": "Inspect the repository test configuration.",
+          "time": {"start": created + 2100, "end": created + 2200}}),
+        ("part-tool", "msg-assistant", created + 2300,
+         {"type": "tool", "tool": "bash", "callID": "call_fixture_01",
+          "state": {"status": "completed", "input": {"command": "pytest -q"},
+                    "output": "5 passed", "time": {"start": created + 2300, "end": created + 4000}}}),
+        ("part-answer", "msg-assistant", created + 4100,
+         {"type": "text", "text": "All five tests passed."}),
+    ]
+    for part_id, message_id, timestamp, data in parts:
+        conn.execute(
+            "INSERT INTO part VALUES (?,?,?,?,?,?)",
+            (part_id, "opencode-fixture-001", message_id, timestamp, timestamp, json.dumps(data)),
+        )
+    conn.execute(
+        "INSERT INTO todo VALUES (?,?,?,?,?)",
+        ("opencode-fixture-001", "Add native SQLite regression coverage", "completed", "high", 0),
+    )
+    conn.commit()
+    conn.close()
+
+    reader = OpencodeReader(str(db_path))
+    reader.connect()
+    try:
+        listed = reader.list_sessions()
+        session = reader.read_session("opencode-fixture-001")
+    finally:
+        reader.disconnect()
+
+    assert listed[0]["id"] == "opencode-fixture-001"
+    assert listed[0]["tokens_input"] == 120
+    assert listed[0]["tokens_output"] == 80
+    assert listed[0]["cost"] == 0.02
+    assert session["tool"]["name"] == "opencode"
+    assert session["agent"]["name"] == "openai/gpt-test"
+    assert session["metadata"]["total_tokens"] == 200
+    assert session["metadata"]["cost"] == 0.02
+    assert session["metadata"]["messages"] == 2
+    assert session["metadata"]["parts"] == 4
+    assert session["context"]["working_directory"] == "/workspace/agentson"
+    assert any(e["type"] == "user-query" and e["text"] == "Run the project tests." for e in session["entries"])
+    assert any(e["type"] == "thought" and "test configuration" in e["text"] for e in session["entries"])
+    action = next(e for e in session["entries"] if e["type"] == "action")
+    assert action["tool"] == "bash"
+    assert json.loads(action["code"]) == {"command": "pytest -q"}
+    assert action["output"] == "5 passed"
+    assert action["status"] == "success"
+    assert any(e["type"] == "answer" and e["text"] == "All five tests passed." for e in session["entries"])
+    todo = next(e for e in session["entries"] if e["type"] == "side-effect")
+    assert todo["action"] == "todo_update"
+    assert "timestamp" not in todo
+
+    events = _export_and_validate(session, tmp_path / "opencode.agentson", "opencode")
+    assert events[0]["source_session"]["metadata"]["total_tokens"] == 200
+    assert events[0]["source_session"]["context"]["working_directory"] == "/workspace/agentson"
+    assert any(e["type"] == "action" and e.get("tool") == "bash" for e in events)
+    assert any(e["type"] == "side-effect" and e.get("action") == "todo_update" for e in events)
+
+
+def test_opencode_sqlite_reader_rejects_unknown_session(tmp_path):
+    from readers.opencode import OpencodeReader
+
+    db_path = tmp_path / "empty-opencode.sqlite"
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        CREATE TABLE session (
+            id TEXT PRIMARY KEY, title TEXT, time_created INTEGER, time_updated INTEGER,
+            model TEXT, agent TEXT, tokens_input INTEGER, tokens_output INTEGER,
+            cost REAL, directory TEXT
+        );
+        CREATE TABLE message (id TEXT, session_id TEXT, time_created INTEGER, time_updated INTEGER, data TEXT);
+        CREATE TABLE part (id TEXT, session_id TEXT, message_id TEXT, time_created INTEGER, time_updated INTEGER, data TEXT);
+        CREATE TABLE todo (session_id TEXT, content TEXT, status TEXT, priority TEXT, position INTEGER);
+    """)
+    conn.commit()
+    conn.close()
+    reader = OpencodeReader(str(db_path))
+    reader.connect()
+    try:
+        import pytest
+        with pytest.raises(ValueError, match="not found"):
+            reader.read_session("missing-session")
+    finally:
+        reader.disconnect()
