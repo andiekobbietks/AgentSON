@@ -31,7 +31,7 @@ No model response is requested during import. Imported actions, commands, prompt
 | Complete v1.2 archive payload | Preserved as embedded JSON text in one synthetic message |
 | Entry order and source identifiers | Preserved inside the embedded archive |
 | Source provenance and extensions | Preserved inside the embedded archive |
-| OpenCode native message history | One synthetic message is created; source event timeline is not reconstructed |
+| OpenCode native message history | One queued synthetic inbox item is created; it becomes transcript context only when delivered. The source event timeline is not reconstructed |
 | Native OpenCode tool-call records | Not created |
 | Workspace snapshot, environment and credentials | Not restored |
 | Model/provider state or checkpoint | Not restored |
@@ -55,7 +55,7 @@ The archive digest is SHA-256 over the adapter's deterministic compact JSON seri
 
 Automated mock tests verify schema rejection, v2 session creation, synthetic-message insertion with `resume: false`, archive read-back comparison, endpoint restrictions, best-effort cleanup and explicit future-model-context exposure.
 
-A separate live integration test starts a real OpenCode server, records its reported version, imports the synthetic conformance fixture, reads the message back through the v2 API, compares the embedded JSON and digest, and deletes the test session. CI pins `@opencode/cli@2.2.5` so the API target is reproducible.
+A separate live integration test starts a real OpenCode server, records its reported version, imports the synthetic conformance fixture, reads the queued synthetic item back through the v2 inbox API, compares the embedded JSON and digest, and deletes the test session. CI pins `@opencode/cli@2.2.5` so the API target is reproducible.
 
 A passing live test establishes archive-capsule storage fidelity against that OpenCode version. It does **not** establish native event reconstruction or session resumption. It is not, by itself, full semantic C2 conformance: the source producer must also be exercised end-to-end with a version-identified source session and semantic comparison.
 
