@@ -20,7 +20,7 @@ The same lock-in problem exists everywhere:
 | AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
 | Development | Cursor, Copilot, Claude Code | Code context, edit history |
 
-**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+Data portability and AI transparency obligations depend on the applicable law, role and circumstances. AgentSON is designed to make supported session data exportable and inspectable; adapter coverage and implementation evidence determine what it can actually provide. The format alone does not establish legal compliance.
 
 > **Your health data. Your code sessions. Your data. One format.**
 
