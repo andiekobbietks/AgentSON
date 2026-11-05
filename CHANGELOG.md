@@ -9,6 +9,7 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 - Updated the OpenCode reader and ChatGPT importer to identify v1.2 output; added `chatgpt` to the v1.2 source-tool enum.
 - ChatGPT imports now omit unavailable timestamps rather than emitting JSON `null`, and are schema-validated by regression tests.
 - Replaced the OpenCode real-sample test's duplicated mapping implementation with a call to the production reader conversion method.
+- Sanitised the OpenCode source fixture's Windows user-profile paths to avoid committing personal filesystem paths.
 - Added a staged C0–C4 cross-harness conformance plan. C2 adapter interoperability, C3 reconstruction and C4 resumption remain unproven.
 
 ### Documentation
