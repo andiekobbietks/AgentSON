@@ -116,3 +116,28 @@ def test_real_opencode_sample_runs_through_actual_reader_and_jsonl(tmp_path):
     assert exported_action["source_payload"]["part_data"] == native_tool
     assert events[0]["source_session"]["source_metadata"]["schema_generation"] == "1.x"
     assert events[0]["source_session"]["source_metadata"]["session_row"]["id"] == message["sessionID"]
+
+
+def test_v2_untimestamped_inbox_rows_remain_after_timestamped_events():
+    reader = OpencodeReader(":memory:")
+    session = {
+        "id": "session-order",
+        "title": "Ordering fixture",
+        "time_created": 100,
+        "time_updated": 200,
+        "model": "{}",
+    }
+    messages = [
+        {"id": "later", "type": "user", "time_created": 200, "data": json.dumps({"text": "later"})},
+        {"id": "earlier", "type": "user", "time_created": 100, "data": json.dumps({"text": "earlier"})},
+    ]
+    inbox = [
+        {"type": "user", "time_created": None, "payload": {"text": "queued item"}},
+    ]
+
+    result = reader._convert_v2(session, messages, [], inbox)
+    entries = result["entries"]
+
+    assert [event["text"] for event in entries[:2]] == ["earlier", "later"]
+    assert entries[-1]["text"].startswith("OpenCode inbox item")
+    assert entries[-1].get("timestamp") is None
