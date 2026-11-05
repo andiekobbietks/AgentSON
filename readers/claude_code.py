@@ -30,6 +30,7 @@ Reference: https://code.claude.com/docs/en/sessions.md
 import json
 import os
 import glob
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -130,6 +131,8 @@ class ClaudeCodeReader:
             "session_id": session_id,
             "project_hash": jsonl_path.parent.name,
             "file_path": str(jsonl_path),
+            "unparsed_lines": [],
+            "source_file_sha256": hashlib.sha256(jsonl_path.read_bytes()).hexdigest(),
         }
 
         with open(jsonl_path, "r", encoding="utf-8") as f:
@@ -141,14 +144,19 @@ class ClaudeCodeReader:
                     obj = json.loads(line)
                     entries.append(obj)
                     # Extract metadata from first user message
-                    if obj.get("type") == "user" and "timestamp" not in metadata:
-                        metadata["timestamp"] = obj.get("timestamp", "")
+                    if obj.get("type") == "user" and not metadata.get("timestamp") and obj.get("timestamp"):
+                        metadata["timestamp"] = obj.get("timestamp")
                     if obj.get("type") == "assistant" and "model" not in metadata:
                         msg = obj.get("message", {})
                         metadata["model"] = msg.get("model", "unknown")
-                except json.JSONDecodeError:
-                    continue
+                except json.JSONDecodeError as exc:
+                    metadata["unparsed_lines"].append({
+                        "line_number": line_num,
+                        "raw_line": line,
+                        "error": str(exc),
+                    })
 
+        metadata["source_line_count"] = line_num if "line_num" in locals() else 0
         return self._to_agentson(entries, metadata)
 
     def export_session(self, session_id: str, output_dir: str) -> Optional[str]:
@@ -226,6 +234,15 @@ class ClaudeCodeReader:
                                 "source_payload": {"entry": entry, "block": block},
                             })
                             break
+                    else:
+                        agentson_entries.append({
+                            "type": "observation",
+                            "text": str(result_content)[:2000] if result_content else "",
+                            "correlation_id": tool_id or None,
+                            "source": "tool",
+                            "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block, "unmatched_result": True},
+                        })
 
             elif entry_type == "assistant":
                 msg = entry.get("message", {})
@@ -299,6 +316,17 @@ class ClaudeCodeReader:
 
                         agentson_entries.append(action)
 
+                    else:
+                        # Preserve future or multimodal block types explicitly;
+                        # never silently drop a native block we do not map yet.
+                        agentson_entries.append({
+                            "type": "system-event",
+                            "source": "other",
+                            "text": "Unmapped Claude Code content block: {}".format(block_type or "unknown"),
+                            "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block},
+                        })
+
             elif entry_type == "summary":
                 text = entry.get("summary", entry.get("text", ""))
                 if text:
@@ -316,25 +344,33 @@ class ClaudeCodeReader:
                 if isinstance(content, list):
                     content = self._extract_text(content)
 
-                # Find the matching action and add observation
-                for existing in reversed(agentson_entries):
-                    if existing.get("type") == "action" and existing.get("tool_call_id") == tool_id:
-                        agentson_entries.append({
-                            "type": "observation",
-                            "text": str(content)[:2000] if content else "",
-                            "correlation_id": tool_id,
-                            "source": "tool",
-                            "timestamp": timestamp,
-                            "source_payload": entry,
-                        })
-                        break
+                # Preserve every tool result, even when the matching invocation
+                # is absent from this file (for example, a split subagent trace).
+                agentson_entries.append({
+                    "type": "observation",
+                    "text": str(content)[:2000] if content else "",
+                    "correlation_id": tool_id or None,
+                    "source": "tool",
+                    "timestamp": timestamp,
+                    "source_payload": entry,
+                })
+
+            else:
+                # Keep future top-level record types rather than dropping them.
+                agentson_entries.append({
+                    "type": "system-event",
+                    "source": "other",
+                    "text": "Unmapped Claude Code record: {}".format(entry_type or "unknown"),
+                    "timestamp": timestamp,
+                    "source_payload": entry,
+                })
 
         # Build the AgentSON document
         session_id = metadata.get("session_id", "unknown")
         model = metadata.get("model", "unknown")
 
-        return {
-            "$schema": "https://agentson.dev/schema/v1.1.json",
+        document = {
+            "$schema": "https://agentson.dev/schema/v1.2.json",
             "id": f"claude-code-{session_id}",
             "task": task,
             "outcome": outcome,
@@ -347,9 +383,18 @@ class ClaudeCodeReader:
                 "name": model,
                 "provider": "anthropic",
             },
-            "timestamp": metadata.get("timestamp", datetime.utcnow().isoformat() + "Z"),
             "entries": agentson_entries,
+            "source_metadata": {
+                "source_file_sha256": metadata.get("source_file_sha256"),
+                "source_line_count": metadata.get("source_line_count"),
+                "unparsed_lines": metadata.get("unparsed_lines", []),
+                "source_file_path": metadata.get("file_path", ""),
+            },
         }
+        # Do not invent a start time when the transcript has no source timestamp.
+        if metadata.get("timestamp"):
+            document["timestamp"] = metadata["timestamp"]
+        return document
 
     def _extract_text(self, content) -> str:
         """Extract text from content blocks (list of dicts or plain string)."""
