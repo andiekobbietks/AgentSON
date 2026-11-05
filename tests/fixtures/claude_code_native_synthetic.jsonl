@@ -3,3 +3,6 @@
 {"type":"user","sessionId":"claude-fixture-001","timestamp":"2026-11-05T09:00:03.000Z","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_fixture_01","content":"5 passed","is_error":false}]}}
 {"type":"assistant","sessionId":"claude-fixture-001","timestamp":"2026-11-05T09:00:04.000Z","message":{"role":"assistant","model":"claude-sonnet-test","stop_reason":"end_turn","content":[{"type":"text","text":"The test suite passed."}]}}
 {"type":"summary","sessionId":"claude-fixture-001","timestamp":"2026-11-05T09:00:05.000Z","summary":"Inspected the project and ran the test suite."}
+{"type":"assistant","sessionId":"claude-fixture-001","timestamp":"2026-11-05T09:00:06.000Z","message":{"role":"assistant","model":"claude-sonnet-test","content":[{"type":"future_block_kind","payload":{"preserve":true}}]}}
+{"type":"queue-operation","sessionId":"claude-fixture-001","payload":{"id":"queued-01","text":"preserve this future record"}}
+{malformed json line retained as evidence
