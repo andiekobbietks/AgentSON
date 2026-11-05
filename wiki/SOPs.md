@@ -150,9 +150,9 @@ Fine-tune MedGemma on personal glucose data for personalized insights.
 Create and populate a GitHub wiki — manually via browser or programmatically via clone-and-push.
 
 **Prerequisites:**
-- GitHub account
+- GitHub account with wiki write access
 - Git installed
-- Classic PAT with `repo` scope
+- Git Credential Manager, GitHub CLI authentication or SSH configured
 
 **Method 1: Manual (Browser)**
 1. Go to `github.com/USER/REPO/wiki`
@@ -162,9 +162,9 @@ Create and populate a GitHub wiki — manually via browser or programmatically v
 **Method 2: Clone and Push (Recommended)**
 ```bash
 git clone https://github.com/USER/REPO.wiki.git
-# Copy markdown files into cloned repo
-git add . && git commit -m "Add wiki pages"
-# Push with PAT embedded in URL
+# Copy reviewed Markdown files into the cloned repo
+git add . && git commit -m "docs(wiki): update pages"
+# Push using configured Git Credential Manager or SSH authentication
 ```
 
 **Method 3: Programmatic with OpenCode**
@@ -173,6 +173,6 @@ git add . && git commit -m "Add wiki pages"
 3. Push manually (Method 2)
 
 **Common errors:**
-- "Password authentication not supported" → Embed PAT in URL
-- "Invalid username or token" → Use classic PAT, not fine-grained
+- Authentication failure → confirm wiki access and configure Git Credential Manager, GitHub CLI or SSH
+- Never embed a PAT or password in a remote URL
 - "Repository not found" → Wiki URL needs `.wiki.git` suffix
