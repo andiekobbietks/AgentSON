@@ -1,109 +1,47 @@
 # Getting Started
 
-## Installation
+## What AgentSON is
+
+AgentSON is an open interchange format and toolchain for AI-agent sessions. Its goal is to make sessions captured in one harness understandable and exchangeable in another while preserving source meaning and provenance.
+
+The canonical v1.2 archive is a single JSON session envelope with an ordered `entries` array. It is not a guarantee that a different harness can reproduce or resume the original runtime.
+
+## Install
 
 ```bash
 pip install agentson
 ```
 
-## Export Your First Session
+## Inspect available commands
 
 ```bash
-# List sessions from opencode
-agentson list --tool opencode
-
-# Export a specific session
-agentson export --tool opencode --session ses_xxx --output ./sessions/
-
-# Export all sessions
-agentson export --tool opencode --output ./sessions/
+agentson --help
 ```
 
-## View in Browser
+Command availability depends on the installed package version. Consult the CLI help for the commands actually exposed by that release; do not assume every roadmap or historical README command is implemented.
 
-### PWA (Offline)
+## Current workflow
 
-Open `pwa/index.html` in any browser. Drag and drop an `.AgentSON` file.
+The README documents the project-level quick start. In general:
 
-### Web Viewer
+1. Select a supported source reader.
+2. Export a session from the source harness.
+3. Validate the resulting canonical v1.2 envelope against the versioned schema.
+4. Inspect the session without executing imported actions.
+5. Preserve the original archive and its provenance/loss report.
 
-Visit [andiekobbietks.github.io/AgentSON/viewer/](https://andiekobbietks.github.io/AgentSON/viewer/) for full features:
-- JSON Schema validation
-- Download as `.AgentSON`
-- Full-text search
-- Sort by timestamp
-- Copy per entry
-- Side-by-side layout
-- Role-based colors
-- Collapsible JSON metadata preview
+Use [Readers](Readers) to check module inventory and evidence. A module being present does not prove it is fully tested.
 
-## Search Across Sessions
+## Understand the format
 
-```bash
-# Search for a keyword across all sessions
-agentson search "nightscout" --tool opencode
+- [Schema](Schema) — canonical envelope and event vocabulary.
+- [Session interoperability architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) — capture, exchange, inspection, reconstruction and resumption.
+- [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md) — canonical archive decision.
 
-# Search in specific tool
-agentson search "auth bug" --tool claude-code
-```
+## Important distinctions
 
-## Export for Fine-Tuning
+- **Portable:** another consumer can parse and understand the archive.
+- **Reconstructable:** a consumer can rebuild a useful representation while declaring missing state.
+- **Resumable:** a compatible harness can continue from a validated checkpoint with permissions and safety checks.
 
-```bash
-# Unsloth/ShareGPT format (LLaMA, Mistral, etc.)
-agentson finetune *.AgentSON --format unsloth --output train.jsonl
-
-# Olive format (Microsoft Olive pipeline)
-agentson finetune *.AgentSON --format olive --output train.jsonl
-```
-
-## Render as Markdown
-
-```bash
-agentson render session.AgentSON --format md
-```
-
-## Push to Supabase (Optional)
-
-```bash
-agentson push session.AgentSON
-```
-
----
-
-## Supported Tools (v0.1.0)
-
-| Tool | Status | Reader |
-|------|--------|--------|
-| opencode | ✅ Working | `readers/opencode.py` |
-| MiniMax | ✅ Working | `readers/minimax.py` |
-| Antigravity IDE | ✅ Working | `readers/antigravity.py` |
-| FreeStyle Libre 2 | ✅ Working | `readers/libre.py` |
-| Chrome DevTools AI | ✅ Working | `readers/chrome_devtools.py` |
-| Claude Code | ✅ Working | `readers/claude_code.py` |
-
-See [Readers](Readers) for the full 33-tool roadmap.
-
----
-
-## What's in an AgentSON File?
-
-```json
-{
-  "$schema": "https://agentson.dev/schema/v1.1.json",
-  "id": "session-2026-07-04-001",
-  "task": "Fix the authentication bug in the login flow",
-  "outcome": "success",
-  "tool": {"name": "opencode", "session_id": "ses_xxx"},
-  "agent": {"name": "mimo-v2.5-free", "provider": "opencode"},
-  "entries": [
-    {"type": "user-query", "text": "Fix the auth bug"},
-    {"type": "thought", "text": "Looking at the auth module..."},
-    {"type": "action", "tool": "bash", "code": "grep -r 'auth' src/", "tool_call_id": "tc_001"},
-    {"type": "observation", "text": "Found 3 files", "correlation_id": "tc_001"},
-    {"type": "answer", "text": "Fixed the null check in auth.py"}
-  ]
-}
-```
-
-See [Schema](Schema) for the full reference.
+A transcript that renders in a viewer is not proof of runtime reconstruction or resumption. Imported tool calls and outputs are untrusted and must not execute during inspection.
