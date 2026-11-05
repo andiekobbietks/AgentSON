@@ -1,4 +1,4 @@
-# Status (last updated: 2026-11-05T17:59:00Z, by: AgentSON OpenCode v2 consumer integration work)
+# Status (last updated: 2026-11-05T18:02:00Z, by: AgentSON ChatGPT-to-OpenCode integration work)
 
 ## Pull request queue
 
