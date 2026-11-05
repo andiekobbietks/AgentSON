@@ -72,6 +72,8 @@ The evidence chain is: **Principle → Requirement → Contract → Implementati
 
 Why I made specific decisions. Each ADR captures context, decision, and consequences.
 
+**Identifier rule:** the repository contains two historical ADR namespaces. **Operating ADRs** live under `docs/standards/adrs/`; **Specification ADRs** live under `spec/`. Both series contain ADR-015 and ADR-016, so always cite the namespace and file path (for example, Operating ADR-015 versus Specification ADR-015).
+
 | ADR | Decision |
 |---|---|
 | [ADR-001](adrs/adr-001-agentSON-format.md) | Why AgentSON exists as a format |
@@ -88,10 +90,12 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-012](adrs/adr-012-academic-literature-relationship.md) | AgentSON's relationship to academic trace-provenance literature |
 | [ADR-013](adrs/adr-013-cli-scope-violation-finetune-push-pull.md) | `finetune`, `push`, and `pull` violate the core/downstream scope rule |
 | [ADR-014](adrs/adr-014-observation-entry-type-missing-from-spec.md) | `"observation"` is missing from the entry `type` enum |
-| [ADR-015](../../spec/ADR-015-canonical-schema.md) | Historical JSONL decision — superseded by ADR-024 |
-| [ADR-016](../../spec/ADR-016-ontology-enum-reconciliation.md) | Ontology / Enum Reconciliation |
-| [ADR-017](../../spec/ADR-017-core-vs-streaming.md) | Core vs Streaming Primitive Separation |
-| [ADR-024](../../spec/ADR-024-canonical-session-archive-and-interoperability.md) | Canonical session archive and cross-harness interoperability |
+| Operating ADR-015 | [Rename to AgentSON](adrs/adr-015-rename-agenson-to-agentson.md) |
+| Operating ADR-016 | [Intrinsic Before Extrinsic](adrs/adr-016-intrinsic-before-extrinsic.md) |
+| Specification ADR-015 | [Canonical Schema](../../spec/ADR-015-canonical-schema.md) — historical JSONL decision, superseded by ADR-024 |
+| Specification ADR-016 | [Ontology / Enum Reconciliation](../../spec/ADR-016-ontology-enum-reconciliation.md) |
+| Specification ADR-017 | [Core vs Streaming Primitive Separation](../../spec/ADR-017-core-vs-streaming.md) |
+| Specification ADR-024 | [Canonical session archive and cross-harness interoperability](../../spec/ADR-024-canonical-session-archive-and-interoperability.md) |
 | [ADR-022](../../spec/ADR-022-reconciling-readers-with-ontology.md) | Reconciling the Readers with the Ontology |
 | ~~ADR-018~~ | **Never written.** Data Rights Intelligence Platform — managed service separation |
 | ~~ADR-019~~ | **Never written.** LLM analysis — three-tier privacy model |
