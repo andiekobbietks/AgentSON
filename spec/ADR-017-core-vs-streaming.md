@@ -48,7 +48,7 @@ Should streaming primitives be **optional** (only in multi-agent streams) or **a
 
 ### Rationale
 
-1. **Single-agent streams don't need handoff.** If there's only one agent, there's nobody to hand off to. Requiring `handoff` entries in a single-agent export would be noise.
+1. **Inter-agent handoffs are not required in a single-agent session.** A user-to-agent handoff may still be meaningful and must be preserved if the source records it. Do not invent handoffs merely to satisfy a template.
 
 2. **Presence is meaningless without multiple agents.** "Agent X is online" is only useful when you need to know which agent is active. In a single-agent stream, the agent is always active.
 
@@ -92,48 +92,24 @@ For a line-oriented stream profile, participant metadata may identify multi-agen
 
 ## Schema Impact
 
-### v1.2 Schema Update
+### Current v1.2 archive
 
-Add `mode` to `stream-meta`:
+The v1.2 JSON Schema defines a JSON session envelope with an ordered `entries` array. It includes the `stream-meta` entry definition and its optional `mode` property, but the archive schema does not require a `stream-meta` entry to be first and does not enforce stream-wide event cardinality or collaboration-mode rules.
 
-```json
-"streamMeta": {
-  "properties": {
-    "mode": {
-      "type": "string",
-      "enum": ["single", "multi", "collab"],
-      "description": "Stream mode. Determines which primitives are required."
-    }
-  },
-  "required": ["stream_id", "agents", "mode"]
-}
-```
+The `mode` value, when present, is descriptive metadata. It does not require every primitive to occur, and it must not be used to fabricate missing events.
 
-### Validation Logic
+### Future line-oriented stream profile
 
-```python
-def validate_stream(stream):
-    entries = parse_jsonl(stream)
-    meta = entries[0]
-    
-    if meta["type"] != "stream-meta":
-        return Error("Stream must start with stream-meta")
-    
-    mode = meta.get("mode", "single")
-    agent_count = len(meta.get("agents", []))
-    
-    # Auto-detect mode if not specified
-    if mode == "single" and agent_count > 1:
-        mode = "multi"
-    
-    for entry in entries[1:]:
-        if mode == "single":
-            if entry["type"] in ("handoff", "presence", "capabilities"):
-                return Error(f"{entry['type']} not allowed in single-agent stream")
-        
-        # Validate required fields per primitive
-        validate_entry(entry)
-```
+A separate stream contract may define a first-record header, participant declarations, framing, ordering, termination and stream-level validation. It must preserve user-to-agent handoffs where recorded and distinguish them from inter-agent transfers.
+
+Example validation responsibilities:
+
+- Validate the canonical archive envelope and each entry against the v1.2 contracts.
+- Validate a line-oriented stream only against its separately versioned framing contract.
+- Check that handoff references resolve to declared actors when the relevant profile provides actor declarations.
+- Do not require an observation where the source provides no result.
+- Do not require every primitive to occur in every session.
+- Do not treat `mode` as permission to reject valid source-observed events without a documented semantic rule.
 
 ---
 
@@ -145,7 +121,7 @@ def validate_stream(stream):
 - Higher fidelity (no noise entries in single-agent streams)
 - Better analyzability (consumers know what to expect based on mode)
 - Same replayability (replay engine handles all 12 types)
-- Same portability (JSONL format unchanged)
+- Same portability (the canonical v1.2 JSON envelope is unchanged; stream transport is separate)
 
 ### ISO Litmus Test
 
