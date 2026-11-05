@@ -180,7 +180,7 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
 
 
 def test_antigravity_sqlite_fixture_through_reader(tmp_path):
-    from readers.antigravity import read_antigravity_session
+    from readers.antigravity import _connect_readonly, read_antigravity_session
 
     db_path = tmp_path / "antigravity-synthetic.sqlite"
     conn = sqlite3.connect(db_path)
@@ -198,6 +198,14 @@ def test_antigravity_sqlite_fixture_through_reader(tmp_path):
     conn.execute("INSERT INTO gen_metadata VALUES (?,?)", (0, b"{}"))
     conn.commit()
     conn.close()
+
+    readonly = _connect_readonly(str(db_path))
+    try:
+        import pytest
+        with pytest.raises(sqlite3.OperationalError):
+            readonly.execute("CREATE TABLE should_not_be_created (id TEXT)")
+    finally:
+        readonly.close()
 
     session = read_antigravity_session({"db_path": str(db_path), "session_id": "antigravity-fixture-001"})
     assert "timestamp" not in session["entries"][0]
@@ -283,6 +291,9 @@ def test_opencode_sqlite_native_fixture_through_reader(tmp_path):
     reader = OpencodeReader(str(db_path))
     reader.connect()
     try:
+        import pytest
+        with pytest.raises(sqlite3.OperationalError):
+            reader.conn.execute("CREATE TABLE should_not_be_created (id TEXT)")
         listed = reader.list_sessions()
         session = reader.read_session("opencode-fixture-001")
     finally:
