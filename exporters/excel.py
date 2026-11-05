@@ -16,9 +16,9 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 def export_to_excel(input_path: str, output_path: str = None):
     """Export an .agentson file to Excel with charts and analytics."""
     
-    # Load the .agentson file
-    with open(input_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    # Load canonical JSONL or a legacy document-style .agentson file.
+    from exporters.jsonl import load_agentson_document
+    data = load_agentson_document(input_path)
     
     # Create output path
     if output_path is None:
