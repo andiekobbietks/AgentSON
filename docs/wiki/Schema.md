@@ -1,129 +1,88 @@
-# Schema Reference
+# AgentSON Schema Reference
 
-AgentSON uses JSON Schema for validation. Two versions exist:
+## Canonical representation
 
-- **v1.0** — Original format (8 entry types)
-- **v1.1** — Trajectory semantics (adds task, outcome, observation, correlation)
+The canonical v1.2 archive is a **single JSON session envelope** defined by [`spec/v1.2.json`](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json). It contains session-level metadata and an ordered `entries` array. The individual entry contract is [`spec/v1.2-entries.json`](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2-entries.json); the event vocabulary is defined by [`spec/ontology.md`](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md).
 
-All v1.0 files validate against v1.1 (backward compatible).
+This is not a JSONL schema. The earlier [ADR-015](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md) declared JSONL canonical, but that decision was superseded by [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md) because the v1.2 schema itself defines a JSON object envelope. Existing JSONL exporters/stream code are separate stream or transport implementations until a dedicated stream contract is published.
 
----
+## Version history
 
-## Schema URLs
+| Version | Representation | Status |
+|---|---|---|
+| v1.0 | Single JSON document with an entries array | Legacy input |
+| v1.1 | Single JSON document with trajectory fields | Legacy input |
+| v1.2 | Single JSON session envelope with ordered entries | Canonical archive contract |
 
-```
-https://agentson.dev/schema/v1.json
-https://agentson.dev/schema/v1.1.json
-```
+Do not infer the format from the filename alone. Detect and validate the actual representation.
 
----
+## Session envelope
 
-## Top-Level Fields
+The v1.2 schema defines the envelope fields, including:
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `$schema` | string | Yes | Schema URL |
-| `id` | string | Yes | Unique session identifier |
-| `task` | string | No | High-level task description |
-| `outcome` | string | No | `success`, `failure`, `partial`, `abandoned` |
-| `tool` | object | No | Tool metadata (`name`, `session_id`) |
-| `agent` | object | No | Agent metadata (`name`, `provider`) |
-| `entries` | array | Yes | Array of entry objects |
-| `metadata` | object | No | Arbitrary key-value pairs |
+- `id`: session identifier.
+- `tool`: originating harness and source session identity.
+- `agent`: model/agent identity where exposed by the source.
+- `task`, `outcome`, `started_at`, `ended_at`: session-level context where known.
+- `context`: environment information actually captured.
+- `entries`: ordered event records.
+- `metadata`: optional session metadata.
+- `compliance`, `reconstruct_mode`, `digest`: optional declared metadata; their presence does not prove legal compliance or successful reconstruction.
 
----
+See the schema for exact types, required fields and constraints. This page is explanatory, not a substitute for the schema.
 
-## Entry Types (v1.1)
+## Event vocabulary
 
-| Type | Description | Key Fields |
-|------|-------------|------------|
-| `user-query` | User's input or question | `text` |
-| `context` | Additional context (data used, DOM info) | `text`, `source` |
-| `querying` | Agent is processing | `text` |
-| `title` | Section or step title | `text` |
-| `thought` | Agent's reasoning/thinking | `text` |
-| `action` | Tool execution (code + output) | `tool`, `code`, `output`, `tool_call_id` |
-| `answer` | Agent's response | `text` |
-| `side-effect` | File changes, state mutations | `tool`, `code`, `tool_call_id` |
-| `observation` | Async observation from tool/user/system | `text`, `correlation_id` |
+The ontology and v1.2 schema define these twelve event primitives:
 
----
+| Primitive | Meaning |
+|---|---|
+| `stream-meta` | Stream/session header and participant/capability metadata |
+| `handoff` | Transfer of control between agents |
+| `presence` | Agent presence/status |
+| `capabilities` | Agent capability declaration |
+| `action` | Tool or agent action |
+| `observation` | Result or observation from a tool, user or system |
+| `thought` | Agent reasoning/working note, only where source capture and policy permit |
+| `side-effect` | Persistent state change |
+| `answer` | Agent response |
+| `user-query` | User request |
+| `user-feedback` | User correction or clarification |
+| `system-event` | External runtime/system trigger |
 
-## v1.1 Additions
+A source adapter must not invent an event because the target vocabulary has a matching type. If the source does not expose the information, mark it unavailable or preserve it as source-specific data where safe.
 
-### Task & Outcome
+## Semantic fidelity and provenance
 
-```json
-{
-  "task": "Fix the authentication bug in the login flow",
-  "outcome": "success"
-}
-```
+Every adapter/transform must report whether information was:
 
-- `task` — Human-readable description of what the session was trying to accomplish
-- `outcome` — One of: `success`, `failure`, `partial`, `abandoned`
+- preserved without semantic change;
+- normalised to a documented canonical equivalent;
+- retained as source-specific extension data;
+- unavailable at source or capture time;
+- redacted under a documented privacy/security rule; or
+- unsupported by the target contract.
 
-### Correlation ID
+Preserve source identifiers, source timestamps and ordering semantics where available. Distinguish source event time from AgentSON capture time. Do not fabricate missing values. Unknown is not equivalent to absent, false, empty or zero.
 
-Links actions to their observations:
+## Portability, reconstruction and resumption
 
-```json
-{"type": "action", "tool": "bash", "code": "grep -r 'auth' src/", "tool_call_id": "tc_001"}
-{"type": "observation", "text": "Found 3 files", "correlation_id": "tc_001"}
-```
+- **Portable:** another conforming consumer can parse and understand the archive.
+- **Reconstructable:** a consumer can rebuild a useful representation of recorded work while reporting missing state.
+- **Resumable:** a compatible receiving harness can continue from a validated checkpoint after capability and permission checks.
 
-### Duration & Error
-
-```json
-{"type": "action", "tool": "bash", "code": "pytest", "duration_ms": 1234, "error": "2 tests failed"}
-```
-
----
-
-## Example: Complete Session
-
-```json
-{
-  "$schema": "https://agentson.dev/schema/v1.1.json",
-  "id": "session-2026-07-04-001",
-  "task": "Fix the authentication bug in the login flow",
-  "outcome": "success",
-  "tool": {"name": "opencode", "session_id": "ses_xxx"},
-  "agent": {"name": "mimo-v2.5-free", "provider": "opencode"},
-  "metadata": {
-    "project": "agentson",
-    "branch": "feat/auth-fix",
-    "duration_ms": 45000
-  },
-  "entries": [
-    {"type": "user-query", "text": "Fix the auth bug", "timestamp": "2026-07-04T10:00:00Z"},
-    {"type": "thought", "text": "Looking at the auth module, I see the null check is missing in auth.py line 42"},
-    {"type": "action", "tool": "bash", "code": "grep -r 'auth' src/", "tool_call_id": "tc_001", "timestamp": "2026-07-04T10:00:05Z"},
-    {"type": "observation", "text": "Found 3 files: src/auth.py, src/auth_test.py, src/middleware.py", "correlation_id": "tc_001"},
-    {"type": "action", "tool": "edit", "code": "if user is not None and user.is_active:", "tool_call_id": "tc_002"},
-    {"type": "observation", "text": "Edit applied to src/auth.py:42", "correlation_id": "tc_002"},
-    {"type": "action", "tool": "bash", "code": "pytest src/auth_test.py", "tool_call_id": "tc_003"},
-    {"type": "observation", "text": "All tests passed", "correlation_id": "tc_003"},
-    {"type": "answer", "text": "Fixed the null check in auth.py:42. All tests pass."}
-  ]
-}
-```
-
----
+These are separate guarantees. A transcript that can be displayed is not proof that runtime state can be resumed. Credentials and reusable secrets must never be embedded in portable archives. Imported commands and tool outputs are untrusted and must not execute during parsing or inspection.
 
 ## Validation
 
-```bash
-# Validate a file
-python -c "import json; d=json.load(open('session.AgentSON')); assert d.get('\$schema')"
+Validate the complete session envelope against `spec/v1.2.json` and validate entry-level constraints against `spec/v1.2-entries.json` using the project's supported validator. A schema-valid archive is not automatically complete, authentic, safe to execute or resumable.
 
-# Full schema validation
-pip install jsonschema
-python -c "
-import json, jsonschema
-schema = json.load(open('spec/v1.1.json'))
-instance = json.load(open('session.AgentSON'))
-jsonschema.validate(instance, schema)
-print('Valid')
-"
-```
+A JSON Schema document does not, by itself, validate a multi-line JSONL stream. Any stream transport requires its own framing, ordering, metadata and conformance contract.
+
+## Related documents
+
+- [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- [ADR-024: Canonical Session Archive and Interoperability](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md)
+- [ADR-015: Historical Canonical Schema Decision](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md)
+- [Readers and adapter inventory](Readers)
+- [Coding Standards](Coding-Standards)
