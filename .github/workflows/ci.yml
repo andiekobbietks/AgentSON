@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -74,9 +74,33 @@ jobs:
               assert any(name.endswith("/spec/v1.2-entries.json") for name in names)
           PY
 
-      - name: Smoke-test the built wheel
+      - name: Smoke-test the built wheel outside the checkout
+        shell: bash
         run: |
           python -m pip install --force-reinstall --no-deps dist/*.whl
-          python -c "from importlib.resources import files; assert files('spec').joinpath('v1.2.json').is_file(); assert files('spec').joinpath('v1.2-entries.json').is_file()"
-          python -c "from cli.main import main; from tools.distribute import publish; from tools.pii_redactor import PIIRedactor"
+          smoke_dir="$(mktemp -d)"
+          trap 'rm -rf "$smoke_dir"' EXIT
+          cd "$smoke_dir"
+          python - <<'PY'
+          import json
+          from importlib.resources import files
+          from cli.main import main
+          from exporters.jsonl import validate_v1_2_events
+          from tools.distribute import publish
+          from tools.pii_redactor import PIIRedactor
+
+          schema_path = files("spec").joinpath("v1.2.json")
+          entries_path = files("spec").joinpath("v1.2-entries.json")
+          assert schema_path.is_file()
+          assert entries_path.is_file()
+          schema = json.loads(schema_path.read_text(encoding="utf-8"))
+          entries_schema = json.loads(entries_path.read_text(encoding="utf-8"))
+          assert schema["$schema"].endswith("2020-12/schema")
+          assert entries_schema["$schema"].endswith("2020-12/schema")
+          validate_v1_2_events([{
+              "type": "stream-meta", "schema_version": "1.2",
+              "stream_id": "wheel-smoke", "mode": "single",
+              "agents": [{"id": "assistant", "name": "Assistant"}],
+          }])
+          PY
           agentson --help
