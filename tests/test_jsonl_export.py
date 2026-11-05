@@ -69,6 +69,33 @@ def test_existing_v12_stream_is_not_wrapped_twice():
     validate_v1_2_events(events)
 
 
+def test_existing_stream_events_are_normalised_and_null_ids_omitted():
+    source = [
+        {"type": "stream-meta", "stream_id": "existing", "mode": "single", "agents": [{"id": "a"}]},
+        {"type": "action", "tool": "shell.run", "status": "unknown", "tool_call_id": None,
+         "correlation_id": None, "source_payload": {"native": "evidence"}},
+    ]
+    events = to_v1_2_events({"id": "existing", "entries": source})
+    assert events[1]["status"] == "partial"
+    assert "tool_call_id" not in events[1]
+    assert "correlation_id" not in events[1]
+    assert events[1]["source_payload"] == {"native": "evidence"}
+    validate_v1_2_events(events)
+
+
+def test_existing_stream_rejects_non_object_event_with_position():
+    source = [
+        {"type": "stream-meta", "stream_id": "existing", "mode": "single", "agents": [{"id": "a"}]},
+        "malformed event",
+    ]
+    try:
+        to_v1_2_events({"id": "existing", "entries": source})
+    except ValueError as exc:
+        assert "position 1" in str(exc)
+    else:
+        raise AssertionError("Expected malformed existing stream event to fail")
+
+
 def test_invalid_stream_without_stream_meta_is_rejected():
     try:
         validate_v1_2_events([{"type": "answer", "text": "No header"}])
