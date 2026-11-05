@@ -2,6 +2,10 @@
 
 This directory contains the Markdown source of the [AgentSON GitHub Wiki](https://github.com/andiekobbietks/AgentSON/wiki).
 
+## Legacy directory
+
+The root-level `wiki/` directory is a historical duplicate and is not the publishing source. Do not edit it. Use `docs/wiki/` for wiki content and keep the hosted GitHub Wiki synchronised from these files.
+
 ## Authoritative source
 
 **The `docs/` directory in the main repository is the authoritative source for AgentSON documentation.** The GitHub Wiki is a published mirror of these files. Edits should be made here first, then mirrored to the wiki.
