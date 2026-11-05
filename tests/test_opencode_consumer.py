@@ -46,7 +46,7 @@ def test_import_creates_v2_session_and_inserts_inert_synthetic_message():
         return {"data": {"id": "msg_synthetic_123"}}
 
     with patch("consumers.opencode._request_json", side_effect=fake_request):
-        result = import_archive(_archive())
+        result = import_archive(_archive(), context_packet="# Screened continuation context")
 
     assert result["consumer"] == "opencode"
     assert result["consumer_api"] == "opencode-http-api-v2"
@@ -65,6 +65,7 @@ def test_import_creates_v2_session_and_inserts_inert_synthetic_message():
     assert message["delivery"] == "queue"
     assert message["description"] == "Imported AgentSON v1.2 archive capsule"
     assert message["text"].startswith("Imported AgentSON v1.2 archive")
+    assert "## Selected continuation context\\n# Screened continuation context" in message["text"]
     embedded = message["text"].split("<agentson-archive>\n", 1)[1].split(
         "\n</agentson-archive>", 1
     )[0]
