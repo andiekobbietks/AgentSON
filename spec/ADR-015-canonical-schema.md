@@ -102,7 +102,7 @@ The current codebase produces **both shapes**:
 
 > "Is this the only format solving this problem at the international level?"
 
-**Yes.** AgentSON is the only provenance format for AI agent sessions. No ISO standard exists for agent session recording. No non-ISO standard does this either. JSONL is already a de facto standard (IETF RFC 8259). AgentSON builds on JSONL and adds the 12-primitive ontology that makes agent traces machine-readable and human-analyzable.
+**Historical assessment, not independently verified.** This ADR does not establish that AgentSON is the only provenance format or that no adjacent non-ISO standard exists. Any standards-positioning claim requires a current comparative review. The canonical archive decision is now governed by ADR-024.
 
 ---
 
