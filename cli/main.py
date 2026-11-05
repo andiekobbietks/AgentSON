@@ -1086,6 +1086,19 @@ TOPICS:
     recon_parser.add_argument("--no-ai-act-marks", action="store_true", help="Skip EU AI Act Art. 50(2) marking")
     recon_parser.add_argument("--strict", action="store_true", help="Fail on zero entries or missing sources")
 
+    # resume command (portable cross-harness context continuation)
+    resume_parser = subparsers.add_parser(
+        "resume", help="Create a portable continuation packet for another AI harness"
+    )
+    resume_parser.add_argument("input", help="Input .agentson JSONL or legacy session")
+    resume_parser.add_argument(
+        "--target",
+        choices=["generic", "opencode", "claude-code", "codex", "cursor", "cline"],
+        default="generic",
+        help="Destination harness profile (packet remains portable)",
+    )
+    resume_parser.add_argument("--output", help="Output Markdown packet (default: <input>.resume-<target>.md)")
+
     # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
     browser_parser = subparsers.add_parser(
         "browser", help="NOT IMPLEMENTED — planned MCP capture (agentson_mcp, see ADR-022)"
@@ -1181,6 +1194,8 @@ TOPICS:
             print("Error: `agentson reconstruct` is not implemented (cli/reconstruct.py is missing).", file=sys.stderr)
             sys.exit(1)
         cmd_reconstruct(args)
+    elif args.command == "resume":
+        cmd_resume(args)
     elif args.command == "browser":
         cmd_browser(args)
     elif args.command == "watch":
@@ -1269,6 +1284,21 @@ TOPICS:
             show_encyclopedia()
         except ImportError:
             parser.print_help()
+
+
+def cmd_resume(args):
+    """Create a safe, portable continuation packet for another harness."""
+    from importers.continuation import write_continuation_packet
+
+    output = args.output or (str(Path(args.input).with_suffix("")) + f".resume-{args.target}.md")
+    try:
+        destination = write_continuation_packet(args.input, output, target=args.target)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        print(f"Error creating continuation packet: {exc}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Continuation packet created: {destination}")
+    print("Open it in the destination harness as context for a new session.")
+    print("This restores working context, not private runtime state or tool permissions.")
 
 
 def cmd_browser(args):
