@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/Contributing.md`](../docs/wiki/Contributing.md). This file is retained for historical links only.
+
 # Contributing
 
 How to add a reader, write tests, or submit a PR.
