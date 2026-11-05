@@ -1,10 +1,12 @@
 # ADR-017: Core vs Streaming Primitive Separation
 
-**Status:** Accepted
+**Status:** Accepted for event-vocabulary grouping; stream framing is governed by ADR-024
 **Date:** 07 July 2026
 **Decision Makers:** andiekobbietks
 
 ---
+
+> Clarification, 05 November 2026: this ADR separates core event primitives from collaboration/streaming primitives. It does not define the canonical archive container or establish JSONL as the canonical v1.2 archive. See ADR-024 for the canonical JSON session envelope and the separate status of JSONL stream transport.
 
 ## Context
 
