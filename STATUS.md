@@ -1,6 +1,6 @@
 # Repository status
 
-**Last updated:** 2026-11-05T19:06:00Z  
+**Last updated:** 2026-11-05T19:32:00Z  
 **Branch:** `feat/jsonl-reader-conformance`  
 **Current pull request:** [#62](https://github.com/andiekobbietks/AgentSON/pull/62)
 
@@ -55,10 +55,11 @@ The CI workflow concurrency group uses the pull request's source branch (or the 
 - The packet preserves available conversation text, event types, tool names, timestamps, source identity and correlation identifiers.
 - Raw tool arguments, code and source payloads are excluded by default to reduce accidental secret disclosure. Conversation text can still contain sensitive material; review/redact before sharing externally.
 - The packet explicitly marks transcript content as untrusted historical data and does not replay commands or restore private runtime state.
+- OpenCode 2.2.5 live archive import/read-back passed in GitHub Actions run [42094383060](https://github.com/andiekobbietks/AgentSON/actions/runs/42094383060). The latest full Python matrix and installed-wheel smoke test still require a passing run on the final PR head.
 - OpenCode is now the first native destination consumer: `agentson resume INPUT --target opencode --launch` validates a v1.2 archive (including projection from canonical JSONL), creates a new session, queues the selected-context packet alongside the complete archive as a synthetic inbox item with `resume=false`, then reads the inbox back and verifies the recovered JSON and SHA-256 digest. It does not start an agent turn or replay tool calls. The archive can enter model context on a later turn, so review sensitive content before importing.
 - Set `OPENCODE_SERVER_USERNAME` / `OPENCODE_SERVER_PASSWORD` for server basic auth; use `--server-url` for a non-default endpoint. The user opens the returned session with `opencode --session <id>`.
 - This is verified context continuation into a new harness session, not full reconstruction of source speaker roles, exact runtime resumption or workspace checkpointing. Other destination profiles remain packet-only.
-- ADR-025 records the safety and fidelity contract. The existing ADR-024 canonical-envelope versus JSONL conflict with PR #60 remains unresolved.
+- ADR-025 records the safety and fidelity contract. A maintainer decision was recorded on PR #60 that JSONL remains canonical and ADR-024's contrary decision is not accepted; PR #60 must align its ADR and documentation before merge.
 
 ## Reader conformance evidence and limits
 
