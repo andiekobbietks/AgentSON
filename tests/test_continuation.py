@@ -34,7 +34,7 @@ def test_packet_preserves_context_and_marks_historical_commands_inert(tmp_path):
     assert "2 tests failed" in packet
     assert "untrusted historical data" in packet
     assert "does not restore private runtime state" in packet
-    assert "Do not replay historical commands" in packet
+    assert "do not replay historical commands" in packet
 
 
 def test_packet_writer_creates_parent_directory_and_utf8_file(tmp_path):
@@ -84,5 +84,5 @@ def test_public_cli_resume_command_creates_packet(tmp_path, monkeypatch, capsys)
 
     assert output.exists()
     assert "Continue this task" in output.read_text(encoding="utf-8")
-    assert "new OpenCode session" in output.read_text(encoding="utf-8")
+    assert "new Opencode session" in output.read_text(encoding="utf-8")
     assert "Continuation packet created" in capsys.readouterr().out
