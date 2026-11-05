@@ -42,6 +42,7 @@ The archive digest is SHA-256 over the adapter's deterministic compact JSON seri
 ## Security boundary
 
 - Localhost is the default endpoint policy.
+- OpenCode v2 protects its server with HTTP Basic authentication. Supply the server password through the `password` argument; the adapter sends it in the Authorization header and never embeds it in the URL.
 - A remote endpoint requires explicit `allow_remote=True` and HTTPS.
 - URLs containing embedded credentials, query strings or fragments are rejected.
 - The archive is treated as untrusted historical evidence.
@@ -67,8 +68,11 @@ From a Python environment with AgentSON installed and an OpenCode v2 server runn
 from consumers.opencode import import_archive, verify_import
 
 archive = "session.agentson"
-result = import_archive(archive)
-verification = verify_import(result, archive)
+import os
+
+server_password = os.environ["OPENCODE_PASSWORD"]
+result = import_archive(archive, password=server_password)
+verification = verify_import(result, archive, password=server_password)
 assert verification["verified"]
 print(result["session_id"])
 print(result["losses"])
@@ -81,6 +85,7 @@ result = import_archive(
     "session.agentson",
     base_url="https://opencode.example.test",
     allow_remote=True,
+    password=os.environ["OPENCODE_PASSWORD"],
 )
 ```
 
