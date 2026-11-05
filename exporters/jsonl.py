@@ -122,11 +122,15 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
         source = event.get("source", "other")
         event["source"] = source if source in SYSTEM_SOURCES else "other"
     elif event_type == "handoff":
-        event.setdefault("from", default_agent)
-        event.setdefault("to", "unknown")
-        event.setdefault("conch", event.get("to", "unknown"))
+        event["from"] = str(event.get("from") or default_agent)
+        event["to"] = str(event.get("to") or "unknown")
+        event["conch"] = str(event.get("conch") or event["to"])
     elif event_type == "presence":
-        event.setdefault("status", "idle")
+        if event.get("status") not in {"online", "offline", "busy", "idle"}:
+            event["status"] = "idle"
+    elif event_type == "user-feedback":
+        if event.get("sentiment") not in {"positive", "negative", "neutral", "correction", "clarification"}:
+            event["sentiment"] = "neutral"
     elif event_type == "capabilities":
         event["capabilities"] = _json_object(event.get("capabilities"))
     elif event_type == "side-effect":
