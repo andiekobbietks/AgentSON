@@ -1,0 +1,31 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-5",
+    "label": "Informational",
+    "category": "maintainability"
+  },
+  "priority": "P4",
+  "confidence": {
+    "level": "unknown"
+  },
+  "status": "detected",
+  "impact": {
+    "scope": "single_session",
+    "dimensions": [],
+    "description": "Similar validation logic appears in multiple tool calls."
+  },
+  "evidence": {
+    "event_ids": ["evt_040", "evt_041"],
+    "session_ids": ["sess_abc123"],
+    "start_offset": 800,
+    "end_offset": 950,
+    "excerpt": "if not path.startswith(...): raise ..."
+  },
+  "method": "ai_assisted",
+  "assessed_at": "2026-11-04T17:20:00Z",
+  "assessed_by": "agentson_platform.slm",
+  "rule_id": "duplicate-validation",
+  "rationale": "Possible refactor candidate; no runtime impact observed.",
+  "overrides": null
+}

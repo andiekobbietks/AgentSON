@@ -1,0 +1,42 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-4",
+    "label": "Low",
+    "category": "security"
+  },
+  "priority": "P3",
+  "confidence": {
+    "level": "confirmed",
+    "score": 0.95,
+    "source": "human_review"
+  },
+  "status": "dismissed",
+  "impact": {
+    "scope": "single_session",
+    "dimensions": ["confidentiality"],
+    "description": "Looked like credential exposure but was a revoked test token."
+  },
+  "evidence": {
+    "event_ids": ["evt_060", "evt_061"],
+    "session_ids": ["sess_abc123"],
+    "start_offset": 400,
+    "end_offset": 450,
+    "excerpt": "sk-test-..."
+  },
+  "method": "human_approval",
+  "assessed_at": "2026-11-04T17:35:00Z",
+  "assessed_by": "security@example.com",
+  "rule_id": "api-key-exposed",
+  "rationale": "Token was revoked before the session was recorded.",
+  "overrides": {
+    "previous_severity": {
+      "level": "SEV-2",
+      "label": "High",
+      "category": "security"
+    },
+    "reason": "Revoked test token; no production impact.",
+    "approved_by": "security@example.com",
+    "approved_at": "2026-11-04T17:40:00Z"
+  }
+}

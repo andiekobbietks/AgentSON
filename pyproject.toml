@@ -28,6 +28,7 @@ dependencies = [
     "jsonschema>=4.17",
     "openpyxl>=3.1",
     "pylatex>=1.4",
+    "pydantic>=2.0",
     # rich is required directly by cli/help_system.py (Console, Text, Panel,
     # box) -- declared here because it was previously present only as a
     # transitive dependency of mcp-use, so nothing in the package metadata
@@ -58,12 +59,13 @@ agentson = "cli.main:main"
 
 [tool.setuptools.package-data]
 "spec" = ["v1.json"]
+"spec.severity" = ["v1.json"]
 "supabase" = ["schema.sql"]
 "examples" = ["*.AgentSON"]
 "pwa" = ["manifest.json", "sw.js", "*.html", "*.png", "*.ico"]
 
 [tool.setuptools.packages.find]
-include = ["readers*", "exporters*", "importers*", "cli*", "agentson_platform*", "agentson_mcp*"]
+include = ["readers*", "exporters*", "importers*", "cli*", "agentson_platform*", "agentson_mcp*", "spec*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

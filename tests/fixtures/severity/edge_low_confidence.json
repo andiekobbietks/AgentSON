@@ -1,0 +1,33 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-3",
+    "label": "Medium",
+    "category": "correctness"
+  },
+  "priority": "P2",
+  "confidence": {
+    "level": "low",
+    "score": 0.25,
+    "source": "ai_assisted"
+  },
+  "status": "detected",
+  "impact": {
+    "scope": "single_session",
+    "dimensions": ["correctness"],
+    "description": "Agent may have selected the wrong tool, but evidence is weak."
+  },
+  "evidence": {
+    "event_ids": ["evt_050"],
+    "session_ids": ["sess_abc123"],
+    "start_offset": 300,
+    "end_offset": 330,
+    "excerpt": "selected tool: browser.navigate"
+  },
+  "method": "ai_assisted",
+  "assessed_at": "2026-11-04T17:30:00Z",
+  "assessed_by": "agentson_platform.slm",
+  "rule_id": "tool-selection-ambiguity",
+  "rationale": "Low-confidence ML suggestion; requires human review before action.",
+  "overrides": null
+}
