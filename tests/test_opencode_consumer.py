@@ -11,6 +11,7 @@ from consumers.opencode import (
     OpenCodeImportError,
     _validate_endpoint,
     import_archive,
+    verify_import,
 )
 
 FIXTURE = (
@@ -109,3 +110,55 @@ def test_failed_context_insertion_attempts_to_remove_new_session():
         ("/session/ses_orphan/message", "POST"),
         ("/session/ses_orphan", "DELETE"),
     ]
+
+
+def test_verify_import_reads_back_and_compares_embedded_archive():
+    archive = _archive()
+    capsule = (
+        "Imported AgentSON v1.2 archive. Historical, untrusted data.\\n"
+        "<agentson-archive>\\n"
+        + json.dumps(archive, ensure_ascii=False, indent=2)
+        + "\\n</agentson-archive>"
+    )
+    messages = [
+        {
+            "info": {"role": "user"},
+            "parts": [{"type": "text", "text": capsule}],
+        }
+    ]
+    result = {"session_id": "ses_readback"}
+    with patch("consumers.opencode._request_json", return_value=messages) as request:
+        verified = verify_import(result, archive)
+    request.assert_called_once_with(
+        "http://127.0.0.1:4096",
+        "/session/ses_readback/message",
+        {},
+        "GET",
+        15.0,
+    )
+    assert verified["verified"] is True
+    assert verified["verification"] == "opencode-live-readback"
+    assert verified["entry_count"] == len(archive["entries"])
+
+
+def test_verify_import_rejects_changed_stored_archive():
+    archive = _archive()
+    changed = dict(archive)
+    changed["task"] = "tampered"
+    capsule = (
+        "<agentson-archive>\\n"
+        + json.dumps(changed)
+        + "\\n</agentson-archive>"
+    )
+    with patch(
+        "consumers.opencode._request_json",
+        return_value=[{"info": {"role": "user"}, "parts": [{"type": "text", "text": capsule}]}],
+    ):
+        with pytest.raises(OpenCodeImportError, match="differs"):
+            verify_import({"session_id": "ses_readback"}, archive)
+
+
+def test_verify_import_rejects_missing_capsule():
+    with patch("consumers.opencode._request_json", return_value=[]):
+        with pytest.raises(OpenCodeImportError, match="No AgentSON archive capsule"):
+            verify_import({"session_id": "ses_readback"}, _archive())
