@@ -52,8 +52,8 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - Repository-relative Markdown links were checked across the documentation set; no broken repository links were found. Short links such as `ADR-001` and `SOP-001` are intentional links to separately hosted wiki pages.
 - The OpenCode reader and ChatGPT importer now emit the v1.2 schema identifier. The v1.2 `tool.name` enum includes `chatgpt`; missing ChatGPT timestamps are omitted rather than emitted as null.
 - Sanitised Windows user-profile paths in `tests/fixtures/opencode_real_sample.json` to align with the no-personal-paths repository rule.
-- GitHub Actions run [42079728567](https://github.com/andiekobbietks/AgentSON/actions/runs/42079728567) passed **32 canonical archive/producer/consumer tests** in 0.82s and **1 live integration test** in 0.62s.
-- The live test used pinned `@opencode/cli@2.2.5`, authenticated to the server, created a session, queued the four-entry synthetic AgentSON archive, read the durable inbox item back, verified the full archive and SHA-256 digest, and deleted the test session. Recorded digest: `60c88f52174f7fa2a76a5eca11e0443a4113eac4cfc95d903f1fb95a73a1ceb3`.
+- GitHub Actions run [42080278756](https://github.com/andiekobbietks/AgentSON/actions/runs/42080278756) passed **32 canonical archive/producer/consumer tests** in 0.51s and **1 live ChatGPT-to-OpenCode integration test** in 0.53s.
+- The live test used the production ChatGPT importer with `tests/fixtures/chatgpt_synthetic_export.json`, then used pinned `@opencode/cli@2.2.5` to create a session, queue the two-entry AgentSON archive, read the durable inbox item back, verify the full archive and SHA-256 digest, and delete the test session. Recorded digest: `0e858e4b1bbc49b7f15a8bdea7d3cde9157f90a8f22334380bd2faff9f555efb`.
 - This proves live archive-capsule storage fidelity against OpenCode 2.2.5. It does not demonstrate a real source-producer-to-consumer semantic C2 pair, native event reconstruction (C3) or resumption (C4). The full repository test suite has not been run.
 
 
