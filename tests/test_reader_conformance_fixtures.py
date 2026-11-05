@@ -57,8 +57,12 @@ def test_chrome_devtools_markdown_fixture_through_reader(tmp_path):
     assert any(e["type"] == "user-query" and e.get("attachments") for e in session["entries"])
     assert any(e["type"] == "action" and e.get("code") for e in session["entries"])
     assert any(e["type"] == "answer" for e in session["entries"])
+    raw_markdown = (FIXTURES / "chrome_devtools_native_synthetic.md").read_text(encoding="utf-8")
+    assert session["source_metadata"]["source_markdown"] == raw_markdown
+    assert any(e["source_payload"].get("raw_ai_subsection") for e in session["entries"] if e["type"] == "action")
     events = _export_and_validate(session, tmp_path / "chrome.agentson", "chrome-devtools")
     assert events[0]["source_session"]["metadata"]["source_filename"].endswith("chrome_devtools_native_synthetic.md")
+    assert events[0]["source_session"]["source_metadata"]["source_markdown_sha256"] == session["source_metadata"]["source_markdown_sha256"]
 
 
 def test_libre_csv_fixture_through_reader(tmp_path):
