@@ -1,10 +1,12 @@
 # ADR-015: Canonical Schema Decision
 
-**Status:** Accepted
+**Status:** Superseded by ADR-024 (05 November 2026)
 **Date:** 07 July 2026
 **Decision Makers:** andiekobbietks
 
 ---
+
+> Historical decision: this ADR's JSONL-canonical decision is superseded by [ADR-024](ADR-024-canonical-session-archive-and-interoperability.md). The current v1.2 schema defines a single JSON session envelope with an ordered `entries` array. Existing JSONL code is treated as a separate stream/transport implementation until a dedicated contract is defined.
 
 ## Context
 
