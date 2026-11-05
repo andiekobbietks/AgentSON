@@ -128,11 +128,23 @@ agentson search "authentication" --dir ./sessions/
 
 # Render a session as Markdown
 agentson render ./sessions/session.agentson --format md
+agentson resume ./sessions/session.agentson --target claude-code --output ./handoff.md
 ```
 
 The CLI exposes source selectors for OpenCode, MiniMax, Antigravity, Chrome DevTools, Libre CSV, Claude Code, VibeEdge, Gemini, Cursor, Cline and Aider. Availability and completeness are adapter-specific; a selector being present in the CLI is not, by itself, evidence of production readiness or full-fidelity support. Check the relevant reader and tests before relying on a particular source.
 
 Use `agentson --help` and `agentson help <topic>` for the commands and options available in the installed version. Some commands are experimental or explicitly not implemented; the CLI help text is authoritative for the installed build.
+
+
+### Continue a session in another harness
+
+Use the resume command to create a portable Markdown context packet from a canonical JSONL archive or supported legacy session document:
+
+```bash
+agentson resume ./sessions/session.agentson --target opencode --output ./handoff.md
+```
+
+Open the resulting packet in a new destination-harness session. It carries the available conversation history, decisions and tool records, with explicit provenance and safety boundaries. Historical commands are inert evidence and must not be replayed. This is context continuation into a new session, **not** restoration of hidden prompts, credentials, permissions, live processes, unsaved buffers or vendor-private runtime state. See [ADR-025](spec/ADR-025-cross-harness-context-continuation.md).
 
 ## Repository map
 
