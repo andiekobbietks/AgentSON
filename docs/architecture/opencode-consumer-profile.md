@@ -46,13 +46,14 @@ The archive digest is SHA-256 over the adapter's deterministic compact JSON seri
 - URLs containing embedded credentials, query strings or fragments are rejected.
 - The archive is treated as untrusted historical evidence.
 - The synthetic message explicitly labels the embedded archive as untrusted historical data.
-- The v2 synthetic-message request uses `resume: false`; the adapter does not submit a user prompt or invoke a model.
+- The result reports `immediate_agent_loop_started: false` and `future_model_context_exposure: true`.
+- The v2 synthetic-message request uses `resume: false`; this prevents immediate agent-loop execution during import. However, OpenCode stores the synthetic message as session content and it can enter model context on a later turn. The archive is therefore not an isolated vault and the warning text is not a security boundary. Do not import archives containing untrusted instructions into a session that will later be used for autonomous work unless that future context exposure is acceptable.
 - This warning and API flag are not a security sandbox for later user interactions. Users must still review imported context before asking a model to act on it.
 - This adapter does not import credentials or issue tool permissions.
 
 ## Verification status
 
-Automated mock tests verify schema rejection, v2 session creation, synthetic-message insertion with `resume: false`, archive read-back comparison, endpoint restrictions and best-effort cleanup.
+Automated mock tests verify schema rejection, v2 session creation, synthetic-message insertion with `resume: false`, archive read-back comparison, endpoint restrictions, best-effort cleanup and explicit future-model-context exposure.
 
 A separate live integration test starts a real OpenCode server, records its reported version, imports the synthetic conformance fixture, reads the message back through the v2 API, compares the embedded JSON and digest, and deletes the test session. CI pins `@opencode/cli@2.2.5` so the API target is reproducible.
 
