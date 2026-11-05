@@ -87,3 +87,38 @@ def test_public_cli_resume_command_creates_packet(tmp_path, monkeypatch, capsys)
     assert "Continue this task" in output.read_text(encoding="utf-8")
     assert "new Opencode session" in output.read_text(encoding="utf-8")
     assert "Continuation packet created" in capsys.readouterr().out
+
+
+def test_packet_rejects_non_object_event_with_position(tmp_path):
+    source = tmp_path / "malformed.agentson"
+    source.write_text(json.dumps({
+        "id": "malformed",
+        "entries": [{"type": "user-query", "text": "hello"}, "not-an-event"],
+    }), encoding="utf-8")
+    try:
+        build_continuation_packet(str(source))
+    except ValueError as exc:
+        assert "position 1" in str(exc)
+    else:
+        raise AssertionError("Expected malformed event to be rejected")
+
+
+def test_packet_redacts_credentials_and_renders_handoff_side_effect_fields(tmp_path):
+    source = tmp_path / "sensitive.agentson"
+    source.write_text(json.dumps({
+        "id": "sensitive",
+        "tool": {"name": "fixture"},
+        "entries": [
+            {"type": "user-query", "text": "Use token ghp_abcdefghijklmnopqrstuvwxyz1234567890"},
+            {"type": "handoff", "from": "planner", "to": "builder", "conch": "build"},
+            {"type": "side-effect", "action": "file_write", "path": "/private/report.txt"},
+        ],
+    }), encoding="utf-8")
+    packet = build_continuation_packet(str(source))
+    assert "ghp_abcdefghijklmnopqrstuvwxyz1234567890" not in packet
+    assert "[SECRET]" in packet
+    assert "- from: planner" in packet
+    assert "- to: builder" in packet
+    assert "- conch: build" in packet
+    assert "- action: file_write" in packet
+    assert "- path: /private/report.txt" in packet
