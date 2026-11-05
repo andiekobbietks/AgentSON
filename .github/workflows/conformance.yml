@@ -61,6 +61,7 @@ jobs:
   live-opencode:
     name: Live OpenCode archive import and read-back
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
