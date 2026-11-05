@@ -248,3 +248,45 @@ def test_claude_reader_direct_export_uses_canonical_jsonl(tmp_path, monkeypatch)
     assert events[0]["source_session"]["tool"] == "claude-code"
     assert events[1]["type"] == "user-query"
     validate_v1_2_events(events)
+
+
+def test_redaction_scans_source_evidence_and_omits_opaque_binary():
+    """Redacted exports must not leak PII hidden in source evidence or blobs."""
+    import base64
+    from tools.pii_redactor import PIIRedactor
+
+    opaque = base64.b64encode(b"private@example.com").decode("ascii")
+    source = {
+        "source_session": {
+            "source_metadata": {
+                "source_markdown": "Contact private.person@example.com for details.",
+                "trajectory_metadata_blobs": [{
+                    "data_base64": opaque,
+                    "sha256": "metadata-digest",
+                }],
+            },
+        },
+        "entries": [{
+            "type": "system-event",
+            "text": "Imported native record",
+            "source_payload": {
+                "message": {"data": json.dumps({"email": "nested@example.com"})},
+                "step_payload_base64": opaque,
+                "step_payload_sha256": "payload-digest",
+            },
+        }],
+    }
+
+    redacted, changes = PIIRedactor(use_model=False).redact_agentson(source)
+    metadata = redacted["source_session"]["source_metadata"]
+    payload = redacted["entries"][0]["source_payload"]
+
+    assert "[PRIVATE_EMAIL]" in metadata["source_markdown"]
+    assert "[PRIVATE_EMAIL]" in payload["message"]["data"]
+    assert metadata["trajectory_metadata_blobs"][0]["data_base64"] is None
+    assert metadata["trajectory_metadata_blobs"][0]["data_base64_omitted"] is True
+    assert metadata["trajectory_metadata_blobs"][0]["sha256"] == "metadata-digest"
+    assert payload["step_payload_base64"] is None
+    assert payload["step_payload_base64_omitted"] is True
+    assert payload["step_payload_sha256"] == "payload-digest"
+    assert sum(item["type"] == "opaque_binary_payload_omitted" for item in changes) == 2
