@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# AgentSON-specific review configuration.
+# Project-wide guidance is maintained in AGENTS.md, which CodeRabbit
+# recognises as a coding-guidelines file.
+
+language: "en-GB"
+tone_instructions: "Be concise and evidence-led. Prioritise correctness, security, privacy and data integrity over style. Distinguish verified defects from uncertainty."
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+
+  path_instructions:
+    - path: "spec/**"
+      instructions: |
+        Treat schema and ontology changes as format-contract changes. Check
+        consistency between v1.2 JSONL, v1.2-entries, the 12 ontology
+        primitives, examples, validators and compatibility behaviour.
+        Do not approve a primitive or field change based only on documentation.
+    - path: "readers/**"
+      instructions: |
+        Check source-format assumptions against fixtures or documented real
+        exports. Preserve event ordering, timestamps, source identifiers and
+        meaningful content. Handle missing, null, malformed and partial input
+        safely. Flag silent data loss and unsafe assumptions.
+    - path: "importers/**"
+      instructions: |
+        Check import fidelity, provenance, deterministic mapping, malformed
+        input handling and privacy boundaries. Ensure unrelated, hidden or
+        sensitive source data is not unintentionally imported.
+    - path: "cli/**"
+      instructions: |
+        Check argument validation, safe filesystem handling, clear exit codes,
+        command registration and backwards-compatible behaviour. Avoid leaking
+        secrets or sensitive imported content in terminal output.
+    - path: "agentson_platform/**"
+      instructions: |
+        Review this as the separately scoped platform layer, not as permission
+        to add hosted-service dependencies to the AgentSON core. Check trust
+        boundaries, PII classification, redaction, report contents, network
+        behaviour and safe handling of exported session data.
+    - path: "tests/**"
+      instructions: |
+        Prefer regression tests that prove observable behaviour. Check fixtures
+        are representative, assertions are meaningful and sensitive real-world
+        data is not committed. Do not weaken tests merely to make a change pass.
+    - path: "docs/**"
+      instructions: |
+        Distinguish implemented, tested, planned and design-only capabilities.
+        Check technical claims against code, schemas and tests. Avoid claims of
+        legal compliance or security guarantees unsupported by evidence.
