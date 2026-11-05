@@ -120,7 +120,7 @@ Revenue from the platform funds AgentSON development. Both can exist without the
 | `spec/ADR-024-canonical-session-archive-and-interoperability.md` | Canonical session envelope and cross-harness guarantees | ✅ Architecture baseline; implementation migration outstanding |
 | `spec/ADR-016-ontology-enum-reconciliation.md` | 12 primitives = source of truth | ✅ Accepted |
 | `spec/ADR-017-core-vs-streaming.md` | Core vs streaming separation | ✅ Accepted |
-| `docs/standards/adrs/adr-001…014` + `spec/ADR-015/016/017/022/024` | The 18 ADRs that exist on disk | ✅ |
+| ADR inventory | See `docs/standards/README.md` and the linked files under `docs/standards/adrs/` and `spec/` | Verify paths before editing |
 | `docs/standards/adrs/adr-018…021` | Platform separation, privacy model, enforcement, pricing | ❌ **Never written** — corrected 2026-10-21 |
 | `docs/platform/mvp-spec.md` | MVP architecture: Crawler→Analyze→Report→Enforce | ❌ **Never written** — corrected 2026-10-21 |
 | `readers/opencode.py` | OpenCode reader | ✅ repaired 2026-10-21 |
@@ -165,7 +165,7 @@ Stack: L0 Identity → L1 Execution → L2 Knowledge → L3 Display
 3. ~~**`requests` serves push/pull**~~ — ✅ Removed (ADR-013)
 4. ~~**No ADR-015/016/017**~~ — ✅ Accepted (2026-07-08)
 5. ~~**GDPR compliance model unimplemented**~~ — ✅ Resolved (`cli/compliance.py` + `cli/reconstruct.py` + schema v1.2 updated)
-6. **CHANGELOG.md stale** — needs v0.2.1 entry
+6. ~~**CHANGELOG.md stale**~~ — v0.2.1 entry exists; interoperability alignment is recorded under Unreleased
 7. ~~**chrome-devtools not in CLI export/list**~~ — ✅ In CLI export (already had handler in cmd_export)
 8. ~~**Data Rights Platform not built**~~ — ✅ Sprint 1 BUILT (`agentson_platform/` — Crawl→Classify→Report working)
 9. **claude-code reader wired into CLI** — ✅ Added to export + list commands (Sprint 1)
