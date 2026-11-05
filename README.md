@@ -75,7 +75,7 @@ A `thought` event is a source-provided data category. Its presence does not mean
 Each line below is a separate JSON object:
 
 ```jsonl
-{"type":"stream-meta","stream_id":"session-001","mode":"single","agents":[{"id":"assistant","name":"Assistant"}]}
+{"type":"stream-meta","schema_version":"1.2","stream_id":"session-001","mode":"single","agents":[{"id":"assistant","name":"Assistant"}]}
 {"type":"user-query","text":"Find the cause of the failing test."}
 {"type":"action","agent":"assistant","tool":"shell.run","args":{"command":"pytest -q"},"tool_call_id":"call-001"}
 {"type":"observation","agent":"assistant","source":"tool","text":"One test failed: expected 200, received 500.","correlation_id":"call-001"}
