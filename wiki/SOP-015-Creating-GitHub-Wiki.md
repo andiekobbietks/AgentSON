@@ -1,245 +1,62 @@
-# SOP-015: Creating a GitHub Wiki (Manual + Programmatic)
+# Wiki SOP: Publishing the AgentSON GitHub Wiki
 
-**Version:** 1.0
-**Date:** 2026-07-05
-**Author:** Andrea Enning (AndieKobbieTech)
+**Status:** Maintained procedure for the checked-in wiki mirror. Follow the repository root SOP-015 and SOP-016 for all repository governance.
 
----
+## Important distinction
 
-## Overview
-
-This SOP covers creating and populating a GitHub wiki — both manually and programmatically using OpenCode.
-
----
+The repository's checked-in documentation mirror is under `wiki/`. The GitHub-hosted wiki, when enabled, is a separate Git repository ending in `.wiki.git`. Keep the two in sync only through an intentional, reviewed documentation change.
 
 ## Prerequisites
 
-- GitHub account
-- Git installed
-- OpenCode installed (for programmatic method)
-- Classic Personal Access Token (PAT) with `repo` scope
+- Wiki feature enabled in the main GitHub repository.
+- Git installed.
+- Permission to edit the repository wiki.
+- Authentication configured through Git Credential Manager, GitHub CLI or SSH.
 
----
-
-## Method 1: Manual (Browser)
-
-### Step 1: Create Wiki on GitHub
-
-1. Go to `github.com/your-username/your-repo/wiki`
-2. Click **"Create the first page"**
-3. Edit the default Home page
-4. Click **"Save Page"**
-5. Verify: banner says "Your Wiki was created."
-
-### Step 2: Add Pages
-
-1. Click **"New page"** (top right)
-2. Enter page name (e.g., `Getting-Started`)
-3. Paste markdown content
-4. Click **"Save Page"**
-5. Repeat for each page
-
-### Limitations
-
-- No version control for wiki content
-- No CI/CD pipeline
-- No local editing
-- No bulk operations
-
----
-
-## Method 2: Clone and Push (Recommended)
-
-### Step 1: Clone Wiki Repo
+## Clone the wiki repository
 
 ```bash
-git clone https://github.com/your-username/your-repo.wiki.git
+git clone https://github.com/andiekobbietks/AgentSON.wiki.git
+cd AgentSON.wiki
 ```
 
-**Expected output:**
-```
-Cloning into 'your-repo.wiki'...
-remote: Enumerating objects: 3, done.
-remote: Counting objects: 100% (3/3), done.
-Receiving objects: 100% (3/3), done.
-```
+If cloning fails, confirm the wiki exists and that your GitHub account has access. Do not place a token in the remote URL.
 
-### Step 2: Add Content
+## Edit and publish
+
+1. Copy or edit the relevant Markdown pages.
+2. Check links, headings, schema versions and feature status against the source-of-truth files in the main repository.
+3. Review the diff for personal data, secrets and stale commands.
+4. Commit with a descriptive message.
+5. Push using the configured Git credential helper or SSH remote.
 
 ```bash
-cd your-repo.wiki
-# Copy your markdown files here
-copy path\to\your\files\*.md .
-```
-
-### Step 3: Commit
-
-```bash
+git status
+git diff --check
 git add .
-git commit -m "Add wiki pages"
+git commit -m "docs(wiki): align session interoperability guidance"
+git push origin master
 ```
 
-**Expected output:**
-```
-[main xxxxxxx] Add wiki pages
- X files changed, Y insertions(+)
-```
+For the main repository, do not push directly to `master`: use the branch/PR workflow required by SOP-015 and SOP-016. The command above applies only to the separate wiki repository if its configured default branch is `master`.
 
-### Step 4: Push with PAT
+## Security rules
 
-```powershell
-# PowerShell — masked input
-$token = Read-Host -Prompt "Paste PAT" -AsSecureString
-$tokenPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-    [Runtime.InteropServices.Marshal]::SecureStringToBSTR($token)
-)
-git remote set-url origin "https://your-username:${tokenPlain}@github.com/your-username/your-repo.wiki.git"
-git push
-```
+- Never embed access tokens or passwords in a remote URL, script, wiki page or shell history.
+- Never request or paste a broad account token for routine wiki updates.
+- Prefer SSH or Git Credential Manager / GitHub CLI authentication.
+- Revoke credentials that may have been exposed.
+- Do not publish raw private session exports, personal data or secrets as wiki examples.
 
-**Expected output:**
-```
-Enumerating objects: 13, done.
-Writing objects: 100% (11/11), done.
-To https://github.com/your-username/your-repo.wiki.git
-   abc1234..def5678  main -> main
-```
+## Source-of-truth rule
 
----
+The main repository files are authoritative for product and engineering claims:
 
-## Method 3: Programmatic with OpenCode
+- `PRD.md`
+- `docs/architecture/session-interoperability.md`
+- `spec/v1.2.json` and `spec/v1.2-entries.json`
+- `spec/ontology.md`
+- `spec/ADR-*.md`
+- `docs/standards/coding-standards.md`
 
-### What OpenCode Can Do
-
-OpenCode is a free, open-source AI coding assistant. With the right prompts, it can:
-
-1. Generate markdown content for wiki pages
-2. Create files locally using the write() tool
-3. Run git commands via bash tool
-4. Generate PDFs using Python (reportlab)
-5. Query SQLite databases for session data
-
-### What OpenCode Cannot Do (Free Tier)
-
-- Cannot authenticate to GitHub (no token handling)
-- Cannot push to remote repos directly
-- Cannot access browser-based workflows
-- Limited to local file operations
-
-### Workflow: OpenCode + Manual Push
-
-**Step 1: Generate content with OpenCode**
-
-Prompt: "Create a wiki page for [topic] in markdown format. Include: title, overview, step-by-step instructions, expected outputs, common errors, and fixes."
-
-OpenCode will use the write() tool to create the file locally.
-
-**Step 2: Review and edit locally**
-
-```bash
-cd C:\Users\your-username\Documents\your-repo\wiki
-# Review the generated files
-notepad Getting-Started.md
-```
-
-**Step 3: Push manually**
-
-Follow Method 2 above.
-
-### OpenCode Free Tier Limitations
-
-| Feature | Free Tier | Paid Tier |
-|---------|-----------|-----------|
-| Model | MiMo V2.5 Free | GPT-4, Claude |
-| Sessions | Unlimited | Unlimited |
-| File writes | Yes | Yes |
-| Git operations | Yes (local) | Yes (local) |
-| GitHub auth | No | No |
-| Token handling | No (security) | No (security) |
-
-### OpenCode Prompts for Wiki Generation
-
-**Generate a getting started page:**
-```
-Create a getting-started.md wiki page for [project name]. Include:
-- Installation steps with exact commands
-- Expected output for each command
-- Common errors and fixes
-- Version requirements
-```
-
-**Generate an API reference:**
-```
-Create an api-reference.md wiki page for [project name]. Include:
-- All public functions/methods
-- Parameters and return types
-- Usage examples
-- Error codes
-```
-
-**Generate a troubleshooting guide:**
-```
-Create a troubleshooting.md wiki page for [project name]. Include:
-- Top 5 common errors
-- Exact error messages
-- Step-by-step fixes
-- Prevention tips
-```
-
----
-
-## Token Management
-
-### Creating a Classic PAT
-
-1. Go to `github.com/settings/tokens`
-2. Click **"Generate new token"** → **"Generate new token (classic)"**
-3. Note: name it (e.g., `wiki-push`)
-4. Expiration: 30 days
-5. Scopes: check **`repo`** (only)
-6. Click **"Generate token"**
-7. Copy immediately (won't see again)
-
-### Token Security Rules
-
-- NEVER share tokens in chat/email
-- Use `Read-Host -AsSecureString` for masked input
-- Delete compromised tokens immediately
-- Use minimal scopes (repo only for wiki)
-
-### Clearing Cached Credentials
-
-If git keeps failing after token change:
-
-```bash
-git config --global --unset credential.helper
-git config --global credential.helper store
-```
-
----
-
-## Troubleshooting
-
-### Error: "Password authentication is not supported"
-
-**Cause:** GitHub deprecated password auth for git in 2021.
-**Fix:** Embed PAT in URL: `https://USER:TOKEN@github.com/USER/REPO.wiki.git`
-
-### Error: "Invalid username or token"
-
-**Cause:** Fine-grained token lacks wiki permission, or cached bad creds.
-**Fix:** Use classic PAT with `repo` scope. Clear credential helper.
-
-### Error: "remote: Repository not found"
-
-**Cause:** Wrong wiki URL.
-**Fix:** Wiki URL format: `https://github.com/USER/REPO.wiki.git` (note `.wiki.git` suffix)
-
----
-
-## References
-
-- [GitHub Wiki Documentation](https://docs.github.com/en/communities/documenting-your-project-with-wikis)
-- [GDPR Article 20 — Right to Data Portability](https://gdpr-info.eu/art-20-gdpr/)
-- [ICO — Your Right to Data Portability](https://ico.org.uk/for-the-public/your-right-to-data-portability/)
-- [OpenCode Documentation](https://opencode.ai)
+The wiki is a navigable explanation and mirror, not a competing specification. Update the source-of-truth document and its wiki mirror in the same reviewed change.
