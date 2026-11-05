@@ -55,7 +55,7 @@ agentson = "cli.main:main"
 "pwa" = ["manifest.json", "sw.js", "*.html", "*.png", "*.ico"]
 
 [tool.setuptools.packages.find]
-include = ["readers*", "exporters*", "importers*", "consumers*", "cli*", "agentson_platform*", "agentson_mcp*"]
+include = ["spec*", "readers*", "exporters*", "importers*", "consumers*", "cli*", "agentson_platform*", "agentson_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
