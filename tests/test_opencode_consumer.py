@@ -61,6 +61,7 @@ def test_import_creates_v2_session_and_inserts_inert_synthetic_message():
     assert calls[1][1] == "/api/session/ses_imported_123/synthetic"
     message = calls[1][2]
     assert message["resume"] is False
+    assert message["delivery"] == "queue"
     assert message["description"] == "Imported AgentSON v1.2 archive capsule"
     assert message["text"].startswith("Imported AgentSON v1.2 archive")
     embedded = message["text"].split("<agentson-archive>\n", 1)[1].split(
