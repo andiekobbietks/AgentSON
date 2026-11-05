@@ -77,6 +77,7 @@ def cmd_export(args):
     from readers.libre import read_libre_csv
     
     db_paths = get_default_db_paths()
+    Path(args.output).mkdir(parents=True, exist_ok=True)
     
     if args.tool == "opencode":
         db_path = db_paths["opencode"]
