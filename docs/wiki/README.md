@@ -13,6 +13,7 @@ This directory contains the Markdown source of the [AgentSON GitHub Wiki](https:
 | [Home.md](Home.md) | Wiki index and overview |
 | [Getting-Started.md](Getting-Started.md) | Install, export your first session, understand the format |
 | [Schema.md](Schema.md) | JSON Schema reference |
+| [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) | Cross-harness capture, exchange, inspection, reconstruction and resumption boundaries |
 | [Readers.md](Readers.md) | Tool-specific readers |
 | [ADRs.md](ADRs.md) | Architecture Decision Records index |
 | [SOPs.md](SOPs.md) | Standard Operating Procedures |
