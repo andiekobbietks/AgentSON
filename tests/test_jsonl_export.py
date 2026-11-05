@@ -372,3 +372,25 @@ def test_redactor_validation_failure_does_not_truncate_source(tmp_path):
     else:
         raise AssertionError("Expected invalid stream validation to fail")
     assert source.read_bytes() == original
+
+
+def test_atomic_stream_file_writer_preserves_existing_file_on_validation_error(tmp_path):
+    from exporters.jsonl import write_agentson_stream_file
+
+    destination = tmp_path / "existing.agentson"
+    destination.write_text("keep this archive intact", encoding="utf-8")
+    invalid = {
+        "id": "invalid",
+        "entries": [
+            {"type": "stream-meta", "schema_version": "1.2",
+             "stream_id": "invalid", "mode": "invalid",
+             "agents": [{"id": "assistant", "name": "Assistant"}]},
+        ],
+    }
+    try:
+        write_agentson_stream_file(invalid, destination)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Expected schema validation to fail")
+    assert destination.read_text(encoding="utf-8") == "keep this archive intact"
