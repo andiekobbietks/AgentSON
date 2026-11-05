@@ -127,7 +127,7 @@ Example validation responsibilities:
 
 > "Is this the only format solving this problem at the international level?"
 
-**Yes.** No other format distinguishes single-agent vs multi-agent session traces. The `mode` field in `stream-meta` is a unique capability that makes AgentSON adaptable to any agent architecture.
+This is the distinction AgentSON chooses for its own event model. No claim is made that it is unique across all formats or standards. The stream-mode field is descriptive metadata unless a separately specified stream profile gives it normative validation rules.
 
 ---
 
