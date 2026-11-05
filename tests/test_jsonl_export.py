@@ -168,3 +168,62 @@ def test_redaction_preserves_jsonl_and_redacts_source_payload(tmp_path):
     assert "[PRIVATE_EMAIL]" in events[1]["text"]
     assert "[PRIVATE_EMAIL]" in events[1]["source_payload"]["text"]
     validate_v1_2_events(events)
+
+
+def test_reader_specific_session_metadata_survives_projection():
+    """Fields outside the common session shape must remain inspectable."""
+    source = {
+        "id": "antigravity-session",
+        "version": "1.0.0",
+        "tool": {"id": "antigravity", "name": "Antigravity IDE", "version": "1.0.0"},
+        "agent": {"id": "gemini", "name": "Gemini", "model": "gemini-2.0-flash"},
+        "variant": {"id": "antigravity", "name": "Antigravity IDE", "version": "1.0.0"},
+        "metrics": {"total_tokens": 0, "cost": 0.0, "total_turns": 1},
+        "entries": [{"role": "assistant", "type": 21, "text": "run command", "timestamp": "2026-11-05T10:00:00+00:00"}],
+    }
+    events = to_v1_2_events(source, source_tool="antigravity")
+    retained = events[0]["source_session"]["source_metadata"]
+    assert retained["version"] == "1.0.0"
+    assert retained["variant"]["name"] == "Antigravity IDE"
+    assert retained["metrics"]["total_turns"] == 1
+    assert events[1]["source_payload"]["type"] == 21
+    assert events[1]["source_payload"]["role"] == "assistant"
+    validate_v1_2_events(events)
+
+
+def test_opencode_real_reader_shape_round_trips_through_canonical_stream(tmp_path):
+    """Use the checked-in real OpenCode message/parts sample as a regression fixture."""
+    from pathlib import Path
+    fixture_path = Path(__file__).parent / "fixtures" / "opencode_real_sample.json"
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    message = fixture["message"]
+    reader_entries = [
+        {
+            "type": "thought",
+            "text": fixture["parts"][0]["text"],
+            "timestamp": fixture["parts"][0]["time"]["start"],
+        },
+        {
+            "type": "action",
+            "tool": fixture["parts"][1]["tool"],
+            "code": json.dumps(fixture["parts"][1]["state"]["input"]),
+            "output": fixture["parts"][1]["state"]["output"],
+            "status": "success",
+        },
+    ]
+    session = {
+        "id": message["sessionID"],
+        "tool": {"name": "opencode", "session_id": message["sessionID"]},
+        "agent": {"name": message["modelID"], "provider": message["providerID"]},
+        "metadata": {"message_id": message["id"], "finish": message["finish"]},
+        "entries": reader_entries,
+    }
+    output = tmp_path / "opencode-real-sample.agentson"
+    with output.open("w", encoding="utf-8") as handle:
+        write_agentson_stream(session, handle, source_tool="opencode")
+    parsed = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+    assert [event["type"] for event in parsed] == ["stream-meta", "thought", "action"]
+    assert parsed[1]["source_payload"]["text"] == "Now run the test script."
+    assert parsed[2]["source_payload"]["status"] == "success"
+    assert parsed[0]["source_session"]["metadata"]["message_id"] == message["id"]
+    validate_v1_2_events(parsed)
