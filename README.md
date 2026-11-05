@@ -1,5 +1,5 @@
 # AgentSON — v1.2.0 (Canonical Schema, 2026-10-23)
-# Release: full session-debug (browser panel inspection), 236 passing tests, 9 readers.
+# Release: full session-debug (browser panel inspection). Reader modules and verification status are tracked in [wiki/Readers.md](wiki/Readers.md).
 # Design-level: ClickOps NOT BUILT; full MCP capture (ADR-022) design-only.
 # AKCloud managed service stays separate — banner / tagline AKCloud-only.
 # AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
@@ -26,7 +26,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/agentson.svg)](https://pypi.org/project/agentson/)
 [![CI](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml/badge.svg)](https://github.com/andiekobbietks/AgentSON/actions)
 
-> Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
+> AgentSON aims to make AI-agent session records as portable and interoperable as API descriptions and development environments.
 
 ---
 
@@ -44,7 +44,7 @@ The same lock-in problem exists everywhere:
 | AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
 | Development | Cursor, Copilot, Claude Code | Code context, edit history |
 
-**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. AgentSON is designed to make data from supported sources exportable and inspectable. Actual coverage depends on each source adapter; the format alone does not establish legal compliance.
 
 The FreeStyle Libre reader (`readers/libre.py`) was the first reader built — not because glucose data is the most important, but because it's the most personal. If the format can handle medical time-series data, it can handle anything.
 
@@ -58,7 +58,7 @@ Every AI coding agent stores session data in its own proprietary database. There
 
 ## The Solution
 
-AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
+AgentSON is designed to capture an AI-assisted session as a self-contained, versioned session envelope: user inputs, agent messages, tool actions, observations, side effects and outcomes where the source exposes them. The canonical v1.2 archive is one JSON document with an ordered `entries` array. Adapters preserve source provenance and report information that is transformed, unavailable, redacted or unsupported.
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
@@ -82,7 +82,7 @@ AgentSON captures the full trajectory of what happened during an AI-assisted ses
 │               ▼              ▼              ▼                   │
 │  ┌─────────────────┐ ┌──────────────┐ ┌──────────────────┐    │
 │  │   Local CLI     │ │   Supabase   │ │  Web Viewer      │    │
-│  │  (search/replay)│ │  (optional)  │ │  (shared replay) │    │
+│  │ (search/inspect)│ │  (optional)  │ │   (inspection)   │    │
 │  └─────────────────┘ └──────────────┘ └──────────────────┘    │
 │                                                                   │
 └───────────────────────────────────────────────────────────────────┘
@@ -92,17 +92,19 @@ AgentSON captures the full trajectory of what happened during an AI-assisted ses
 
 ## Tool Landscape
 
-AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
+The planning landscape surveys 33 tools across 7 tiers; this is a market/priority roadmap, not a claim of complete integration coverage.
 
 ### Reader Coverage
 
+The chart below is a historical v0.1.0 planning snapshot, not the current implementation inventory. The current repository module list and dedicated test-file presence are recorded in [wiki/Readers.md](wiki/Readers.md). A module's presence does not by itself establish that it is working, conformant or resumable.
+
 ```mermaid
-pie title Reader Coverage (v0.1.0)
-    "Working (6)" : 6
-    "Planned (27)" : 27
+pie title Historical reader roadmap snapshot (v0.1.0)
+    "Marked working at the time (6)" : 6
+    "Planned at the time (27)" : 27
 ```
 
-### RICE Priority (Top 10 Readers)
+### Historical RICE Priority Snapshot (not a current capability inventory)
 
 ```mermaid
 xychart-beta
@@ -113,6 +115,10 @@ xychart-beta
 ```
 
 > opencode (RICE: ∞) already works — zero effort, full reach.
+
+### Historical market and priority roadmap
+
+The tier tables below are planning context, not the authoritative inventory of implemented reader modules or tested capabilities. See [wiki/Readers.md](wiki/Readers.md) for the repository snapshot and evidence status.
 
 ### Tier 1: Core Market
 
@@ -207,22 +213,22 @@ Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 
 ### For Developers
 
-Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, Aider, Cline, Gemini CLI — becomes one searchable, portable, analysable record. Switch runtimes without losing your operational history. Every `.AgentSON` file is a personal engineering journal that follows you.
+For supported source adapters, your AI work can be preserved as a searchable, portable and analysable record. Move the archive between tools without losing the recorded history; whether another harness can reconstruct or resume the work depends on its adapter, available state and permissions. Every `.agentson` archive is a portable engineering record.
 
 - **Portability** — Switch tools without losing context
 - **Search** — Full-text search across all your sessions
-- **Replay** — Re-run or review any agent session offline
-- **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
+- **Inspection** — Review the recorded session offline without executing imported actions
+- **Ownership** — No unsolicited telemetry; core archive operations work offline; optional source integrations disclose their dependencies
 
 ### For the Organisation
 
 As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows?
 
-Memory systems (MCP, bespoke databases) don't give you portable answers to those questions. AgentSON does.
+Memory systems and bespoke databases solve different problems. AgentSON is designed to provide a portable session record; its current coverage and limits are documented per adapter.
 
 - **Institutional knowledge** — Preserve the operational life of every agent independently of where it ran
 - **Vendor independence** — Change runtimes, keep the record
-- **Compliance** — GDPR Art. 20 + EU AI Act Art. 52
+- **Governance** — Exportability and traceability can support applicable obligations; the format alone does not establish legal compliance
 - **Training-data export** — Export to Unsloth/Olive for fine-tuning
 
 ---
@@ -256,9 +262,7 @@ agentson validate ./sessions/
 
 ## Schema (v1.2 — canonical)
 
-> v1 and v1.1 are deprecated. v1.2 is the canonical schema
-> (`spec/v1.2.json`); individual entries validate against
-> `spec/v1.2-entries.json`.
+ > v1 and v1.1 are legacy single-document formats. v1.2 is the canonical session-envelope schema (`spec/v1.2.json`), containing an ordered `entries` array. Individual entries are checked against `spec/v1.2-entries.json`. This is a JSON document contract, not a JSONL stream validator. Existing line-oriented stream code is a separate transport/implementation surface pending its own explicit contract.
 
 ```json
 {
@@ -282,7 +286,7 @@ agentson validate ./sessions/
 
 | Type | Description |
 |------|-------------|
-| `stream-meta` | Session header; first entry of a JSONL stream |
+| `stream-meta` | Session/stream metadata header; line-oriented framing is a separate transport contract |
 | `user-query` | User's input or question |
 | `thought` | Agent's reasoning |
 | `action` | Tool execution (code + output) |
@@ -297,7 +301,26 @@ agentson validate ./sessions/
 
 ---
 
-## Fine-Tuning Export
+## Cross-Harness Interoperability
+
+AgentSON's objective is to let a session created in one AI coding harness be captured, represented, validated, exchanged and inspected in another without silently losing meaning or provenance. Where a receiving harness supports compatible state and permissions, AgentSON should also enable controlled reconstruction and resumption.
+
+These are separate guarantees:
+
+| Capability | Guarantee |
+|---|---|
+| **Portable** | A conforming consumer can parse and understand the session independently of its source harness. |
+| **Reconstructable** | A consumer can rebuild a useful representation of recorded activity and context, while reporting missing state. |
+| **Resumable** | A compatible receiving harness can continue from an explicit, validated checkpoint after capability and permission checks. |
+
+Portability does not imply reconstruction; reconstruction does not imply resumption. Imported tool calls and outputs are untrusted data and are never executed merely by parsing or inspecting an archive. Credentials are not portable session content.
+
+**No silent semantic loss:** adapters must distinguish information preserved exactly, normalised, retained as source-specific extension data, unavailable, redacted or unsupported. See [the interoperability architecture](docs/architecture/session-interoperability.md) and [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md).
+
+## Downstream Fine-Tuning Export (separate from the canonical interchange contract)
+
+Fine-tuning exports are downstream transformations, not the canonical AgentSON session archive. They may omit provenance and execution semantics; do not use them as a lossless interchange format. The core/downstream scope of `finetune`, `push` and `pull` remains tracked by ADR-013 / issue #26.
+
 
 ```bash
 # Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
@@ -371,22 +394,21 @@ agentson/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
+See [ROADMAP.md](ROADMAP.md) for the reader-priority planning snapshot. It is not the authoritative implementation inventory; see [wiki/Readers.md](wiki/Readers.md) for repository modules and available test files.
 
-**Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
+**Roadmap candidates:** OpenClaw and additional harnesses not yet represented by a supported, verified adapter.
 
-**Version targets:**
-- v0.2.0 (Aug 2026): 10+ readers, real-world data
-- v0.3.0 (Sep 2026): 15+ readers, sample corpus
-- v1.0.0 (Oct 2026): 20+ readers, stable API
+**Historical version targets:** The v0.2.0, v0.3.0 and v1.0.0 dates in the original roadmap were planning estimates from 2026-07, not current release commitments. Check releases and CI for actual status.
 
 ---
 
 ## Standards
 
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
-- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
-- [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
+- [Session Interoperability Architecture](docs/architecture/session-interoperability.md) — Cross-harness capture, exchange, inspection and resumption boundaries
+- [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md) — Canonical archive decision
+- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Operating and specification decision records (separate namespaces)
+- [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — Standard Operating Procedures
 
 ---
 
