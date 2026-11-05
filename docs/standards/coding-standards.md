@@ -18,25 +18,25 @@ Non-negotiable rules for how I write code.
 
 ## No Telemetry
 
-**No phone-home, no analytics, no tracking.**
+**No unsolicited telemetry, analytics, tracking or error reporting.**
 
-Not even "anonymous usage statistics." Not even "error reporting." If the user didn't explicitly opt in, don't send data anywhere.
+Do not collect or transmit usage/session data for the maintainer or a third party without explicit, informed user opt-in. Core archive operations must not phone home.
 
-**Rule:** No `requests.post`, no `fetch()` to external URLs, no beacon scripts, no tracking pixels.
+**Rule:** No hidden analytics, tracking pixels, beacons or background uploads. Network access required for a user-requested source integration, update check or explicitly enabled hosted feature is not telemetry by itself; it must be documented, scoped to that action and disclose what data leaves the device. Do not send session content to an external service merely because a user opened or inspected an archive.
 
-**Why:** The user owns their data. That includes metadata about how they use the tool.
+**Why:** Users own their session data and must understand and control every external disclosure.
 
 ---
 
 ## Vendor Neutral
 
-**Never depend on one company's API or format.**
+**The canonical model and archive must not depend on one company's API or format.**
 
-If OpenAI shuts down tomorrow, AgentSON still works. If GitHub goes down, the CLI still works. If Supabase disappears, the local files still work.
+The canonical archive must remain readable and inspectable without the originating vendor runtime or a hosted AgentSON service. Individual source adapters may depend on a source application's local database or an explicitly authorised API; those dependencies must be declared per adapter.
 
-**Rule:** Every external service is optional. Every core feature works offline.
+**Rule:** External services are optional to the core archive. Core parse, validate and inspect operations must work offline. Source-specific capture may require the source application or service and must disclose that requirement.
 
-**Why:** Vendor lock-in is the enemy of portability. The whole point of AgentSON is that it works everywhere.
+**Why:** Vendor lock-in is the enemy of portability. The archive must outlive any one harness or provider.
 
 ---
 
