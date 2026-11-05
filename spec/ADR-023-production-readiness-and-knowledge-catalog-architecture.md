@@ -220,3 +220,72 @@ This is the project's public decision record. It should explain the reasoning su
 - Google Cloud Platform knowledge-catalogue repository: https://github.com/GoogleCloudPlatform/knowledge-catalog
 
 **Review trigger:** Revisit this ADR when the platform has an implemented ingestion/indexing service, when a production deployment target is selected, or when upstream OKF changes materially affect interoperability.
+
+## 10. Scoped standards assessment: AgentSON Severity v1
+
+The Severity v1 deliverable on `feat/severity-v1` was assessed against the GOV.UK API Technical and Data Standards and the Technology Code of Practice (TCoP). This is a **data-contract assessment**, not an API-service assessment. The deliverable consists of `SEVERITY.md`, a Pydantic model, a JSON Schema 2020-12 document, package metadata and tests. It does not expose an HTTP endpoint.
+
+That scope distinction is mandatory. Requirements for REST resource design, OpenAPI, HTTPS/TLS, OAuth, API sandbox services and API endpoint versioning cannot be marked as failures of a deliverable with no HTTP API surface. Where a later AgentSON Platform API exposes this contract, those requirements must be assessed against that API separately.
+
+### 10.1 GDS API Technical and Data Standards — scoped result
+
+| Requirement | Result for Severity v1 | Evidence / qualification |
+|---|---|---|
+| REST API style | Not applicable | No HTTP API surface exists. |
+| OpenAPI specification | Not applicable | The deliverable publishes JSON Schema 2020-12, not an API description. |
+| UTF-8 | Met | Source and tests open JSON files with UTF-8; JSON interchange is Unicode. |
+| JSON response formats | Scope-qualified | JSON is the contract/document format. There are no HTTP responses to assess. |
+| Consistent resource naming | Met within the contract | Stable severity and priority identifiers and consistent field naming; this does not establish REST resource naming. |
+| ISO 8601 date/time | Partially met | `assessed_at` is described and generated as ISO 8601 UTC, but the schema uses a plain string without `format: date-time`. |
+| Input validation / unknown attributes | Partially met | Required fields and enumerations are validated, but unknown properties are not explicitly rejected by the schema or Pydantic configuration. |
+| Versioning / older versions | Partially met | `schema_version: agentson.severity.v1` and the schema path version the data contract. URI versioning and API backward-compatibility policy are not applicable until an API exists. |
+| HTTPS / TLS 1.2+ / OAuth 2.0 | Not applicable | No hosted endpoint or transport layer is part of this deliverable. |
+| Access control / authentication | Not applicable at contract layer | The schema does not authenticate consumers. A service that stores or serves assessments must implement access control. |
+| Sensitive-data access logging | Partially met, with boundary | Assessment provenance records who/what assessed a finding and when. It does not record who later accessed the assessment or evidence. |
+| API test service / sandbox | Not applicable | No runtime API is supplied. Contract fixtures and validation tests are the relevant current test mechanism. |
+| API documentation | Scope-qualified | `SEVERITY.md` documents the data contract; it is not API endpoint documentation. |
+| User needs / iteration | Not met in inspected evidence | Consumer groups and their needs are not documented as research or validated requirements. |
+| Check for existing APIs | Not assessed | No evidence of a cross-government API catalogue review was included in this deliverable. |
+| Data Standards Catalogue / TCoP mapping | Partially met | Uses open JSON/JSON Schema and ISO 8601 intent, but does not provide an explicit standards-catalogue mapping. |
+
+### 10.2 Technology Code of Practice — scoped result
+
+| TCoP point | Result for Severity v1 | Evidence / qualification |
+|---|---|---|
+| 1. Define user needs | Not met | No documented user-needs research for the severity contract. |
+| 2. Make things accessible and inclusive | Partially met | Markdown is human-readable; no accessibility or plain-language review is evidenced. |
+| 3. Be open and use open source | Met | Package metadata declares Apache-2.0. |
+| 4. Make use of open standards | Partially met | JSON, JSON Schema 2020-12 and ISO 8601 intent are present; no OpenAPI is required for a non-API contract. |
+| 5. Use cloud first | Not applicable to this deliverable | No deployment or hosting component is in scope. Reassess at platform/service level. |
+| 6. Make things secure | Partially met | Assessment method and human override concepts are represented; no formal threat model or complete input-hardening policy is evidenced. TLS is outside this schema's scope. |
+| 7. Make privacy integral | Partially met | Evidence references are read-only, but excerpts can contain personal data and pseudonymisation is not required by the contract. |
+| 8. Share, reuse and collaborate | Partially met | Apache-2.0 supports reuse; cross-government reuse discovery is not evidenced. |
+| 9. Integrate and adapt technology | Not applicable to this deliverable | No integration with government systems is claimed. |
+| 10. Make better use of data | Partially met | Separating severity, priority and confidence improves structured interpretation; data quality and lineage controls remain limited. |
+| 11. Define your purchasing strategy | Not applicable | No procurement decision is part of this schema deliverable. |
+| 12. Make your technology sustainable | Not applicable to this deliverable | No operational hosting or environmental claim is in scope. |
+| 13. Meet the Service Standard | Not applicable | This is a data specification, not a public-facing government service. |
+
+### 10.3 Corrective actions for Severity v1
+
+1. **Document consumers and user needs.** Add a concise section to `SEVERITY.md` identifying CLI users, report readers and platform analysts, the decisions they need to make, and the problems the contract is intended to solve. Distinguish evidenced user research from maintainer assumptions.
+2. **Enforce timestamp semantics.** Add `format: date-time` to `assessed_at` in the JSON Schema and enforce timezone-aware ISO 8601 timestamps in Pydantic. Add positive and negative fixtures. Confirm the chosen JSON Schema validator checks format assertions rather than merely recognising the keyword.
+3. **Decide unknown-field policy explicitly.** If forward-compatible extension is not intended in v1, configure Pydantic with `extra="forbid"` and set `additionalProperties: false` at the top level and in every object definition. Add parity tests proving both validators reject the same unknown properties. Treat this as a contract-tightening change and review compatibility before merging; do not silently make it a breaking change.
+4. **State the interface boundary.** In `SEVERITY.md`, explicitly say this is a JSON Schema/Pydantic data contract, not a REST API or OpenAPI description. If a REST API is introduced later, publish a separate OpenAPI document and assess the API against the relevant GDS requirements.
+5. **Separate assessment provenance from access audit.** Keep `assessed_by`, `assessed_at`, `method`, `rule_id`, evidence references and overrides as provenance of the assessment. Record reads, exports and administrative access in the service/platform audit layer, where identity and access events actually occur.
+6. **Address privacy in evidence excerpts.** Define whether excerpts are optional, redacted, pseudonymised or excluded by default, and add tests for the selected policy.
+
+### 10.4 Reasoning correction and decision boundary
+
+The standards review must not turn into a checklist exercise where every GDS API requirement is forced onto every JSON document. The correct method is:
+
+- identify the artefact and its actual interface;
+- determine which requirement applies to that artefact;
+- assess the evidence at that boundary;
+- mark genuinely out-of-scope requirements as not applicable, not as failed;
+- carry service-level requirements forward to the service that will expose or process the contract.
+
+This is the same layer-boundary discipline adopted in this ADR's Core/Platform decision. It also corrects the earlier production-readiness assessment, which referred too broadly to API and service controls without always distinguishing the severity data contract from the future platform API.
+
+The Severity v1 findings above are scoped to the reviewed `feat/severity-v1` deliverable. They do not certify a later API or the AgentSON Platform as GDS-compliant.
+
