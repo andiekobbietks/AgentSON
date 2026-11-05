@@ -403,6 +403,9 @@ def test_opencode_v2_sqlite_schema_and_state_fidelity(tmp_path):
     reader.connect()
     try:
         assert reader.schema_generation == "2.x"
+        import pytest
+        with pytest.raises(sqlite3.OperationalError):
+            reader.conn.execute("CREATE TABLE should_not_be_created (id TEXT)")
         listed = reader.list_sessions()
         session = reader.read_session("ses-v2-fixture")
     finally:
