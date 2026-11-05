@@ -1,118 +1,67 @@
-# Readers
+# Reader and Adapter Inventory
 
-Readers convert tool-specific session data into AgentSON format.
+Readers extract source sessions and map them into AgentSON. A reader is not automatically an importer, exporter, reconstruction engine or resume adapter.
 
----
+## Repository inventory (master snapshot, 05 November 2026)
 
-## Working Readers (v0.1.0)
+The repository contains the following reader modules. This is a source-tree inventory, not a claim that every module is production-ready or that tests have passed in this documentation change.
 
-| Tool | Reader | Tests | Notes |
-|------|--------|-------|-------|
-| opencode | `readers/opencode.py` | ✅ | SQLite → AgentSON |
-| MiniMax | `readers/minimax.py` | ✅ | SQLite → AgentSON |
-| Antigravity IDE | `readers/antigravity.py` | ✅ | Protobuf → AgentSON |
-| FreeStyle Libre 2 | `readers/libre.py` | ✅ | CSV → AgentSON (health data) |
-| Chrome DevTools AI | `readers/chrome_devtools.py` | ✅ 9 tests | MD export → AgentSON |
-| Claude Code | `readers/claude_code.py` | ✅ | JSONL → AgentSON |
+| Source | Module | Dedicated test module present in repository |
+|---|---|---|
+| Aider | `readers/aider.py` | Yes: `tests/test_aider.py` |
+| Antigravity | `readers/antigravity.py` | Yes: `tests/test_antigravity.py` |
+| Chrome DevTools | `readers/chrome_devtools.py` | Yes: `tests/test_chrome_devtools.py` |
+| Claude Code | `readers/claude_code.py` | Yes: `tests/test_claude_code.py` |
+| Cline | `readers/cline.py` | Yes: `tests/test_cline.py` |
+| GitHub Copilot Chat | `readers/copilot_chat.py` | Yes: `tests/test_copilot_chat.py` |
+| Cursor | `readers/cursor.py` | Yes: `tests/test_cursor.py` |
+| Gemini | `readers/gemini.py` | No dedicated `test_gemini.py` found in this snapshot |
+| FreeStyle Libre | `readers/libre.py` | No dedicated `test_libre.py` found in this snapshot |
+| MiniMax | `readers/minimax.py` | Yes: `tests/test_minimax.py` |
+| OpenCode | `readers/opencode.py` | Yes: `tests/test_opencode.py` |
+| VibeEdge | `readers/vibeedge.py` | No dedicated `test_vibeedge.py` found in this snapshot |
 
----
+The source tree also contains importers for A2A, AGNTCY, ChatGPT and MCP under `importers/`. These are importer integrations and should not be counted as source readers without a clearly defined inventory rule.
 
-## Usage
+## Capability labels
 
-```python
-from readers.opencode import read_opencode_session
+Use these labels per adapter and per operation:
 
-session = read_opencode_session("ses_xxx", db_path="~/.local/share/opencode/opencode.json")
-```
+- **Implemented and tested:** implementation exists and relevant tests have run and passed against identified fixtures.
+- **Implemented, not yet verified:** implementation exists but current test evidence is missing or has not been run.
+- **Experimental:** available for evaluation; behaviour or interface may change.
+- **Designed:** contract or plan exists; implementation is not complete.
+- **Planned:** accepted roadmap item, not implemented.
+- **Unsupported:** deliberately not supported.
 
-```python
-from readers.libre import read_libre_csv
+A file existing in the repository is not sufficient evidence for the label "working". Record the tested source version, fixture provenance, test command and known gaps.
 
-session = read_libre_csv("libre_data.csv")
-```
+## Adapter capability dimensions
 
----
+Track these separately:
 
-## RICE-Scored Roadmap
+1. Capture/read source data.
+2. Export a canonical v1.2 archive.
+3. Import a canonical v1.2 archive.
+4. Validate envelope and entries.
+5. Preserve source ordering and correlation.
+6. Preserve provenance and report semantic loss.
+7. Inspect/render without executing imported content.
+8. Reconstruct recorded context.
+9. Resume from a compatible checkpoint.
 
-| Priority | Tool | RICE Score | Status |
-|----------|------|------------|--------|
-| 1 | Cursor | 2700 | Planned |
-| 2 | GitHub Copilot | 4000 | Planned |
-| 3 | Claude Code | ∞ | Working |
-| 4 | Codex CLI | 1920 | Planned |
-| 5 | Gemini CLI | 1400 | Planned |
-| 6 | Cline | 1350 | Planned |
-| 7 | Aider | 1350 | Planned |
-| 8 | Kiro | 1120 | Planned |
-| 9 | opencode | ∞ | Working |
-| 10 | Replit | 150 | Planned |
+Do not infer capabilities 3–9 from capability 1.
 
----
+## Adding a reader
 
-## Adding a New Reader
+1. Inspect the source format and document its version/limitations.
+2. Implement a source-specific reader behind a stable adapter boundary.
+3. Preserve source identifiers, timestamps and ordering where available.
+4. Map into the canonical v1.2 envelope and event vocabulary.
+5. Record preserved, normalised, extension, unavailable, redacted and unsupported information.
+6. Add sanitised fixtures derived from real exports where permission allows; label synthetic fixtures honestly.
+7. Test malformed, incomplete, unknown and version-skewed source records.
+8. Update this inventory with actual test evidence and limitations.
+9. Submit changes through the repository's branch/PR workflow.
 
-1. Create `readers/<tool_name>.py`
-2. Implement `read_<tool>_session(session_id, **kwargs) -> dict`
-3. Return AgentSON-compatible dict with `entries` array
-4. Add test fixtures in `tests/`
-5. Update this wiki page
-6. Submit PR
-
-### Reader Template
-
-```python
-"""
-<Tool Name> reader for AgentSON.
-
-Converts <Tool Name> session data to AgentSON format.
-"""
-
-import json
-from typing import Dict, List, Optional
-
-
-def read_<tool>_session(session_id: str, db_path: Optional[str] = None) -> Dict:
-    """
-    Read a <Tool Name> session and convert to AgentSON format.
-    
-    Args:
-        session_id: The session identifier
-        db_path: Path to the database file (optional)
-    
-    Returns:
-        AgentSON session dict
-    """
-    entries = []
-    
-    # TODO: Implement reader
-    # 1. Connect to database
-    # 2. Query session data
-    # 3. Convert to AgentSON entry format
-    # 4. Return complete session dict
-    
-    return {
-        "$schema": "https://agentson.dev/schema/v1.1.json",
-        "id": f"session-{session_id}",
-        "tool": {"name": "<tool_name>", "session_id": session_id},
-        "entries": entries
-    }
-```
-
----
-
-## Tool Landscape
-
-AgentSON covers 33 tools across 7 tiers:
-
-| Tier | Tools | Status |
-|------|-------|--------|
-| Core Market | Cursor, Claude Code, Kiro, Codex CLI, Gemini CLI, Windsurf | Partial |
-| Open Source | opencode, Cline, Aider, Zed, Goose, OpenHands | Partial |
-| Extensions | Copilot, Amazon Q, JetBrains, Cody, Qodo, Augment, Continue, Tabnine | Planned |
-| Builders | Bolt.new, v0, Lovable, Replit | Planned |
-| Orchestrators | amux, Claude Squad, Kilo Code, dmux | Planned |
-| Autonomous | Devin, Blitzy | Planned |
-| China Plans | GLM Coding, Kimi, Qwen Code | Deferred |
-
-See [ROADMAP.md](../ROADMAP.md) for full RICE scoring.
+Raw real sessions must not be committed by default. See [Coding Standards](Coding-Standards).
