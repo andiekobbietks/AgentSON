@@ -1305,6 +1305,7 @@ def cmd_resume(args):
                 allow_remote=args.allow_remote,
                 password=password,
                 title=args.title,
+                context_packet=packet,
             )
             verified = verify_import(
                 imported,
