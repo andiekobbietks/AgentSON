@@ -29,43 +29,11 @@ def get_default_db_paths():
 
 
 def _load_agentson(path):
-    """Load an AgentSON file that may be single-document JSON or JSONL.
+    """Load canonical JSONL or a legacy document into the shared session view."""
+    from exporters.jsonl import load_agentson_document
 
-    JSONL streams (one entry per line) are wrapped into a synthetic session
-    document so downstream renderers/searchers/fine-tuners can treat every
-    file uniformly. Returns a dict.
-    """
-    from pathlib import Path as _P
-    with open(path, "r", encoding="utf-8") as f:
-        content = f.read().strip()
-    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
-    is_jsonl = False
-    if lines:
-        try:
-            first_event = json.loads(lines[0])
-            is_jsonl = (
-                isinstance(first_event, dict)
-                and first_event.get("type") == "stream-meta"
-            ) or len(lines) > 1
-            if is_jsonl:
-                for line in lines:
-                    json.loads(line)
-        except json.JSONDecodeError:
-            is_jsonl = False
-    if is_jsonl:
-        entries = [json.loads(ln) for ln in lines]
-        stem = _P(path).stem
-        return {
-            "id": entries[0].get("stream_id", stem) if isinstance(entries[0], dict) else stem,
-            "tool": {"name": "other", "session_id": stem},
-            "entries": entries,
-            "_format": "jsonl",
-        }
-    data = json.loads(content)
-    if isinstance(data, list):
-        stem = _P(path).stem
-        return {"id": stem, "tool": {"name": "other", "session_id": stem}, "entries": data, "_format": "jsonl"}
-    return data
+    return load_agentson_document(path)
+
 
 
 def cmd_export(args):
