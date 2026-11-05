@@ -49,12 +49,16 @@ browser-use click → action (tool: "browser.click")
 Extension message → observation (source: "extension")
 ```
 
-### Rule 2: Observations always follow actions
+### Rule 2: Record observations when the source provides them
 
-```
-action (browser.navigate) → observation (page loaded)
-action (browser.extract) → observation (content extracted)
-action (browser.evaluate) → observation (result)
+An action may produce an observation, but a result is not guaranteed: the source may omit it, the action may time out, or capture may stop before a result is available. Preserve the action and report the missing/unavailable result; do not manufacture an observation to complete a pair.
+
+When a result is available, represent it as an observation and correlate it with the action where the source provides a correlation identifier.
+
+```text
+action (browser.navigate) → observation (page loaded, when returned)
+action (browser.extract) → observation (content extracted, when returned)
+action (browser.evaluate) → observation (result, when returned)
 ```
 
 ### Rule 3: Handoffs define the execution graph
@@ -143,14 +147,14 @@ overlap only partly, and a value valid in one is not valid in the others.
 
 ### Deterministic Ordering
 
-1. Events are processed in file order (line-by-line JSONL)
-2. `handoff` events define control transfer
-3. `action` events must complete before next `handoff`
-4. `observation` events are causally linked to preceding `action`
+1. In the canonical v1.2 archive, events are processed in the order of the `entries` array.
+2. In a separately defined line-oriented stream profile, record order follows the stream framing contract; JSONL is not the canonical archive container.
+3. `handoff` events define control transfer where collaboration is recorded.
+4. An `observation` is causally linked to a preceding `action` when the source establishes that relationship; absence of an observation is not proof of success.
 
 ### Correlation IDs
 
-Every `action` can include `correlation_id`. The corresponding `observation` MUST reference the same `correlation_id`.
+An `action` can include `correlation_id`. If a corresponding `observation` exists and the source provides the correlation identifier, the observation MUST reference the same identifier. An action without a captured observation is valid when the source did not provide a result or capture was incomplete; the adapter must report that limitation rather than inventing a result.
 
 ```json
 {"type": "action", "correlation_id": "abc-123", "tool": "browser.navigate", ...}
@@ -194,11 +198,11 @@ Streams can branch when agents explore alternatives:
 
 ## Validation Rules
 
-1. Every stream MUST start with `stream-meta`
-2. Every `handoff` MUST reference valid agent IDs
-3. Every `action` SHOULD have a corresponding `observation`
-4. No circular handoffs (A→B→A without completion)
-5. `user-query` MUST appear before first `handoff` from user
+1. The canonical v1.2 archive is validated as a JSON session envelope; its session metadata is carried at the envelope level. A future line-oriented stream profile may require `stream-meta` as its first record, but that is not a v1.2 archive framing rule.
+2. Every recorded `handoff` MUST reference valid agent IDs.
+3. An `action` SHOULD have a corresponding `observation` when the source provides a result; missing results must remain explicit and must not be fabricated.
+4. No circular handoffs (A→B→A without completion) in a stream profile that defines control-transfer semantics.
+5. For user-initiated collaboration, a captured `user-query` precedes the corresponding user-to-agent handoff. System-initiated sessions may begin with a `system-event`.
 
 ---
 
@@ -215,7 +219,7 @@ AgentSON is the **only** format doing agent session provenance. No other standar
 | 1 | **Does any ISO standard already cover this?** | ❌ No. ISO has SQL, PDF, Unicode. No agent provenance format. |
 | 2 | **Does any non-ISO standard cover this?** | ❌ No. MCP/A2A/AGNTCY are execution protocols, not provenance formats. |
 | 3 | **Is this royalty-free and open?** | ✅ Apache 2.0. No patents. |
-| 4 | **Is this stable enough?** | ✅ v1.2 JSONL, 12 primitives, schema validated. |
+| 4 | **Is this stable enough?** | v1.2 JSON session envelope with 12 event primitives; stream framing remains a separate contract. |
 | 5 | **Does this have broad industry potential?** | ✅ Every AI agent produces session traces. Every enterprise needs audit trails. |
 
 ### Why AgentSON and not MCP/A2A/AGNTCY
