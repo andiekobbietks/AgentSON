@@ -197,3 +197,38 @@ These are architectural inputs, not reasons to block the initial CI and document
 - It does not mark a roadmap item complete merely because a design or runbook exists.
 
 The objective is to make every readiness claim traceable to code, tests, configuration or operational evidence.
+
+## 9. Scoped GDS / TCoP assessment of the Severity v1 deliverable
+
+A separate review of `feat/severity-v1` assessed `SEVERITY.md`, `agentson_platform/severity/v1.py`, `spec/severity/v1.json`, `pyproject.toml` and `tests/test_severity.py` against the GOV.UK GDS API Technical and Data Standards and the Technology Code of Practice.
+
+**Scope correction:** Severity v1 is a JSON Schema 2020-12 / Pydantic data contract. It is not a running REST API. REST style, OpenAPI, TLS, OAuth, API sandbox and URI-versioning requirements are therefore not applicable to this deliverable. They must be assessed separately if a platform service exposes the contract. JSON as the document format is present, but there are no HTTP response bodies to assess.
+
+### 9.1 Results summary
+
+| Area | Result | Main observation |
+|---|---|---|
+| GDS API requirements | Mixed / scope-qualified | Several transport and endpoint requirements are not applicable; timestamp and unknown-field enforcement are partial; user needs are not evidenced. |
+| TCoP | Mixed / scope-qualified | Open source and structured data are positive; user needs, privacy controls and security evidence need improvement; several service/procurement/hosting points are outside scope. |
+| Overall | Useful open data-contract foundation; not a claim of full GDS/TCoP compliance | Do not present a schema as an API or infer service compliance from schema quality. |
+
+### 9.2 Specific Severity v1 gaps
+
+- `assessed_at` is described as ISO 8601 and generated as UTC, but `spec/severity/v1.json` declares it as a plain string without `format: date-time`.
+- JSON Schema does not explicitly set `additionalProperties: false` at the top level and in object definitions; Pydantic's default extra-field behaviour is to ignore unknown fields unless configured otherwise.
+- `SEVERITY.md` should name its intended consumers (CLI users, report readers and platform analysts) and document their needs. No user research/feedback loop was evidenced in the reviewed deliverable.
+- Assessment provenance (`assessed_by`, `assessed_at`, `method`, `rule_id`, evidence and overrides) is not the same as access logging. Reads, exports and administrative access belong in the service/platform audit layer.
+- Evidence excerpts may contain personal data; the contract does not require pseudonymisation or a redaction policy.
+- `schema_version` and the versioned schema path version the data contract; they do not provide API URI versioning.
+
+### 9.3 Actions and compatibility cautions
+
+1. Add consumer/user-needs documentation to `SEVERITY.md`.
+2. Add JSON Schema `format: date-time` and timezone-aware Pydantic validation for `assessed_at`, with negative tests. Verify that the selected JSON Schema validator asserts formats.
+3. Decide whether v1 is closed to unknown fields. If so, apply Pydantic `extra="forbid"` and JSON Schema `additionalProperties: false` consistently, then add cross-validator parity tests. This tightens the contract and may reject documents currently accepted; review compatibility before merging.
+4. Explicitly document that Severity v1 is a data contract, not REST/OpenAPI.
+5. Separate assessment provenance from service-level access audit.
+6. Define handling of evidence excerpts, including redaction/pseudonymisation and privacy tests.
+
+The full requirement-by-requirement classification and reasoning trace are recorded in ADR-023, section 10. These findings apply to the reviewed Severity v1 branch, not automatically to every AgentSON component.
+
