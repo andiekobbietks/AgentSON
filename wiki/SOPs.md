@@ -28,8 +28,8 @@ This page indexes the legacy wiki procedures. Repository governance procedures S
 
 ## Repository governance SOPs
 
-- [SOP-015: AI-Agent Repository Operating Procedure](../SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md)
-- [SOP-016: Work-In-Progress Governance](../SOPs/SOP-016-Work-In-Progress-Governance.md)
+- [SOP-015: AI-Agent Repository Operating Procedure](https://github.com/andiekobbietks/AgentSON/blob/master/SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md)
+- [SOP-016: Work-In-Progress Governance](https://github.com/andiekobbietks/AgentSON/blob/master/SOPs/SOP-016-Work-In-Progress-Governance.md)
 
 These repository procedures govern branch/PR workflow and take precedence over legacy wiki instructions about authentication or pushing. Do not embed access tokens in Git URLs, shell history or documentation.
 
