@@ -142,3 +142,29 @@ def test_loader_keeps_legacy_document_style_agentson_readable(tmp_path):
     loaded = _load_agentson(source)
     assert loaded["id"] == "legacy-session"
     assert loaded["entries"][0]["text"] == "legacy"
+
+
+
+def test_redaction_preserves_jsonl_and_redacts_source_payload(tmp_path):
+    from tools.pii_redactor import PIIRedactor
+
+    original = tmp_path / "private.agentson"
+    redacted = tmp_path / "private-redacted.agentson"
+    session = {
+        "id": "private-session",
+        "tool": {"name": "opencode", "session_id": "native-private"},
+        "entries": [{"type": "user-query", "text": "Contact me at person@example.com"}],
+    }
+    with original.open("w", encoding="utf-8") as handle:
+        write_agentson_stream(session, handle, source_tool="opencode")
+
+    stats = PIIRedactor(use_model=False).redact_file(str(original), str(redacted))
+    lines = redacted.read_text(encoding="utf-8").splitlines()
+    events = [json.loads(line) for line in lines]
+
+    assert stats["total_redactions"] >= 1
+    assert len(events) == 2
+    assert events[0]["type"] == "stream-meta"
+    assert "[PRIVATE_EMAIL]" in events[1]["text"]
+    assert "[PRIVATE_EMAIL]" in events[1]["source_payload"]["text"]
+    validate_v1_2_events(events)
