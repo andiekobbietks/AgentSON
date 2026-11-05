@@ -194,11 +194,19 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
         meta.setdefault("stream_id", sid)
         meta.setdefault("mode", "single")
         meta.setdefault("agents", [{"id": agent_id, "name": agent_name}])
-        if source_tool and "source_session" not in meta:
-            meta["source_session"] = {
-                "tool": source_tool,
-                "session_id": str(tool_data.get("session_id") or sid),
-            }
+        source_session = _json_object(meta.get("source_session"))
+        source_session.setdefault("tool", source_tool or str(tool_data.get("name") or "other"))
+        source_session.setdefault("session_id", str(tool_data.get("session_id") or sid))
+        source_session.setdefault("tool_metadata", tool_data)
+        source_session.setdefault("agent_metadata", agent_data)
+        for field in ("started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata"):
+            if field not in source_session and session.get(field) is not None:
+                source_session[field] = session[field]
+        source_session.setdefault("source_metadata", {
+            key: value for key, value in session.items()
+            if key not in {"entries", "id", "tool", "agent", "started_at", "ended_at", "heartbeat", "task", "outcome", "context", "metadata"}
+        })
+        meta["source_session"] = source_session
         return events
 
     meta: Dict[str, Any] = {
