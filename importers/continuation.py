@@ -100,8 +100,7 @@ own inferences. Identify missing context rather than inventing it.
 This packet is not a complete transcript or lossless export. It includes only
 selected event fields and omits event source_payload, tool arguments, code,
 action output and fields outside the explicit allowlist. Event provenance is
-included only where supplied in the selected event fields. It does not restore
-private runtime state, hidden system/developer prompts, credentials,
+included only where supplied in the selected event fields. This transfer does not restore private runtime state, hidden system/developer prompts, credentials,
 environment variables, open processes, tool permissions, filesystem state,
 unsaved editor buffers, model cache or vendor-specific conversation IDs.
 Never claim exact continuation or lossless restoration unless independently
