@@ -81,9 +81,14 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
         event["timestamp"] = timestamp
 
     event.setdefault("agent", default_agent)
-    provenance = _json_object(event.get("provenance"))
-    if not provenance:
-        provenance = {"source": "export", "confidence": "inferred"}
+    provenance = dict(_json_object(event.get("provenance")))
+    allowed_confidence = {"confirmed", "inferred", "estimated", "ml_generated", "unknown"}
+    allowed_sources = {"cdp", "mcp", "extension", "user", "system", "other", "export", "reconstructor"}
+    if provenance.get("confidence") not in allowed_confidence:
+        provenance["confidence"] = "inferred" if provenance else "unknown"
+    if provenance.get("source") not in allowed_sources:
+        provenance["source"] = "export"
+    provenance.setdefault("source", "export")
     event["provenance"] = provenance
 
     if event_type in {"user-query", "thought", "answer", "user-feedback"}:
