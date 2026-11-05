@@ -286,12 +286,19 @@ def _parse_ai_block(body: str) -> List[Dict]:
         if not h3:
             plain = sec.strip()
             if plain:
-                entries.append({"type": "thought", "text": plain})
+                entries.append({
+                    "type": "thought", "text": plain,
+                    "source_payload": {"raw_ai_subsection": sec},
+                })
             continue
         title = h3.group("title").strip()
         rest = sec[h3.end():].strip()
         entry = _classify_section_body(title, rest)
         if entry:
+            entry["source_payload"] = {
+                "subsection_title": title,
+                "raw_ai_subsection": sec,
+            }
             entries.append(entry)
     return entries
 
@@ -331,6 +338,7 @@ def parse_markdown(md_text: str, source_filename: Optional[str] = None) -> Dict:
                 entry["attachments"] = att
             if not first_user_query:
                 first_user_query = text
+            entry["source_payload"] = {"section_title": title, "raw_section_body": sec_body}
             entries.append(entry)
         elif title.strip().lower() == "ai":
             entries.extend(_parse_ai_block(sec_body))
@@ -339,6 +347,7 @@ def parse_markdown(md_text: str, source_filename: Optional[str] = None) -> Dict:
                 "type": "side-effect",
                 "action": title.strip() or "Source section",
                 "text": f"{title}\n\n{sec_body.strip()}",
+                "source_payload": {"section_title": title, "raw_section_body": sec_body},
             })
 
     aid = f"{slug}-{created.strftime('%Y%m%d')}" if created else slug
@@ -353,6 +362,14 @@ def parse_markdown(md_text: str, source_filename: Optional[str] = None) -> Dict:
         },
         "agent": {"name": "chrome-devtools-ai", "provider": "google", "variant": "high"},
         "entries": entries,
+        # Keep the exact source document once at session level. Parsed event
+        # fields are useful projections; this raw copy preserves Markdown
+        # formatting, headings, code fences and text not yet understood.
+        "source_metadata": {
+            "source_filename": source_filename or "",
+            "source_markdown": md_text,
+            "source_markdown_sha256": hashlib.sha256(md_text.encode("utf-8")).hexdigest(),
+        },
     }
     # v1.1 trajectory fields
     if first_user_query:
