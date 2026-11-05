@@ -5,12 +5,15 @@ import json
 import os
 from pathlib import Path
 
+import pytest
+
 from consumers.opencode import _request_json, import_archive, verify_import
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests" / "fixtures" / "conformance" / "cross_harness_session_v1_2.json"
 BASE_URL = os.environ.get("AGENTSON_OPENCODE_URL", "http://127.0.0.1:4096")
-SERVER_PASSWORD = os.environ["OPENCODE_SERVER_PASSWORD"]
+SERVER_PASSWORD = os.environ.get("OPENCODE_SERVER_PASSWORD")
+pytestmark = pytest.mark.skipif(not SERVER_PASSWORD, reason="requires a live OpenCode server and OPENCODE_SERVER_PASSWORD")
 
 
 def test_live_opencode_archive_import_and_readback():
