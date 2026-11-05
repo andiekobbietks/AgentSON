@@ -139,6 +139,7 @@ Use `agentson --help` and `agentson help <topic>` for the commands and options a
 ├── importers/            # Importers for external conversation formats
 ├── exporters/            # Export and transformation utilities
 ├── cli/                  # Command-line interface
+├── tools/                # Packaged CLI helper modules
 ├── tests/                # Automated tests and fixtures
 ├── examples/             # Example session data
 ├── pwa/                  # Standalone browser/PWA viewer
