@@ -273,6 +273,11 @@ def test_redaction_scans_source_evidence_and_omits_opaque_binary():
                 "message": {"data": json.dumps({"email": "nested@example.com"})},
                 "step_payload_base64": opaque,
                 "step_payload_sha256": "payload-digest",
+                "binary_column": {
+                    "encoding": "base64",
+                    "data": opaque,
+                    "sha256": "minimax-digest",
+                },
             },
         }],
     }
@@ -289,4 +294,7 @@ def test_redaction_scans_source_evidence_and_omits_opaque_binary():
     assert payload["step_payload_base64"] is None
     assert payload["step_payload_base64_omitted"] is True
     assert payload["step_payload_sha256"] == "payload-digest"
-    assert sum(item["type"] == "opaque_binary_payload_omitted" for item in changes) == 2
+    assert payload["binary_column"]["data"] is None
+    assert payload["binary_column"]["data_omitted"] is True
+    assert payload["binary_column"]["sha256"] == "minimax-digest"
+    assert sum(item["type"] == "opaque_binary_payload_omitted" for item in changes) == 3
