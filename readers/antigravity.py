@@ -128,7 +128,7 @@ def read_antigravity_session(session: Dict) -> Dict:
     """Read an Antigravity IDE session and return canonicalised data."""
     db_path = session["db_path"]
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect_readonly(db_path)
     cursor = conn.cursor()
 
     # Get all steps
