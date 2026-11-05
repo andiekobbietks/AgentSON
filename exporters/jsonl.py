@@ -374,7 +374,7 @@ def write_agentson_stream_file(document: Any, output_path: Any, source_tool: Opt
             temporary_path = temporary.name
             for event in events:
                 temporary.write(json.dumps(event, ensure_ascii=False, separators=(",", ":"), default=str))
-                temporary.write("\\n")
+                temporary.write("\n")
             temporary.flush()
             os.fsync(temporary.fileno())
         os.replace(temporary_path, destination)
