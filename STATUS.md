@@ -1,4 +1,4 @@
-# Status (last updated: 2026-11-05T11:22:42.453Z, by: AgentSON documentation alignment)
+# Status (last updated: 2026-11-05T11:33:00Z, by: AgentSON interoperability and conformance work)
 
 ## Pull request queue
 
@@ -11,14 +11,14 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 ## Active documentation branch
 
 - **`feat/wiki-mirror` / PR #60**: contains the checked-in `docs/wiki/` mirror, canonical session interoperability architecture, ADR-024, v1.2 schema clarification, aligned ontology/adapter/replay semantics, and coordinated README/PRD/standards updates.
-- The PR also contains its pre-existing Severity v1 implementation. The interoperability work in this update changes documentation/specification files only.
+- The PR also contains its pre-existing Severity v1 implementation. Interoperability work now includes documentation/specification updates, v1.2 schema source-name extension, OpenCode reader and ChatGPT importer compatibility changes, regression tests and a dedicated CI workflow.
 
 ## Documentation source of truth
 
 - `docs/` is authoritative for product and engineering documentation.
 - `docs/wiki/` is the checked-in source for the published GitHub Wiki mirror.
 - The separately hosted GitHub Wiki repository is a distinct Git remote and has not been pushed by this change.
-- The older root `wiki/` directory remains a legacy duplicate in `master`; do not treat it as a second source of truth. Reconcile or retire it after the `docs/wiki/` source is merged and the hosted wiki is synced.
+- The older root `wiki/` directory is marked as a legacy duplicate on this branch; do not treat it as a second source of truth. Reconcile or retire it after the `docs/wiki/` source is merged and the hosted wiki is synced.
 
 ## Current architecture decisions
 
@@ -50,8 +50,9 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 
 - `spec/v1.2.json` parses as valid JSON.
 - Repository-relative Markdown links were checked across the documentation set; no broken repository links were found. Short links such as `ADR-001` and `SOP-001` are intentional links to separately hosted wiki pages.
-- No application code or runtime behaviour was changed by the interoperability documentation work.
-- The local test suite, schema conformance tests and CI have not yet been run for this update. PR #60 must remain under review until its checks and maintainer review are complete.
+- The OpenCode reader and ChatGPT importer now emit the v1.2 schema identifier. The v1.2 `tool.name` enum includes `chatgpt`; missing ChatGPT timestamps are omitted rather than emitted as null.
+- GitHub Actions run [42019565524](https://github.com/andiekobbietks/AgentSON/actions/runs/42019565524) passed **20 tests** in 0.33s: canonical archive contract, production OpenCode conversion regression and ChatGPT importer tests.
+- This was a focused conformance/regression run, not the full repository test suite. C2 cross-harness consumer interoperability, C3 reconstruction and C4 resumption remain unproven. PR #60 must remain under review until the wider suite and maintainer review are complete.
 
 
 ## Cross-harness conformance programme (05 November 2026)
@@ -59,6 +60,6 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - Added `tests/conformance/test_canonical_archive.py` and the explicitly synthetic fixture `tests/fixtures/conformance/cross_harness_session_v1_2.json`.
 - Added `.github/workflows/conformance.yml` to run the canonical archive contract tests on relevant pull requests and pushes.
 - Added `docs/architecture/conformance-test-plan.md`, linked from the main architecture, README and wiki mirror index.
-- **CI evidence:** GitHub Actions run [42019019478](https://github.com/andiekobbietks/AgentSON/actions/runs/42019019478) completed successfully; 9 canonical archive contract tests passed in 0.22s on 05 November 2026.
-- This is **C0 archive validity plus limited neutral JSON preservation evidence**. It is not C2 cross-harness adapter interoperability, C3 reconstruction or C4 resumption. The full project test suite has not been run as part of this work.
-- Known conformance blockers are documented: ChatGPT importer emits the legacy v1 schema URI and `tool.name=chatgpt`, which is not accepted by the current v1.2 tool-name enum; the OpenCode real-sample regression test reimplements mapping logic instead of invoking the production reader; no canonical consumer import matrix or normative machine-readable loss-report contract exists.
+- **CI evidence:** GitHub Actions run [42019565524](https://github.com/andiekobbietks/AgentSON/actions/runs/42019565524) completed successfully; 20 focused tests passed in 0.33s on 05 November 2026.
+- This provides C0 archive validity and production producer-conversion evidence for the OpenCode and ChatGPT paths. It is not C2 cross-harness adapter interoperability, C3 reconstruction or C4 resumption. The full project test suite has not been run as part of this work.
+- Remaining blockers: no canonical archive consumer import matrix, no normative machine-readable loss-report contract, and no demonstrated cross-harness checkpoint/resume profile.
