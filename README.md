@@ -180,6 +180,8 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and [CONTRIBUTING.md]
 
 ## Standards and architecture
 
+- [Production-readiness assessment](docs/production-readiness-assessment.md)
+- [ADR-023: Production readiness and the knowledge-catalogue boundary](spec/ADR-023-production-readiness-and-knowledge-catalog-architecture.md)
 - [JSON Schema v1.2](spec/v1.2.json)
 - [Flattened event schema](spec/v1.2-entries.json)
 - [Event ontology](spec/ontology.md)
