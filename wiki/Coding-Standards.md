@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/Coding-Standards.md`](../docs/wiki/Coding-Standards.md). This file is retained for historical links only.
+
 # Coding Standards
 
 Non-negotiable rules for how we write code.
