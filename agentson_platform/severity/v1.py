@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, Field, field_validator, model_validator
 
 
 class SeverityLevel(str, Enum):
@@ -301,14 +301,15 @@ class FindingAssessment(BaseModel):
     method: AssessmentMethod = Field(
         ..., description="Mechanism that produced this assessment."
     )
-    assessed_at: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-        .isoformat()
-        .replace("+00:00", "Z"),
-        description="ISO 8601 timestamp when the assessment was produced.",
+    assessed_at: AwareDatetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description=(
+            "Offset-aware ISO 8601 timestamp when the assessment was produced."
+        ),
     )
-    assessed_by: Optional[str] = Field(
-        None,
+    assessed_by: str = Field(
+        ...,
+        min_length=1,
         description="Identifier of the classifier, model or human assessor.",
     )
     rule_id: Optional[str] = Field(
@@ -331,3 +332,31 @@ class FindingAssessment(BaseModel):
         if value != "agentson.severity.v1":
             raise ValueError(f"expected schema_version 'agentson.severity.v1', got {value!r}")
         return value
+
+    @field_validator("overrides")
+    @classmethod
+    def _override_has_reason_and_approver(
+        cls, value: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
+        """Require the reason and approver when a human override is recorded."""
+        if value is None:
+            return value
+        missing = [key for key in ("reason", "approved_by") if not value.get(key)]
+        if missing:
+            raise ValueError(f"overrides must include: {', '.join(missing)}")
+        return value
+
+    @model_validator(mode="after")
+    def _rule_id_present_for_rule_methods(self) -> "FindingAssessment":
+        """Name the rule or model when the assessment uses one.
+
+        ``rule`` and ``scoring_model`` methods derive their severity from a
+        specific rule or model. Without ``rule_id`` the assessment cannot be
+        reproduced or audited.
+        """
+        if self.method in (AssessmentMethod.RULE, AssessmentMethod.SCORING_MODEL):
+            if not self.rule_id:
+                raise ValueError(
+                    f"rule_id is required when method is {self.method.value!r}"
+                )
+        return self

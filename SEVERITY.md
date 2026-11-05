@@ -33,8 +33,10 @@ is an assessment of evidence, not a property of raw events.
 5. **Method-visible.** Every assessment records whether it was produced by a
    deterministic rule, an established scoring model, AI-assisted classification
    or human approval.
-6. **Versioned and auditable.** `schema_version`, `assessed_at`, `assessed_by`
-   and `rule_id` are required for traceability.
+6. **Versioned and auditable.** `schema_version` and `assessed_at` record the
+   contract version and timestamp. `assessed_by` is required on every
+   assessment. `rule_id` is required whenever `method` is `rule` or
+   `scoring_model`, so the assessment names the rule or model that produced it.
 7. **Not AI-only.** Severity must never depend exclusively on AI judgement.
 
 ## 3. Severity levels
@@ -156,12 +158,20 @@ does **not** modify the original `.agentson` JSONL events.
 * `impact` (`scope` required; `dimensions` optional)
 * `evidence` (required object; `event_ids` defaults to an empty list)
 * `method`
+* `assessed_by` — the classifier, model or human assessor that produced the
+  assessment; must be a non-empty identifier
 
 The following fields have safe defaults and are therefore not required by the
 JSON Schema:
 
 * `schema_version` — defaults to `agentson.severity.v1`
-* `assessed_at` — defaults to the current UTC timestamp
+* `assessed_at` — defaults to the current UTC timestamp; must be an
+  offset-aware ISO 8601 date-time
+
+One field is conditionally required:
+
+* `rule_id` — required when `method` is `rule` or `scoring_model`; optional for
+  `ai_assisted` and `human_approval`
 
 ### Evidence reference
 
@@ -180,7 +190,10 @@ Allowed values:
 
 ### Overrides
 
-When a human overrides an assessment, `overrides` should contain:
+When a human overrides an assessment, `overrides` must be either absent or
+`null`, or an object that contains at least `reason` and `approved_by` (both
+non-empty). An empty object is not a recorded override. A non-empty `overrides`
+object should contain:
 
 ```json
 {

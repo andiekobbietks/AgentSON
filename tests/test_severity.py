@@ -7,10 +7,12 @@ Pydantic model, the JSON Schema and the on-disk fixtures stay consistent.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.exceptions import ValidationError as SchemaValidationError
 from pydantic import ValidationError
 
 from agentson_platform.severity.v1 import (
@@ -35,7 +37,28 @@ SCHEMA_PATH = REPO / "spec" / "severity" / "v1.json"
 
 with open(SCHEMA_PATH, encoding="utf-8") as _f:
     SCHEMA = json.load(_f)
-SCHEMA_VALIDATOR = Draft202012Validator(SCHEMA)
+
+
+def _is_date_time(value: object) -> bool:
+    """Return True for an offset-aware RFC 3339 date-time string.
+
+    ``jsonschema`` only registers the ``date-time`` checker when the
+    optional ``rfc3339-validator`` package is installed. It is not a
+    declared dependency, so register an equivalent dependency-free
+    checker here to make the ``format: date-time`` assertion real.
+    """
+    if not isinstance(value, str):
+        return True
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None
+
+
+_FORMAT_CHECKER = FormatChecker()
+_FORMAT_CHECKER.checks("date-time")(_is_date_time)
+SCHEMA_VALIDATOR = Draft202012Validator(SCHEMA, format_checker=_FORMAT_CHECKER)
 
 VALID_FIXTURES = [
     "sev1_critical_security.json",
@@ -150,6 +173,59 @@ class TestSeverityValidation:
         with pytest.raises(ValidationError):
             Confidence(level=ConfidenceLevel.HIGH, score=1.5)
 
+    def test_invalid_assessed_at_rejected(self) -> None:
+        """An assessment timestamp must be a parseable date-time."""
+        data = _load_json("sev1_critical_security.json")
+        data["assessed_at"] = "not-a-date"
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
+    def test_naive_assessed_at_rejected(self) -> None:
+        """The assessment timestamp must carry an offset."""
+        data = _load_json("sev1_critical_security.json")
+        data["assessed_at"] = "2026-11-04T17:00:00"
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
+    def test_missing_assessed_by_rejected(self) -> None:
+        """Every assessment must name its assessor."""
+        data = _load_json("sev1_critical_security.json")
+        del data["assessed_by"]
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
+    def test_rule_method_requires_rule_id(self) -> None:
+        """A rule assessment must name the rule that produced it."""
+        data = _load_json("sev1_critical_security.json")
+        assert data["method"] == "rule"
+        data["rule_id"] = None
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
+    def test_scoring_model_method_requires_rule_id(self) -> None:
+        """A scoring-model assessment must name the model that produced it."""
+        data = _load_json("sev3_medium_data_integrity.json")
+        assert data["method"] == "scoring_model"
+        del data["rule_id"]
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
+    def test_override_without_reason_rejected(self) -> None:
+        """An override record must carry a reason and an approver."""
+        data = _load_json("edge_human_override.json")
+        data["overrides"] = {
+            "previous_severity": {"level": "SEV-2", "label": "High", "category": "security"}
+        }
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
+    def test_empty_override_rejected(self) -> None:
+        """An empty override object is not a recorded override."""
+        data = _load_json("edge_human_override.json")
+        data["overrides"] = {}
+        with pytest.raises(ValidationError):
+            FindingAssessment(**data)
+
 
 class TestSchemaAndModelAgreement:
     """The JSON Schema and the Pydantic model must describe the same contract."""
@@ -157,7 +233,8 @@ class TestSchemaAndModelAgreement:
     def test_schema_has_required_top_level_fields(self) -> None:
         """The schema requires all fields that have no default in the model."""
         required = set(SCHEMA["required"])
-        # schema_version and assessed_at have defaults and are therefore not required.
+        # schema_version and assessed_at have defaults and are therefore not
+        # required. rule_id is conditionally required, not top-level required.
         model_required = {
             "severity",
             "priority",
@@ -166,6 +243,7 @@ class TestSchemaAndModelAgreement:
             "impact",
             "evidence",
             "method",
+            "assessed_by",
         }
         assert required == model_required
 
@@ -185,6 +263,42 @@ class TestSchemaAndModelAgreement:
         schema_cats = set(SCHEMA["$defs"]["Category"]["enum"])
         model_cats = {cat.value for cat in Category}
         assert schema_cats == model_cats
+
+    def test_schema_rejects_mismatched_level_label(self) -> None:
+        """The schema enforces the same level/label pairing as the model."""
+        data = _load_json("sev1_critical_security.json")
+        data["severity"]["label"] = "Low"
+        with pytest.raises(SchemaValidationError):
+            SCHEMA_VALIDATOR.validate(data)
+
+    def test_schema_rejects_invalid_assessed_at(self) -> None:
+        """The schema enforces the date-time format on assessed_at."""
+        data = _load_json("sev1_critical_security.json")
+        data["assessed_at"] = "not-a-date"
+        with pytest.raises(SchemaValidationError):
+            SCHEMA_VALIDATOR.validate(data)
+
+    def test_schema_requires_assessed_by(self) -> None:
+        """The schema requires an assessor for every assessment."""
+        data = _load_json("sev1_critical_security.json")
+        del data["assessed_by"]
+        with pytest.raises(SchemaValidationError):
+            SCHEMA_VALIDATOR.validate(data)
+
+    def test_schema_requires_rule_id_for_rule_method(self) -> None:
+        """The schema requires rule_id when the method derives from a rule."""
+        data = _load_json("sev1_critical_security.json")
+        assert data["method"] == "rule"
+        del data["rule_id"]
+        with pytest.raises(SchemaValidationError):
+            SCHEMA_VALIDATOR.validate(data)
+
+    def test_schema_override_requires_reason_and_approver(self) -> None:
+        """The schema rejects an override without a reason and approver."""
+        data = _load_json("edge_human_override.json")
+        data["overrides"] = {}
+        with pytest.raises(SchemaValidationError):
+            SCHEMA_VALIDATOR.validate(data)
 
 
 class TestRoundTrip:

@@ -248,6 +248,103 @@
           "description": "Nature of the finding; not a severity level."
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "SEV-1"
+              }
+            },
+            "required": [
+              "level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "label": {
+                "const": "Critical"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "SEV-2"
+              }
+            },
+            "required": [
+              "level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "label": {
+                "const": "High"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "SEV-3"
+              }
+            },
+            "required": [
+              "level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "label": {
+                "const": "Medium"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "SEV-4"
+              }
+            },
+            "required": [
+              "level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "label": {
+                "const": "Low"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "SEV-5"
+              }
+            },
+            "required": [
+              "level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "label": {
+                "const": "Informational"
+              }
+            }
+          }
+        }
+      ],
       "required": [
         "level",
         "label",
@@ -333,22 +430,16 @@
       "description": "Mechanism that produced this assessment."
     },
     "assessed_at": {
-      "description": "ISO 8601 timestamp when the assessment was produced.",
+      "description": "Offset-aware ISO 8601 timestamp when the assessment was produced.",
+      "format": "date-time",
       "title": "Assessed At",
       "type": "string"
     },
     "assessed_by": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
       "description": "Identifier of the classifier, model or human assessor.",
-      "title": "Assessed By"
+      "minLength": 1,
+      "title": "Assessed By",
+      "type": "string"
     },
     "rule_id": {
       "anyOf": [
@@ -380,6 +471,21 @@
       "anyOf": [
         {
           "additionalProperties": true,
+          "minProperties": 1,
+          "properties": {
+            "reason": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "approved_by": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason",
+            "approved_by"
+          ],
           "type": "object"
         },
         {
@@ -391,6 +497,34 @@
       "title": "Overrides"
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "rule",
+              "scoring_model"
+            ]
+          }
+        },
+        "required": [
+          "method"
+        ]
+      },
+      "then": {
+        "properties": {
+          "rule_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_id"
+        ]
+      }
+    }
+  ],
   "required": [
     "severity",
     "priority",
@@ -398,7 +532,8 @@
     "status",
     "impact",
     "evidence",
-    "method"
+    "method",
+    "assessed_by"
   ],
   "title": "AgentSON Severity and Risk Classification v1",
   "type": "object",
