@@ -29,9 +29,10 @@ Thumbs.db
 *.AgentSON
 *.agentson
 
-# But keep curated examples
+# But keep curated examples and test fixtures
 !examples/*.AgentSON
 !examples/*.agentson
+!tests/fixtures/*.csv
 
 # Secrets
 .env

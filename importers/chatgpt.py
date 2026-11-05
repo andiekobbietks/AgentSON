@@ -6,7 +6,7 @@ ChatGPT exports use a tree structure with mapping nodes.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 import uuid
 
@@ -107,7 +107,7 @@ def _convert_conversation(
             "cost": 0.0,
             "messages": len([e for e in entries if e["type"] in ("user-query", "answer")]),
             "parts": len(entries),
-            "exported_at": datetime.utcnow().isoformat() + "Z",
+            "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "source_format": "chatgpt-export"
         }
     }
@@ -243,7 +243,7 @@ def _timestamp_to_iso(timestamp: Optional[float]) -> Optional[str]:
     if timestamp is None:
         return None
     try:
-        dt = datetime.utcfromtimestamp(timestamp)
-        return dt.isoformat() + "Z"
+        dt = datetime.fromtimestamp(timestamp, timezone.utc)
+        return dt.isoformat().replace("+00:00", "Z")
     except:
         return None

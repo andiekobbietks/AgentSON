@@ -13,6 +13,7 @@ class OpencodeReader:
     """Reads agent sessions from opencode's SQLite database."""
     
     def __init__(self, db_path: str):
+        """Open an OpenCode reader on the SQLite session database."""
         self.db_path = db_path
         self.conn = None
         
@@ -286,8 +287,8 @@ class OpencodeReader:
         if timestamp is None:
             return None
         try:
-            dt = datetime.utcfromtimestamp(timestamp / 1000)
-            return dt.isoformat() + "Z"
+            dt = datetime.fromtimestamp(timestamp / 1000, timezone.utc)
+            return dt.isoformat().replace("+00:00", "Z")
         except:
             return None
 

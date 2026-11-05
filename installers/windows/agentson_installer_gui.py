@@ -24,6 +24,7 @@ So the ground is dark. Amber is never used as ink on a light background.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -88,6 +89,7 @@ def load_wordmark():
 
 class Installer(tk.Tk):
     def __init__(self) -> None:
+        """Create and lay out the file-association installer window."""
         super().__init__()
         self.title("AgentSON file association")
         self.configure(bg=GROUND)
@@ -116,6 +118,7 @@ class Installer(tk.Tk):
     # ---------------------------------------------------------------- build
 
     def _build(self) -> None:
+        """Assemble the wordmark, buttons, status, and output widgets."""
         outer = tk.Frame(self, bg=GROUND, padx=20, pady=18)
         outer.pack(fill="both", expand=True)
 
@@ -229,6 +232,7 @@ class Installer(tk.Tk):
         self.output.pack(fill="both", expand=True)
 
     def _button(self, parent, label, command) -> tk.Button:
+        """Create a consistently styled installer action button."""
         btn = tk.Button(
             parent,
             text=label,
@@ -251,10 +255,12 @@ class Installer(tk.Tk):
     # ------------------------------------------------------------- actions
 
     def _set_status(self, message: str, colour: str = MUTED) -> None:
+        """Update the status label and redraw pending UI changes."""
         self.status.configure(text=message, fg=colour)
         self.update_idletasks()
 
     def _append(self, text: str) -> None:
+        """Append text to the scrolled output log."""
         self.output.configure(state="normal")
         self.output.insert("end", text)
         self.output.see("end")
@@ -262,6 +268,7 @@ class Installer(tk.Tk):
         self.update_idletasks()
 
     def _clear(self) -> None:
+        """Clear the scrolled output log."""
         self.output.configure(state="normal")
         self.output.delete("1.0", "end")
         self.output.configure(state="disabled")
@@ -320,18 +327,21 @@ class Installer(tk.Tk):
             # that's the confirmed conformant output.
             lines = (result.stdout or "").splitlines()
             shown = lines[:8] if lines else []
-            self._append("\n--- Render finished (exit %d). ---\n" % result.returncode)
+            self._append(f"\n--- Render finished (exit {result.returncode}). ---\n")
             self._set_status("Render complete (exit 0).", OK)
         else:
-            self._set_status("Render exited with code %d." % result.returncode, BAD)
+            self._set_status(f"Render exited with code {result.returncode}.", BAD)
 
     def register(self) -> None:
+        """Register the .agentson file association."""
         self._run()
 
     def unregister(self) -> None:
+        """Remove the .agentson file association."""
         self._run("-Uninstall")
 
     def _run(self, *args: str) -> None:
+        """Execute the PowerShell installer and display its output."""
         if not PS1.exists():
             messagebox.showerror(
                 "Installer missing",
@@ -398,6 +408,7 @@ class Installer(tk.Tk):
 
 
 def main() -> int:
+    """Launch the AgentSON file-association installer GUI."""
     try:
         app = Installer()
     except Exception as exc:

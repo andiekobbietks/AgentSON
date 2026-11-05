@@ -34,7 +34,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -188,7 +188,7 @@ def read_session(db_path: str, composer_id: str) -> Dict:
             doc["ended_at"] = _ms_to_iso(header["lastUpdatedAt"])
 
         doc["metadata"] = {
-            "exported_at": datetime.utcnow().isoformat() + "Z",
+            "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "source": "cursor-desktop",
             "mode": header.get("unifiedMode", ""),
             "status": header.get("status", ""),
@@ -305,7 +305,7 @@ def _safe_json(val) -> str:
 def _ms_to_iso(ms: int) -> str:
     """Convert millisecond timestamp to ISO 8601."""
     try:
-        return datetime.utcfromtimestamp(ms / 1000).isoformat() + "Z"
+        return datetime.fromtimestamp(ms / 1000, timezone.utc).isoformat().replace("+00:00", "Z")
     except (ValueError, OSError, OverflowError):
         return ""
 
@@ -323,10 +323,13 @@ class CursorReader:
     """Reads Cursor IDE sessions into AgentSON format."""
 
     def __init__(self, db_path: str | Path):
+        """Open a Cursor reader on a globalStorage state.vscdb file."""
         self.db_path = Path(db_path)
 
     def read(self, composer_id: str) -> Dict:
+        """Read a Cursor composer session by ID."""
         return read_session(str(self.db_path), composer_id)
 
     def list_sessions(self, limit: int = 50) -> List[Dict]:
+        """List Cursor composer sessions from the database."""
         return list_sessions(str(self.db_path), limit)

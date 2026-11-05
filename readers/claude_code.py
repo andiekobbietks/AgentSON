@@ -31,7 +31,7 @@ import json
 import os
 import glob
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -54,6 +54,7 @@ class ClaudeCodeReader:
     }
 
     def __init__(self, config_dir: Optional[str] = None):
+        """Open a Claude Code reader, optionally on a non-default config directory."""
         if config_dir:
             self.claude_dir = Path(config_dir)
         else:
@@ -301,7 +302,7 @@ class ClaudeCodeReader:
                 "name": model,
                 "provider": "anthropic",
             },
-            "timestamp": metadata.get("timestamp", datetime.utcnow().isoformat() + "Z"),
+            "timestamp": metadata.get("timestamp", datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")),
             "entries": agentson_entries,
         }
 
