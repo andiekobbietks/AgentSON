@@ -3,8 +3,8 @@
 ## Before changing code or documentation
 
 1. Read the root `STATUS.md`.
-2. Read [SOP-016: Work-In-Progress Governance](../SOPs/SOP-016-Work-In-Progress-Governance.md).
-3. Read [SOP-015: Repository Operating Procedure](../SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md).
+2. Read [SOP-016: Work-In-Progress Governance](https://github.com/andiekobbietks/AgentSON/blob/master/SOPs/SOP-016-Work-In-Progress-Governance.md).
+3. Read [SOP-015: Repository Operating Procedure](https://github.com/andiekobbietks/AgentSON/blob/master/SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md).
 4. Read [Coding Standards](Coding-Standards) and the relevant architecture/ADR.
 5. Check open PRs, active branches and current master before creating work.
 
@@ -37,10 +37,10 @@ Portability, reconstruction and resumption require separate tests. A receiving h
 
 ## Documentation
 
-- Product requirements: [PRD.md](../PRD.md)
-- Architecture: [Session Interoperability Architecture](../docs/architecture/session-interoperability.md)
-- Canonical schema: [spec/v1.2.json](../spec/v1.2.json)
-- Event ontology: [spec/ontology.md](../spec/ontology.md)
+- Product requirements: [PRD.md](https://github.com/andiekobbietks/AgentSON/blob/master/PRD.md)
+- Architecture: [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- Canonical schema: [spec/v1.2.json](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json)
+- Event ontology: [spec/ontology.md](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md)
 - ADR index: [ADRs](ADRs)
 - Engineering policy: [Coding Standards](Coding-Standards)
 
