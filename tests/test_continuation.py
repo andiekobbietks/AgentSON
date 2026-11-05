@@ -30,7 +30,8 @@ def test_packet_preserves_context_and_marks_historical_commands_inert(tmp_path):
     assert "new Claude Code session" in packet
     assert "Fix the failing tests" in packet
     assert "shell.run" in packet
-    assert "command" not in packet
+    assert '- args:' not in packet
+    assert '"command": "pytest -q"' not in packet
     assert "2 tests failed" in packet
     assert "untrusted historical data" in packet
     assert "does not restore private runtime state" in packet
