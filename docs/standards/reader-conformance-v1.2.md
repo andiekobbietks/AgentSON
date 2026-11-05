@@ -53,3 +53,15 @@ The added tests verify that:
 - the resulting stream validates against the v1.2 entry schema.
 
 The OpenCode message/parts sample is a real captured source export; the SQLite container around it is temporary test scaffolding, not a captured full database. Other adapter fixtures in this batch remain synthetic and source-shaped. Tests demonstrate only the represented cases, not universal source-version compatibility. Real anonymised full database exports, blob/attachment fixtures, and broader version coverage remain necessary before claiming production interoperability.
+
+
+## Privacy boundary for preserved source evidence
+
+Native source evidence may contain personal data, credentials, private paths, or binary attachments. A canonical export is therefore still sensitive even when its event schema validates.
+
+The JSONL-aware `PIIRedactor` now:
+- recursively scans string values inside `source_payload` and `source_metadata`, including JSON-encoded native row data and preserved Markdown;
+- removes non-empty opaque fields whose names end in `_base64` from a redacted copy, sets a matching `_base64_omitted` marker, and retains adjacent SHA-256 digests where present;
+- preserves the original source file unless the caller explicitly chooses the same path as the redaction output.
+
+This is a conservative omission policy, not a guarantee that all sensitive information is detected. The regex-based fallback has limited coverage; the optional model path is not a substitute for human review. Keep original native exports access-controlled, review redacted output before sharing, and do not treat a successful redaction run as proof that a file is free of personal data.
