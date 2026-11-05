@@ -1,121 +1,118 @@
 """
-Regression test for readers/opencode.py against a REAL opencode
-message/parts export (tests/fixtures/opencode_real_sample.json),
-not a synthetic hand-built fixture.
+Exercise the real OpenCode export sample through the production SQLite reader.
 
-Per CONVENTIONS.md: "Test against real reference data, not
-synthetic-only examples. Synthetic test data lies."
-
-This fixture surfaced two real bugs in the reader that the
-synthetic-only test in test_opencode.py never caught:
-
-1. `type: "reasoning"` parts were silently dropped (real opencode
-   sessions emit these as standalone parts; the reader only handled
-   text/tool-invocation types).
-2. `type: "tool"` parts (current opencode schema) use a different
-   shape than the `type: "tool-invocation"` shape the reader was
-   built against - tool name at top level, input/output/status
-   nested under "state". The old shape is kept as a fallback for
-   older exports, not removed.
+The checked-in fixture contains a real captured assistant message and its
+native reasoning/tool parts. We wrap those records in a temporary legacy
+SQLite container so the test verifies database discovery, row decoding,
+projection, provenance retention and canonical JSONL export end-to-end.
 """
 import json
+import sqlite3
 from pathlib import Path
-import sys
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from exporters.jsonl import validate_v1_2_events, write_agentson_stream
+from readers.opencode import OpencodeReader
+
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "opencode_real_sample.json"
 
 
-def _convert_message_and_parts(message: dict, parts: list) -> list:
-    """
-    Minimal re-implementation of the message/part -> entries mapping
-    in OpencodeReader._convert_to_agentson, scoped to a single
-    message + its parts (the real sample is one message, not a full
-    session/db export, so we exercise the mapping logic directly
-    rather than standing up a fake sqlite db for a single record).
-    """
-    entries = []
-    role = message.get("role", "unknown")
-
-    if role == "assistant":
-        for part_data in parts:
-            part_type = part_data.get("type", "")
-
-            if part_type == "text":
-                entries.append({
-                    "type": "answer",
-                    "text": part_data.get("text", ""),
-                })
-            elif part_type == "reasoning":
-                entries.append({
-                    "type": "thought",
-                    "text": part_data.get("text", ""),
-                })
-            elif part_type == "tool":
-                state = part_data.get("state", {}) or {}
-                status_raw = state.get("status", "")
-                entries.append({
-                    "type": "action",
-                    "tool": part_data.get("tool", "unknown"),
-                    "code": json.dumps(state.get("input", {})),
-                    "output": str(state.get("output", "")),
-                    "status": "success" if status_raw == "completed" else (status_raw or "unknown"),
-                })
-            elif part_type == "tool-invocation":
-                entries.append({
-                    "type": "action",
-                    "tool": part_data.get("toolName", "unknown"),
-                    "code": json.dumps(part_data.get("args", {})),
-                    "output": str(part_data.get("result", "")),
-                    "status": "success" if not part_data.get("error") else "error",
-                })
-
-    return entries
-
-
-def test_real_sample_reasoning_part_not_dropped():
-    """The 'reasoning' part in the real sample must become a thought entry."""
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    entries = _convert_message_and_parts(fixture["message"], fixture["parts"])
-
-    thought_entries = [e for e in entries if e["type"] == "thought"]
-    assert len(thought_entries) == 1, (
-        f"Expected 1 thought entry from the reasoning part, got {len(thought_entries)}. "
-        "This is the exact bug: reasoning parts were silently dropped."
+def _database_from_real_sample(tmp_path):
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    message = fixture["message"]
+    session_id = message["sessionID"]
+    db_path = tmp_path / "opencode-real-sample.sqlite"
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript("""
+        CREATE TABLE session (
+            id TEXT PRIMARY KEY, title TEXT, time_created INTEGER, time_updated INTEGER,
+            model TEXT, agent TEXT, tokens_input INTEGER, tokens_output INTEGER,
+            cost REAL, directory TEXT, version TEXT
+        );
+        CREATE TABLE message (
+            id TEXT PRIMARY KEY, session_id TEXT, time_created INTEGER,
+            time_updated INTEGER, data TEXT
+        );
+        CREATE TABLE part (
+            id TEXT PRIMARY KEY, session_id TEXT, message_id TEXT,
+            time_created INTEGER, time_updated INTEGER, data TEXT
+        );
+        CREATE TABLE todo (
+            session_id TEXT, content TEXT, status TEXT, priority TEXT, position INTEGER
+        );
+    """)
+    conn.execute(
+        "INSERT INTO session VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (session_id, "Real OpenCode sample", message["time"]["created"],
+         message["time"]["completed"],
+         json.dumps({"id": message["modelID"], "providerID": message["providerID"],
+                     "variant": message["variant"]}),
+         message["agent"], message["tokens"]["input"], message["tokens"]["output"],
+         message["cost"], message["path"]["cwd"], "captured"),
     )
-    assert thought_entries[0]["text"] == "Now run the test script."
-    print("PASS: test_real_sample_reasoning_part_not_dropped")
-
-
-def test_real_sample_tool_part_mapped_correctly():
-    """The 'tool' part (current schema) must become an action entry with correct fields."""
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    entries = _convert_message_and_parts(fixture["message"], fixture["parts"])
-
-    action_entries = [e for e in entries if e["type"] == "action"]
-    assert len(action_entries) == 1, (
-        f"Expected 1 action entry from the tool part, got {len(action_entries)}. "
-        "This is the exact bug: 'tool' parts weren't recognized (only 'tool-invocation' was)."
+    conn.execute(
+        "INSERT INTO message VALUES (?,?,?,?,?)",
+        (message["id"], session_id, message["time"]["created"],
+         message["time"]["completed"], json.dumps(message)),
     )
-    action = action_entries[0]
-    assert action["tool"] == "bash"
+    for part in fixture["parts"]:
+        start = (part.get("time") or {}).get("start")
+        if start is None:
+            start = (part.get("state") or {}).get("time", {}).get("start")
+        conn.execute(
+            "INSERT INTO part VALUES (?,?,?,?,?,?)",
+            (part["id"], session_id, message["id"], start or message["time"]["created"],
+             (part.get("time") or {}).get("end") or
+             (part.get("state") or {}).get("time", {}).get("end") or start or message["time"]["created"],
+             json.dumps(part)),
+        )
+    conn.commit()
+    conn.close()
+    return db_path, fixture
+
+
+def test_real_opencode_sample_runs_through_actual_reader_and_jsonl(tmp_path):
+    db_path, fixture = _database_from_real_sample(tmp_path)
+    message = fixture["message"]
+
+    reader = OpencodeReader(str(db_path))
+    reader.connect()
+    try:
+        sessions = reader.list_sessions()
+        session = reader.read_session(message["sessionID"])
+    finally:
+        reader.disconnect()
+
+    assert sessions[0]["id"] == message["sessionID"]
+    assert session["agent"]["name"] == message["modelID"]
+    assert session["agent"]["provider"] == message["providerID"]
+    assert session["metadata"]["tokens_input"] == message["tokens"]["input"]
+    assert session["metadata"]["tokens_output"] == message["tokens"]["output"]
+    assert session["metadata"]["total_tokens"] == (
+        message["tokens"]["input"] + message["tokens"]["output"]
+    )
+
+    thought = next(e for e in session["entries"] if e["type"] == "thought")
+    assert thought["text"] == "Now run the test script."
+    assert thought["source_payload"]["part_data"]["id"] == fixture["parts"][0]["id"]
+
+    action = next(e for e in session["entries"] if e["type"] == "action")
+    native_tool = fixture["parts"][1]
+    assert action["tool"] == native_tool["tool"] == "bash"
+    assert action["tool_call_id"] == native_tool["callID"]
     assert action["status"] == "success"
     assert "test_claude_code_run.py" in action["code"]
     assert "ALL TESTS PASSED" in action["output"]
-    print("PASS: test_real_sample_tool_part_mapped_correctly")
+    assert action["source_payload"]["part_data"] == native_tool
+    assert action["source_payload"]["message_data"]["finish"] == "tool-calls"
 
-
-def test_real_sample_entry_count():
-    """Sanity check: this message should yield exactly 2 entries (1 thought, 1 action)."""
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    entries = _convert_message_and_parts(fixture["message"], fixture["parts"])
-    assert len(entries) == 2, f"Expected 2 entries total, got {len(entries)}: {entries}"
-    print("PASS: test_real_sample_entry_count")
-
-
-if __name__ == "__main__":
-    test_real_sample_reasoning_part_not_dropped()
-    test_real_sample_tool_part_mapped_correctly()
-    test_real_sample_entry_count()
-    print("\nAll real-sample regression tests passed!")
+    target = tmp_path / "real-opencode.agentson"
+    with target.open("w", encoding="utf-8") as handle:
+        write_agentson_stream(session, handle, source_tool="opencode")
+    events = [json.loads(line) for line in target.read_text(encoding="utf-8").splitlines()]
+    validate_v1_2_events(events)
+    exported_action = next(e for e in events if e["type"] == "action")
+    assert exported_action["tool_call_id"] == native_tool["callID"]
+    assert exported_action["source_payload"]["part_data"] == native_tool
+    assert events[0]["source_session"]["source_metadata"]["schema_generation"] == "1.x"
+    assert events[0]["source_session"]["source_metadata"]["session_row"]["id"] == message["sessionID"]
