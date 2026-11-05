@@ -28,7 +28,7 @@ How I think about problems before I write code.
 | [Own Your Data](mental-models.md#own-your-data) | Never depend on a vendor for something you can store yourself |
 | [Build to Learn](mental-models.md#build-to-learn) | Build things to understand them, not just to use them |
 | [Constraint-Driven](mental-models.md#constraint-driven) | Limitations are features, not bugs |
-| [One File, One Truth](mental-models.md#one-file-one-truth) | A single file should contain everything needed |
+| [One File, One Truth](mental-models.md#one-file-one-truth) | A session archive is independently readable; external artefacts are explicit and integrity-verifiable |
 
 → [Read Mental Models](mental-models.md)
 
@@ -43,7 +43,7 @@ How I write code. Non-negotiable.
 | [No PII in Repo](coding-standards.md#no-pii-in-repo) | Never commit personal file paths, names, or identifiers |
 | [No Telemetry](coding-standards.md#no-telemetry) | No phone-home, no analytics, no tracking |
 | [Vendor Neutral](coding-standards.md#vendor-neutral) | Never depend on one company's API or format |
-| [Single File Output](coding-standards.md#single-file-output) | One .AgentSON file = one complete session |
+| [Single File Output](coding-standards.md#single-file-output) | One canonical archive contains the session record; no hidden sidecar dependency |
 | [Minimal Dependencies](coding-standards.md#minimal-dependencies) | If you can do it in 20 lines, don't import a library |
 | [Test Against Real Data](coding-standards.md#test-against-real-data) | Synthetic test data lies. Real data tells the truth |
 | [Privacy-Safe Test Data](coding-standards.md#privacy-safe-test-data) | Real exports are sanitised and approved before repository use |
@@ -88,9 +88,10 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-012](adrs/adr-012-academic-literature-relationship.md) | AgentSON's relationship to academic trace-provenance literature |
 | [ADR-013](adrs/adr-013-cli-scope-violation-finetune-push-pull.md) | `finetune`, `push`, and `pull` violate the core/downstream scope rule |
 | [ADR-014](adrs/adr-014-observation-entry-type-missing-from-spec.md) | `"observation"` is missing from the entry `type` enum |
-| [ADR-015](../../spec/ADR-015-canonical-schema.md) | Canonical Schema Decision — JSONL is canonical |
+| [ADR-015](../../spec/ADR-015-canonical-schema.md) | Historical JSONL decision — superseded by ADR-024 |
 | [ADR-016](../../spec/ADR-016-ontology-enum-reconciliation.md) | Ontology / Enum Reconciliation |
 | [ADR-017](../../spec/ADR-017-core-vs-streaming.md) | Core vs Streaming Primitive Separation |
+| [ADR-024](../../spec/ADR-024-canonical-session-archive-and-interoperability.md) | Canonical session archive and cross-harness interoperability |
 | [ADR-022](../../spec/ADR-022-reconciling-readers-with-ontology.md) | Reconciling the Readers with the Ontology |
 | ~~ADR-018~~ | **Never written.** Data Rights Intelligence Platform — managed service separation |
 | ~~ADR-019~~ | **Never written.** LLM analysis — three-tier privacy model |
