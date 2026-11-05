@@ -249,7 +249,15 @@ class ClaudeCodeReader:
                 content = msg.get("content", [])
                 model = msg.get("model", "")
 
-                for block in content:
+                for block in content if isinstance(content, list) else []:
+                    if not isinstance(block, dict):
+                        agentson_entries.append({
+                            "type": "system-event", "source": "other",
+                            "text": "Unmapped Claude Code content block",
+                            "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block},
+                        })
+                        continue
                     block_type = block.get("type", "")
 
                     if block_type == "text":
