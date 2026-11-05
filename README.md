@@ -43,8 +43,11 @@ The separate Severity v1 specification is a data contract expressed with JSON Sc
 
 - Canonical interchange is a **JSONL stream**: one JSON event per line.
 - The first event in a stream is `stream-meta`.
+- **The default exported filename remains `.agentson`**, but its contents are canonical v1.2 JSONL, not a pretty-printed session document.
 - Individual events are validated against [`spec/v1.2-entries.json`](spec/v1.2-entries.json).
-- [`spec/v1.2.json`](spec/v1.2.json) describes the session-document representation used by document-oriented tooling and compatibility paths.
+- [`spec/v1.2.json`](spec/v1.2.json) remains available for legacy/document-oriented compatibility and existing integrations; it is not the default export representation.
+- Legacy document-style `.agentson` files remain readable by the CLI compatibility loader. New exports are written as JSONL.
+- Source-level session metadata and original reader event records are retained in `source_session` and `source_payload` where available; unsupported event types are preserved and marked as unmapped rather than silently discarded.
 - The ontology defines 12 event primitives. See [`spec/ontology.md`](spec/ontology.md).
 - v1 and v1.1 are legacy schemas; do not use them for new producers.
 
@@ -108,7 +111,7 @@ python -m build
 
 ## CLI quick start
 
-Export a session from a locally available OpenCode database:
+Export a session from a locally available OpenCode database. The resulting `.agentson` file contains v1.2 JSONL:
 
 ```bash
 agentson export --tool opencode --session <session-id> --output ./sessions/
