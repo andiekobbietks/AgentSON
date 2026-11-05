@@ -89,6 +89,12 @@ python -m pip install agentson
 
 The repository's package metadata currently identifies the Python distribution as **0.1.0 / Alpha**. The schema version (v1.2) and Python package version are separate version tracks. Check the [PyPI project page](https://pypi.org/project/agentson/) for the version actually published.
 
+For optional local ECDSA signing of evidence exports, install the signing extra:
+
+```bash
+python -m pip install "agentson[signing]"
+```
+
 For development:
 
 ```bash
