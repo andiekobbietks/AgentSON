@@ -394,14 +394,11 @@ agentson/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
+See [ROADMAP.md](ROADMAP.md) for the reader-priority planning snapshot. It is not the authoritative implementation inventory; see [wiki/Readers.md](wiki/Readers.md) for repository modules and available test files.
 
-**Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
+**Roadmap candidates:** OpenClaw and additional harnesses not yet represented by a supported, verified adapter.
 
-**Version targets:**
-- v0.2.0 (Aug 2026): 10+ readers, real-world data
-- v0.3.0 (Sep 2026): 15+ readers, sample corpus
-- v1.0.0 (Oct 2026): 20+ readers, stable API
+**Historical version targets:** The v0.2.0, v0.3.0 and v1.0.0 dates in the original roadmap were planning estimates from 2026-07, not current release commitments. Check releases and CI for actual status.
 
 ---
 
@@ -410,8 +407,8 @@ See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tool
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
 - [Session Interoperability Architecture](docs/architecture/session-interoperability.md) — Cross-harness capture, exchange, inspection and resumption boundaries
 - [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md) — Canonical archive decision
-- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
-- [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
+- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Operating and specification decision records (separate namespaces)
+- [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — Standard Operating Procedures
 
 ---
 
