@@ -1,5 +1,5 @@
 # AgentSON — v1.2.0 (Canonical Schema, 2026-10-23)
-# Release: full session-debug (browser panel inspection), 236 passing tests, 9 readers.
+# Release: full session-debug (browser panel inspection). Reader modules and verification status are tracked in [wiki/Readers.md](wiki/Readers.md).
 # Design-level: ClickOps NOT BUILT; full MCP capture (ADR-022) design-only.
 # AKCloud managed service stays separate — banner / tagline AKCloud-only.
 # AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
@@ -58,7 +58,7 @@ Every AI coding agent stores session data in its own proprietary database. There
 
 ## The Solution
 
-AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
+AgentSON is designed to capture an AI-assisted session as a self-contained, versioned session envelope: user inputs, agent messages, tool actions, observations, side effects and outcomes where the source exposes them. The canonical v1.2 archive is one JSON document with an ordered `entries` array. Adapters preserve source provenance and report information that is transformed, unavailable, redacted or unsupported.
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
@@ -211,7 +211,7 @@ Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, A
 
 - **Portability** — Switch tools without losing context
 - **Search** — Full-text search across all your sessions
-- **Replay** — Re-run or review any agent session offline
+- **Inspection** — Review the recorded session offline without executing imported actions
 - **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
 
 ### For the Organisation
@@ -222,7 +222,7 @@ Memory systems (MCP, bespoke databases) don't give you portable answers to those
 
 - **Institutional knowledge** — Preserve the operational life of every agent independently of where it ran
 - **Vendor independence** — Change runtimes, keep the record
-- **Compliance** — GDPR Art. 20 + EU AI Act Art. 52
+- **Governance** — Exportability and traceability can support applicable obligations; the format alone does not establish legal compliance
 - **Training-data export** — Export to Unsloth/Olive for fine-tuning
 
 ---
@@ -256,9 +256,7 @@ agentson validate ./sessions/
 
 ## Schema (v1.2 — canonical)
 
-> v1 and v1.1 are deprecated. v1.2 is the canonical schema
-> (`spec/v1.2.json`); individual entries validate against
-> `spec/v1.2-entries.json`.
+ > v1 and v1.1 are legacy single-document formats. v1.2 is the canonical session-envelope schema (`spec/v1.2.json`), containing an ordered `entries` array. Individual entries are checked against `spec/v1.2-entries.json`. This is a JSON document contract, not a JSONL stream validator. Existing line-oriented stream code is a separate transport/implementation surface pending its own explicit contract.
 
 ```json
 {
@@ -296,6 +294,22 @@ agentson validate ./sessions/
 | `presence` | An agent joining or leaving |
 
 ---
+
+## Cross-Harness Interoperability
+
+AgentSON's objective is to let a session created in one AI coding harness be captured, represented, validated, exchanged and inspected in another without silently losing meaning or provenance. Where a receiving harness supports compatible state and permissions, AgentSON should also enable controlled reconstruction and resumption.
+
+These are separate guarantees:
+
+| Capability | Guarantee |
+|---|---|
+| **Portable** | A conforming consumer can parse and understand the session independently of its source harness. |
+| **Reconstructable** | A consumer can rebuild a useful representation of recorded activity and context, while reporting missing state. |
+| **Resumable** | A compatible receiving harness can continue from an explicit, validated checkpoint after capability and permission checks. |
+
+Portability does not imply reconstruction; reconstruction does not imply resumption. Imported tool calls and outputs are untrusted data and are never executed merely by parsing or inspecting an archive. Credentials are not portable session content.
+
+**No silent semantic loss:** adapters must distinguish information preserved exactly, normalised, retained as source-specific extension data, unavailable, redacted or unsupported. See [the interoperability architecture](docs/architecture/session-interoperability.md) and [ADR-024](spec/ADR-024-canonical-session-archive-and-interoperability.md).
 
 ## Fine-Tuning Export
 
