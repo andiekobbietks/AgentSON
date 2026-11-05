@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Union
 from urllib.error import HTTPError, URLError
@@ -82,7 +83,8 @@ def _request_json(
     if password is not None:
         if not password:
             raise ValueError("password must not be empty")
-        token = base64.b64encode(f"opencode:{password}".encode("utf-8")).decode("ascii")
+        username = os.environ.get("OPENCODE_SERVER_USERNAME", "opencode")
+        token = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
         headers["Authorization"] = f"Basic {token}"
     request = Request(
         f"{base_url}{path}",
@@ -136,7 +138,7 @@ def _load_agentson_input(source: Union[str, Path, Mapping[str, Any]]) -> Dict[st
 
     tool_data = document.get("tool") if isinstance(document.get("tool"), dict) else {}
     source_session = document.get("source_session") if isinstance(document.get("source_session"), dict) else {}
-    raw_tool_name = str(tool_data.get("name") or source_session.get("tool") or "other")
+    raw_tool_name = str(tool_data.get("name") or source_session.get("tool") or "other").lower()
     allowed_tools = {"opencode", "minimax", "antigravity", "chrome-devtools", "cursor", "cline", "aider", "claude-code", "copilot", "other"}
     archive = {
         "id": str(document.get("id") or Path(source).stem),
