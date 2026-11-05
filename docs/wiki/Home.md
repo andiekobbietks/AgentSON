@@ -1,5 +1,7 @@
 # AgentSON Wiki
 
+> **This wiki is a mirror.** The authoritative source for these pages is `docs/wiki/` in the main [`andiekobbietks/AgentSON`](https://github.com/andiekobbietks/AgentSON) repository.
+
 **Agent + JSON** — The open interchange format for AI agent session traces.
 
 > Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
