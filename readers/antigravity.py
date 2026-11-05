@@ -145,6 +145,9 @@ def read_antigravity_session(session: Dict) -> Dict:
     entries = []
     total_tokens = 0
     cost = 0.0
+    # This is extraction time, not event time. Do not fabricate a timestamp
+    # for a step when the source database does not expose one.
+    extracted_at = datetime.now(timezone.utc).isoformat()
 
     for step in steps:
         idx, step_type, status, has_sub, payload, fmt = step
@@ -153,7 +156,6 @@ def read_antigravity_session(session: Dict) -> Dict:
         entry = {
             "role": "assistant" if step_type in [14, 15, 23] else "tool",
             "type": step_type,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
             "metadata": {
                 "status": status,
                 "has_subtrajectory": has_sub,
@@ -210,8 +212,8 @@ def read_antigravity_session(session: Dict) -> Dict:
             "name": "Antigravity IDE",
             "version": "1.0.0"
         },
-        "started_at": datetime.now(timezone.utc).isoformat(),
-        "ended_at": datetime.now(timezone.utc).isoformat(),
+        # Extraction time is metadata, never a fabricated source event time.
+        "metadata": {"extracted_at": extracted_at},
         "entries": entries,
         "metrics": {
             "total_tokens": total_tokens,
