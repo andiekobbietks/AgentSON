@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "agentson"
 version = "0.1.0"
 description = "Agent + JSON — vendor-neutral session capture format for AI coding agents"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
     {name = "andiekobbietks"}
@@ -16,7 +16,6 @@ keywords = ["ai", "agent", "json", "session", "finetuning", "opencode", "minimax
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -44,9 +43,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "build>=1.0",
     "pyrefly>=0.1",
+    "PyYAML>=6.0",
+    "cryptography>=41.0",
 ]
 chatgpt = []  # ChatGPT importer uses only stdlib
+signing = ["cryptography>=41.0"]  # Optional ECDSA signing for --secure evidence export
 
 [project.urls]
 Homepage = "https://github.com/andiekobbietks/AgentSON"
@@ -57,13 +60,13 @@ Issues = "https://github.com/andiekobbietks/AgentSON/issues"
 agentson = "cli.main:main"
 
 [tool.setuptools.package-data]
-"spec" = ["v1.json"]
+"spec" = ["*.json"]
 "supabase" = ["schema.sql"]
 "examples" = ["*.AgentSON"]
 "pwa" = ["manifest.json", "sw.js", "*.html", "*.png", "*.ico"]
 
 [tool.setuptools.packages.find]
-include = ["readers*", "exporters*", "importers*", "cli*", "agentson_platform*", "agentson_mcp*"]
+include = ["readers*", "exporters*", "importers*", "consumers*", "cli*", "spec*", "tools", "agentson_platform*", "agentson_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

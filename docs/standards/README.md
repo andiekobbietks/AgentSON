@@ -75,6 +75,7 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-016](../../spec/ADR-016-ontology-enum-reconciliation.md) | Ontology / Enum Reconciliation |
 | [ADR-017](../../spec/ADR-017-core-vs-streaming.md) | Core vs Streaming Primitive Separation |
 | [ADR-022](../../spec/ADR-022-reconciling-readers-with-ontology.md) | Reconciling the Readers with the Ontology |
+| [ADR-023](../../spec/ADR-023-production-readiness-and-knowledge-catalog-architecture.md) | Production readiness and the knowledge-catalogue boundary |
 | ~~ADR-018~~ | **Never written.** Data Rights Intelligence Platform — managed service separation |
 | ~~ADR-019~~ | **Never written.** LLM analysis — three-tier privacy model |
 | ~~ADR-020~~ | **Never written.** Opt-out injection scope & legal boundary |

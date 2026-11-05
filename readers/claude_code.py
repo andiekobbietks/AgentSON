@@ -30,6 +30,7 @@ Reference: https://code.claude.com/docs/en/sessions.md
 import json
 import os
 import glob
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -130,6 +131,8 @@ class ClaudeCodeReader:
             "session_id": session_id,
             "project_hash": jsonl_path.parent.name,
             "file_path": str(jsonl_path),
+            "unparsed_lines": [],
+            "source_file_sha256": hashlib.sha256(jsonl_path.read_bytes()).hexdigest(),
         }
 
         with open(jsonl_path, "r", encoding="utf-8") as f:
@@ -141,14 +144,19 @@ class ClaudeCodeReader:
                     obj = json.loads(line)
                     entries.append(obj)
                     # Extract metadata from first user message
-                    if obj.get("type") == "user" and "timestamp" not in metadata:
-                        metadata["timestamp"] = obj.get("timestamp", "")
+                    if obj.get("type") == "user" and not metadata.get("timestamp") and obj.get("timestamp"):
+                        metadata["timestamp"] = obj.get("timestamp")
                     if obj.get("type") == "assistant" and "model" not in metadata:
                         msg = obj.get("message", {})
                         metadata["model"] = msg.get("model", "unknown")
-                except json.JSONDecodeError:
-                    continue
+                except json.JSONDecodeError as exc:
+                    metadata["unparsed_lines"].append({
+                        "line_number": line_num,
+                        "raw_line": line,
+                        "error": str(exc),
+                    })
 
+        metadata["source_line_count"] = line_num if "line_num" in locals() else 0
         return self._to_agentson(entries, metadata)
 
     def export_session(self, session_id: str, output_dir: str) -> Optional[str]:
@@ -161,8 +169,11 @@ class ClaudeCodeReader:
         output_path.mkdir(parents=True, exist_ok=True)
         out_file = output_path / f"claude-code-{session_id}.agentson"
 
+        # Keep the reader's direct export path on the same canonical v1.2
+        # serializer as the CLI. The .agentson extension remains unchanged.
+        from exporters.jsonl import write_agentson_stream
         with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(session, f, indent=2, ensure_ascii=False)
+            write_agentson_stream(session, f, source_tool=self.TOOL_NAME)
 
         return str(out_file)
 
@@ -191,7 +202,10 @@ class ClaudeCodeReader:
                 # Extract user message text
                 msg = entry.get("message", {})
                 content = msg.get("content", [])
-                text = self._extract_text(content)
+                text = self._extract_text(
+                    [block for block in content if not (isinstance(block, dict) and block.get('type') == 'tool_result')]
+                    if isinstance(content, list) else content
+                )
                 if text:
                     if not task:
                         task = text[:200]
@@ -199,24 +213,81 @@ class ClaudeCodeReader:
                         "type": "user-query",
                         "text": text,
                         "timestamp": timestamp,
+                        "source_payload": entry,
                     })
+
+                # Claude Code commonly embeds tool_result blocks inside a
+                # user message. Preserve and correlate those native blocks;
+                # do not assume tool results are top-level JSONL records.
+                for block in content if isinstance(content, list) else []:
+                    if not isinstance(block, dict) or block.get("type") != "tool_result":
+                        continue
+                    tool_id = block.get("tool_use_id", "")
+                    result_content = block.get("content", "")
+                    if isinstance(result_content, list):
+                        result_content = self._extract_text(result_content)
+                    for existing in reversed(agentson_entries):
+                        if existing.get("type") == "action" and existing.get("tool_call_id") == tool_id:
+                            agentson_entries.append({
+                                "type": "observation",
+                                "text": str(result_content)[:2000] if result_content else "",
+                                "correlation_id": tool_id,
+                                "source": "tool",
+                                "timestamp": timestamp,
+                                "source_payload": {"entry": entry, "block": block},
+                            })
+                            break
+                    else:
+                        agentson_entries.append({
+                            "type": "observation",
+                            "text": str(result_content)[:2000] if result_content else "",
+                            "correlation_id": tool_id or None,
+                            "source": "tool",
+                            "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block, "unmatched_result": True},
+                        })
 
             elif entry_type == "assistant":
                 msg = entry.get("message", {})
                 content = msg.get("content", [])
                 model = msg.get("model", "")
 
-                for block in content:
+                for block in content if isinstance(content, list) else []:
+                    if not isinstance(block, dict):
+                        agentson_entries.append({
+                            "type": "system-event", "source": "other",
+                            "text": "Unmapped Claude Code content block",
+                            "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block},
+                        })
+                        continue
                     block_type = block.get("type", "")
 
                     if block_type == "text":
                         text = block.get("text", "")
                         if text:
+                            # Claude's stop_reason distinguishes a completed
+                            # assistant turn from commentary preceding a tool call.
+                            event_type = "answer" if msg.get("stop_reason") == "end_turn" else "thought"
                             agentson_entries.append({
-                                "type": "thought",
+                                "type": event_type,
                                 "text": text,
                                 "timestamp": timestamp,
                                 "model": model,
+                                "source_payload": {"entry": entry, "block": block},
+                            })
+                            if event_type == "answer":
+                                outcome = "success"
+
+                    elif block_type == "thinking":
+                        thinking = block.get("thinking", "")
+                        if thinking:
+                            agentson_entries.append({
+                                "type": "thought",
+                                "text": thinking,
+                                "timestamp": timestamp,
+                                "model": model,
+                                "source_payload": {"entry": entry, "block": block},
                             })
 
                     elif block_type == "tool_use":
@@ -230,6 +301,7 @@ class ClaudeCodeReader:
                             "tool": mapped_tool,
                             "tool_call_id": tool_id,
                             "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block},
                         }
 
                         # Map tool-specific inputs
@@ -255,6 +327,17 @@ class ClaudeCodeReader:
 
                         agentson_entries.append(action)
 
+                    else:
+                        # Preserve future or multimodal block types explicitly;
+                        # never silently drop a native block we do not map yet.
+                        agentson_entries.append({
+                            "type": "system-event",
+                            "source": "other",
+                            "text": "Unmapped Claude Code content block: {}".format(block_type or "unknown"),
+                            "timestamp": timestamp,
+                            "source_payload": {"entry": entry, "block": block},
+                        })
+
             elif entry_type == "summary":
                 text = entry.get("summary", entry.get("text", ""))
                 if text:
@@ -262,6 +345,7 @@ class ClaudeCodeReader:
                         "type": "answer",
                         "text": text,
                         "timestamp": timestamp,
+                        "source_payload": entry,
                     })
                     outcome = "success"
 
@@ -271,24 +355,33 @@ class ClaudeCodeReader:
                 if isinstance(content, list):
                     content = self._extract_text(content)
 
-                # Find the matching action and add observation
-                for existing in reversed(agentson_entries):
-                    if existing.get("type") == "action" and existing.get("tool_call_id") == tool_id:
-                        agentson_entries.append({
-                            "type": "observation",
-                            "text": str(content)[:2000] if content else "",
-                            "correlation_id": tool_id,
-                            "source": "tool",
-                            "timestamp": timestamp,
-                        })
-                        break
+                # Preserve every tool result, even when the matching invocation
+                # is absent from this file (for example, a split subagent trace).
+                agentson_entries.append({
+                    "type": "observation",
+                    "text": str(content)[:2000] if content else "",
+                    "correlation_id": tool_id or None,
+                    "source": "tool",
+                    "timestamp": timestamp,
+                    "source_payload": entry,
+                })
+
+            else:
+                # Keep future top-level record types rather than dropping them.
+                agentson_entries.append({
+                    "type": "system-event",
+                    "source": "other",
+                    "text": "Unmapped Claude Code record: {}".format(entry_type or "unknown"),
+                    "timestamp": timestamp,
+                    "source_payload": entry,
+                })
 
         # Build the AgentSON document
         session_id = metadata.get("session_id", "unknown")
         model = metadata.get("model", "unknown")
 
-        return {
-            "$schema": "https://agentson.dev/schema/v1.1.json",
+        document = {
+            "$schema": "https://agentson.dev/schema/v1.2.json",
             "id": f"claude-code-{session_id}",
             "task": task,
             "outcome": outcome,
@@ -301,9 +394,18 @@ class ClaudeCodeReader:
                 "name": model,
                 "provider": "anthropic",
             },
-            "timestamp": metadata.get("timestamp", datetime.utcnow().isoformat() + "Z"),
             "entries": agentson_entries,
+            "source_metadata": {
+                "source_file_sha256": metadata.get("source_file_sha256"),
+                "source_line_count": metadata.get("source_line_count"),
+                "unparsed_lines": metadata.get("unparsed_lines", []),
+                "source_file_path": metadata.get("file_path", ""),
+            },
         }
+        # Do not invent a start time when the transcript has no source timestamp.
+        if metadata.get("timestamp"):
+            document["timestamp"] = metadata["timestamp"]
+        return document
 
     def _extract_text(self, content) -> str:
         """Extract text from content blocks (list of dicts or plain string)."""

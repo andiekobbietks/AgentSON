@@ -1,192 +1,106 @@
-# AgentSON — Maximum Entropy Index
+# AgentSON — Repository Instructions
 
-> **STOP. What you remember about AgentSON is WRONG for this project. Always search docs and read before any task.**
-> **Prefer retrieval-led reasoning over pre-training-led reasoning.**
-> **If docs missing, run: `agentson export --tool opencode --all`** — `export` takes `--tool`; a positional tool name is rejected with exit 2.
+These instructions apply to changes in this repository. Treat checked-in code, schemas, tests and accepted ADRs as the source of truth; do not rely on old summaries or release notes when they conflict with the current implementation.
 
-## Model Routing
+## Project boundary
 
-| Model | Use Case | Intelligence | Taste | Cost |
-|-------|----------|-------------|-------|------|
-| **Fable 5** | Steering, complex tasks, reviews | 10 | 10 | High |
-| **GPT-5.5** | Bulk mechanical work, data analysis | 8 | 4 | Free (CodeX sub) |
-| **Opus 48** | API/SDK review, second-pass review | 8 | 8 | Medium |
-| **Sonnet 5** | Cheap sub-agents, workflows | 6 | 6 | Low |
+AgentSON has two deliberately separate layers:
 
-**Defaults:** Keep reasoning effort on `high`. Do NOT use `x-high`, `max`, or `ultra` — they overthink and cost more for worse results.
+- **AgentSON Core:** the Apache-2.0 event format, versioned schemas, readers, importers, exporters, validators, CLI and protocol-neutral interfaces. Core must remain useful offline and without a hosted account.
+- **AgentSON Platform:** optional discovery, ingestion, indexing, catalogue, governance and service functionality. Platform features must not become mandatory dependencies for reading or validating local AgentSON files.
 
-**Routing rules:**
-- Anything user-facing (UI, copy, API design) → taste > 7 required
-- Reviews → Fable or Opus 48 (optionally 55 for extra perspective)
-- Bulk mechanical work (migrations, data analysis) → 55 (effectively free)
-- Computer use → shell out to GPT-55 via CodeX
+Do not move a platform/service responsibility into the file format merely because a reference implementation uses it. See [ADR-023](spec/ADR-023-production-readiness-and-knowledge-catalog-architecture.md).
 
-**Cost is a tiebreaker only when axes conflict.** Intelligence > Taste > Cost. Don't let cost prevent using the right model.
+## Schema status
 
-## Skills
+| Schema | Status | Use |
+|---|---|---|
+| `spec/v1.json` | Deprecated | Legacy compatibility only |
+| `spec/v1.1.json` | Deprecated | Legacy compatibility only |
+| `spec/v1.2.json` | Canonical version family | Session-document schema |
+| `spec/v1.2-entries.json` | Canonical version family | Flattened per-event validator for JSONL streams |
 
-### Codex Review
-Ask Codex CLI (GPT-55) for independent code review of uncommitted changes, a branch diff, or a specific implementation.
-- **When:** User wants a second-pass review, or change is broad enough for another perspective
-- **Workflow:** Identify review target → create temp artifact dir → run Codex review → read report → verify claims against code → present
-- **Commands:** `codex "review this diff: $(git diff)"` or `codex "review branch: $(git log main..HEAD --oneline)"`
-- **If Codex finds nothing:** Say that clearly, mention what was inspected
+**v1.2 is the canonical format decision.** JSONL is the canonical interchange stream, with one event per line and `stream-meta` as its first event. The session-document representation remains supported by document-oriented tooling; do not confuse that representation with the canonical JSONL wire shape.
 
-### Codex Implementation
-Run Codex (GPT-55) for bounded work on a work tree.
-- **When:** Task is mechanical, well-scoped, or needs GPT-55's pattern matching
-- **Workflow:** Define scope → spawn work tree → run Codex → verify output → merge
-- **Commands:** `codex "implement this spec: <spec>"`
-- **Time heuristic:** <3 min = simple, merge. 15+ min = pay attention. 1+ hour = architecture problem.
+The 12 event primitives are defined by `spec/ontology.md` and reconciled with the schemas by ADR-016. Update the ontology, schemas, fixtures, tests and examples together when changing the event contract.
 
-### Computer Use
-Ask Codex CLI (GPT-55) for local app verification needing computer use, browser automation, screenshots, or runtime inspection.
-- **When:** User asks to test a flow, verify UI behavior, inspect running app, capture screenshots
-- **Commands:** `codex --computer "verify <flow> in <app>"`
-- **Note:** GPT-55's computer use is better than Claude's. Always delegate.
+The separate Severity v1 specification is a JSON Schema 2020-12 / Pydantic data contract. It is not a REST API or OpenAPI document.
 
-## Schema Status (Critical)
+## Engineering rules
 
-| Schema | Required Fields | Validates | Verdict |
-|--------|----------------|-----------|---------|
-| `spec/v1.json` | Per-primitive from ontology | Single-document shape | ✅ Authoritative |
-| `spec/v1.1.json` | Per-primitive + trajectory | Single-document + trajectory | ✅ Working |
-| `spec/v1.2.json` | Per-primitive + oneOf discriminated union | JSONL stream (canonical) | ✅ Accepted (ADR-015) |
+1. **Preserve source evidence.** Do not silently discard, invent or coerce source events. Preserve unknown source fields or record an explicit mapping/loss warning.
+2. **Preserve provenance.** Distinguish source-observed data from inferred, reconstructed, normalised or redacted data.
+3. **Keep boundaries explicit.** Format, adapters, transport, storage, viewer and managed service are separate concerns.
+4. **Avoid hidden dependencies.** Declare every runtime and development dependency in `pyproject.toml`. Optional functionality should use an explicit extra and fail with an actionable message when absent.
+5. **Protect sensitive data.** Never commit real session exports, credentials, tokens, personal data, health data, private file paths or customer evidence. Use synthetic or sanitised fixtures and label them accurately.
+6. **Do not overstate maturity.** A CLI selector, schema-valid file, passing unit test or local demo does not prove lossless interoperability, safe replay, production readiness or regulatory compliance.
+7. **Keep documentation honest.** Separate implemented, tested, experimental, planned and not-implemented capabilities. Keep README, schemas, ADRs, changelog, roadmap and package metadata aligned.
+8. **Avoid unnecessary service coupling.** Local read, validation and export must not require a hosted service or network access.
 
-**v1.2 is canonical.** ADR-015 accepted. JSONL is the only format. v1/v1.1 deprecated.
+## Required workflow for changes
 
-## Ontology ↔ Enum Reconciliation
+### Bug fixes
 
-ADR-016 accepted. The 12 primitives are the source of truth. The schema enum matches exactly.
+- Reproduce the defect and identify the failing contract or code path.
+- Add a regression test that fails before the fix.
+- Make the smallest coherent correction.
+- Run the same test after the fix and run the complete test suite.
 
-| Removed (demoted to metadata) | Added (new primitives) |
-|-------------------------------|------------------------|
-| `context` → session metadata | `observation` |
-| `querying` → `thought` subtype | `user-feedback` |
-| `title` → display metadata | `system-event` |
-| | `capabilities` |
+### Schema or adapter changes
 
-## Dependency Graph
+- Identify the source and target schema versions.
+- Add valid, invalid, boundary and malformed-input fixtures.
+- Test missing, null, unexpected and vendor-specific fields.
+- Preserve native source data or document conversion loss.
+- Update the ontology, schema, examples, reader documentation and compatibility notes where relevant.
 
-```
-WP1 (ADR-015/016/017) ✅ ──→ WP2 (Schema: real required + oneOf) ✅
-                         ──→ WP3 (Core: jsonschema + validate cmd) ✅
-                         ──→ WP4 (Tests: 70 step defs) ✅
-                         ──→ WP5 (Docs sync) — IN PROGRESS
-```
+### CLI and packaging changes
 
-**All critical path items DONE** (2026-07-08). WP5 in progress.
+- Test the public command through its entry point, not only by calling internal functions.
+- Build both wheel and source distribution.
+- Confirm that required schemas and data files are included in both artefacts.
+- Install the wheel outside the repository and smoke-test the installed CLI.
 
-## Platform Context
+### Architecture changes
 
-A separate managed service (Data Rights Intelligence Platform) sits architecturally above AgentSON but does not impact the core format, CLI, or readers.
+- Add or update an ADR when a change affects a stable contract, compatibility boundary, security model or service responsibility.
+- Record claims, evidence, assumptions, inference, counterarguments, failure modes, falsification tests and consequences.
+- Treat automated review comments as hypotheses to verify against source and tests.
 
-> **ADR-018–021 and `docs/platform/mvp-spec.md` were never written.** They
-> were indexed below as accepted and complete, and `docs/standards/README.md`
-> linked all four ADRs. A case-correct search of the repository finds none of
-> them. `agentson_platform/` (2026-10-21) is now the only specification those
-> decisions have — cite the code, not those ADR numbers.
+## Local verification
 
-```
-AgentSON (open source)              Platform (managed service)
-  ├── CLI (export/search/render)       ├── Crawler (wraps agentson export)
-  ├── Readers (7 working)              ├── Analyst (LLM truth-teller)
-  ├── Schema (v1.2 canonical)          ├── Enforcer (opt-out injection)
-  └── Apache 2.0                       └── Supabase + billing
+Run the checks that apply to the change:
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pip check
+python -m pytest -q
+python -m build
+agentson --help
+agentson validate examples/
 ```
 
-Revenue from the platform funds AgentSON development. Both can exist without the other.
+The GitHub Actions workflow is authoritative for the checks it actually executes. Do not report a check as passing until its result has been observed. If a command is not run, state that clearly.
 
-**Sprint 1 BUILT (2026-07-08):** Crawl → Classify → Report loop working end-to-end.
-- `agentson platform detect` — lists installed AI tools + data paths
-- `agentson platform scan` — detects tools, exports all sessions, classifies, writes Markdown + JSON report
-- 62 sessions from 3 tools (opencode/minimax/antigravity) analyzed, 111 concerns found, 50 high/critical
-- Tier 1 rule-based classifier: detects API keys, emails, phones, file paths, telemetry signals, URLs
-- SLM classifier stub with graceful fallback to rules
+## Packaging requirements
 
-## File Map (Vercel Compressed Index)
+The v1.2 schemas are required at runtime by the validator. Keep `spec/v1.2.json` and `spec/v1.2-entries.json` in both wheel and source distribution artefacts. Any new runtime resource must have an explicit package-data/manifest rule and an installed-wheel regression check.
 
-| Path | Purpose | Status |
-|------|---------|--------|
-| `spec/v1.json` | Schema v1 | ✅ Deprecated |
-| `spec/v1.1.json` | Schema v1.1 | ✅ Deprecated |
-| `spec/v1.2.json` | Schema v1.2 (canonical) | ✅ Accepted |
-| `spec/v1.2-entries.json` | Flattened entry schema | ✅ CLI-ready |
-| `spec/ontology.md` | 12 primitives | ✅ Source of truth |
-| `spec/adapter-spec.md` | CDP/MCP/browser-use specs | ✅ |
-| `spec/replay-semantics.md` | Replay rules | ✅ |
-| `spec/okf-digest.md` | OKF reference | ✅ |
-| `spec/ADR-015-canonical-schema.md` | JSONL is canonical | ✅ Accepted |
-| `spec/ADR-016-ontology-enum-reconciliation.md` | 12 primitives = source of truth | ✅ Accepted |
-| `spec/ADR-017-core-vs-streaming.md` | Core vs streaming separation | ✅ Accepted |
-| `docs/standards/adrs/adr-001…014` + `spec/ADR-015/016/017/022` | The 18 ADRs that exist on disk | ✅ |
-| `docs/standards/adrs/adr-018…021` | Platform separation, privacy model, enforcement, pricing | ❌ **Never written** — corrected 2026-10-21 |
-| `docs/platform/mvp-spec.md` | MVP architecture: Crawler→Analyze→Report→Enforce | ❌ **Never written** — corrected 2026-10-21 |
-| `readers/opencode.py` | OpenCode reader | ✅ repaired 2026-10-21 |
-| `readers/claude_code.py` | Claude Code reader | ✅ |
-| `readers/chrome_devtools.py` | Chrome DevTools reader | ✅ |
-| `readers/vibeedge.py` | VibeEdge Studio reader (ThinkAgent DO + CodeGeneratorAgent DO, read-only) | ✅ 2026-10-21 |
-| `cli/main.py` | CLI (13 commands: +reconstruct, +platform) | ✅ |
-| `cli/compliance.py` | GDPR/EU AI Act compliance engine (dual-track EU/UK) | ✅ Resolved 2026-07-08 |
-| `cli/reconstruct.py` | Three-mode reconstructor (forensic/narrative/live) | ✅ Resolved 2026-07-08 |
-| `agentson_platform/tool_registry.py` | Tool path registry (8 tools, cross-platform) | ✅ Sprint 1 |
-| `agentson_platform/crawler.py` | Auto-detect + export all sessions from all tools | ✅ Sprint 1 |
-| `agentson_platform/digest.py` | ComplianceDigest schema (dataclass) | ✅ Sprint 1 |
-| `agentson_platform/classifier.py` | Tier 1 rule-based classifier (PII + telemetry) | ✅ Sprint 1 |
-| `agentson_platform/classifier_slm.py` | SLM-enhanced classifier (graceful fallback) | ✅ Sprint 1 |
-| `agentson_platform/report.py` | Markdown + JSON report renderer | ✅ Sprint 1 |
-| `agentson_platform/scan.py` | End-to-end Crawl→Analyze→Report entry point | ✅ Sprint 1 |
-| `tests/test_schema.py` | 70 schema validation tests | ✅ |
-| `tests/test_opencode_tool_output.py` | Regression tests for the `tool`-part branch and `_resolve_truncated_output` | ✅ 2026-10-21 |
-| `tools/flatten_schema.py` | Generates v1.2-entries.json | ✅ |
-| `tools/heart_monitor.py` | Health dashboard | ✅ |
-| `tools/session_timing.py` | Burst/idle analysis | ✅ |
-| `tools/pii_redactor.py` | PII detection | ✅ |
-| `exporters/excel.py` | Excel export | ✅ |
-| `exporters/pdf_export.py` | PDF export | ✅ |
+## Release and compatibility policy
 
-## Concept Map
+- Schema version and Python package version are independent.
+- Do not infer a package release from the schema version or a changelog heading.
+- Do not bump package versions without reconciling published releases, tags, changelog entries and package metadata.
+- Do not introduce a breaking schema change without an explicit compatibility decision and migration notes.
+- Treat production readiness as workload- and service-boundary-specific evidence, not a generic project label.
 
-```
-OKF (knowledge)          AgentSON (provenance)
-├── What agent LEARNED   ├── What agent DID
-├── Static wiki          ├── Temporal trace
-├── markdown + YAML      ├── JSONL stream
-└── Below MCP            └── Above MCP
+## Key references
 
-Stack: L0 Identity → L1 Execution → L2 Knowledge → L3 Display
-```
-
-## Critical Gaps
-
-1. ~~**No `agentson validate` command**~~ — ✅ Implemented (WP3)
-2. ~~**No `jsonschema` in pyproject.toml**~~ — ✅ Added
-3. ~~**`requests` serves push/pull**~~ — ✅ Removed (ADR-013)
-4. ~~**No ADR-015/016/017**~~ — ✅ Accepted (2026-07-08)
-5. ~~**GDPR compliance model unimplemented**~~ — ✅ Resolved (`cli/compliance.py` + `cli/reconstruct.py` + schema v1.2 updated)
-6. **CHANGELOG.md stale** — needs v0.2.1 entry
-7. ~~**chrome-devtools not in CLI export/list**~~ — ✅ In CLI export (already had handler in cmd_export)
-8. ~~**Data Rights Platform not built**~~ — ✅ Sprint 1 BUILT (`agentson_platform/` — Crawl→Classify→Report working)
-9. **claude-code reader wired into CLI** — ✅ Added to export + list commands (Sprint 1)
-10. **Sprint 2** — Supabase backend + web dashboard + auth + Stripe (not started)
-11. **Sprint 3** — LLM Tier 3 analysis + injection engine (not started)
-
-## Session Context
-
-- SQLite DB: `~/.local/share/opencode/opencode.db` (137 sessions, 10,861 messages)
-- Current session: 25+ hours, 177 steps, 0.1 bpm heart rate, 0.1% activity ratio
-- Chrome Dev CDP: port 9222 (Chrome Dev only, Stable broken)
-- Edge CDP: port 9226 (with `--user-data-dir=%TEMP%\edge_cdp_demo`)
-- MiKTeX: `C:\Users\LLM-Test\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe`
-- mcp-use venv: `mcp_env/Scripts/python`
-- **Package naming:** `agentson_platform/` not `platform/` — `platform` shadows Python stdlib and breaks `attrs`/`jsonschema`
-
-## Evolution Rule
-
-When something goes wrong or a solution works:
-1. Diagnose the root cause
-2. Fix it
-3. Add the solution to THIS FILE so the next agent doesn't repeat the mistake
-4. Keep this file as the living knowledge base — every problem solved becomes permanent knowledge
-
-**This file is not static. It evolves with every session.**
+- [README](README.md)
+- [Canonical schema](spec/v1.2.json)
+- [Event schema](spec/v1.2-entries.json)
+- [Ontology](spec/ontology.md)
+- [Architecture decisions](spec/)
+- [Production-readiness assessment](docs/production-readiness-assessment.md)
+- [Security policy](SECURITY.md)
+- [Contribution guide](CONTRIBUTING.md)

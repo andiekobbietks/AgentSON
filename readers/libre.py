@@ -87,22 +87,37 @@ def read_libre_csv(csv_path: str) -> Dict:
     entries: List[Dict] = []
     timestamps: List[datetime] = []
     glucose_values: List[float] = []
+    rejected_rows: List[Dict] = []
+    source_headers: List[str] = []
 
-    with open(csv_path, "r", encoding="utf-8") as f:
+    with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
-        for row in reader:
+        source_headers = list(reader.fieldnames or [])
+        for row_number, row in enumerate(reader, start=2):
+            raw_row = {
+                (str(key) if key is not None else "__extra_fields__"): value
+                for key, value in row.items()
+            }
             timestamp_str = row.get("Timestamp", "")
             glucose_str = row.get("Glucose (mmol/L)", "")
             source_raw = row.get("Source", "").strip("()").strip()
             reading_type = (row.get("Type", "") or "").strip()
 
             if not timestamp_str or not glucose_str:
+                rejected_rows.append({
+                    "row_number": row_number, "reason": "missing timestamp or glucose",
+                    "row": raw_row,
+                })
                 continue
 
             try:
                 timestamp = datetime.fromisoformat(timestamp_str.replace('"', ''))
                 glucose = float(glucose_str)
-            except (ValueError, TypeError):
+            except (ValueError, TypeError) as exc:
+                rejected_rows.append({
+                    "row_number": row_number, "reason": "invalid timestamp or glucose: {}".format(exc),
+                    "row": raw_row,
+                })
                 continue
 
             # Unknown sources fall back to the enum's catch-all rather than
@@ -131,6 +146,10 @@ def read_libre_csv(csv_path: str) -> Dict:
                     "source_raw": source_raw,
                     "timestamp_local": timestamp.isoformat(),
                     "timestamp_basis": "source-local",
+                },
+                "source_payload": {
+                    "csv_row_number": row_number,
+                    "raw_row": raw_row,
                 },
             }
 
@@ -205,6 +224,11 @@ def read_libre_csv(csv_path: str) -> Dict:
         "started_at": start_time.isoformat() if timestamps else None,
         "ended_at": end_time.isoformat() if timestamps else None,
         "entries": entries,
+        "source_metadata": {
+            "source_headers": source_headers,
+            "rejected_rows": rejected_rows,
+            "timestamp_basis": "source-local when no timezone offset is present",
+        },
         "metrics": {
             "total_readings": len(entries),
             "avg_glucose": round(avg_glucose, 2),

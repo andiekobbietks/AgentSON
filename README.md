@@ -1,399 +1,233 @@
-# AgentSON — v1.2.0 (Canonical Schema, 2026-10-23)
-# Release: full session-debug (browser panel inspection), 236 passing tests, 9 readers.
-# Design-level: ClickOps NOT BUILT; full MCP capture (ADR-022) design-only.
-# AKCloud managed service stays separate — banner / tagline AKCloud-only.
-# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
+# AgentSON
 
-```text
- ______                         __    ____    _____   __  __     
-/\  _  \                       /\ \__/\  _`\ /\  __`\/\ \/\ \    
-\ \ \L\ \     __      __    ___\ \ ,_\ \,\L\_\ \ \/\ \ \ `\\ \   
- \ \  __ \  /'_ `\  /'__`\/' _ `\ \ \/\/_\__ \\ \ \ \ \ \ , ` \  
-  \ \ \/\ \/\ \L\ \/\  __//\ \/\ \ \ \_ /\ \L\ \ \ \_\ \ \ \`\ \ 
-   \ \_\ \_\ \____ \ \____\ \_\ \_\ \__\\ `\____\ \_____\ \_\ \_\
-    \/_/\/_/\/___L\ \/____/\/_/\/_/\/__/ \/_____/\/_____/\/_/\/_/
-              /\____/                                            
-              \_/__/                                             
-```
-# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
+**Portable, provenance-aware interchange for AI agent session traces.**
 
-> ⚠️ **Alpha, pre-release software.** This is not production-ready. Interfaces, the file format, and CLI commands can change without notice between versions. Known open design questions and gaps are tracked publicly at [github.com/andiekobbietks/AgentSON/issues](https://github.com/andiekobbietks/AgentSON/issues) — check there before depending on this for anything you can't afford to break. If you find a security issue, please open an issue or contact the maintainer directly rather than assuming it's already known.
-
-**Preserve the operational life of an AI agent, independently of the runtime that hosted it.**
-
-[![PyPI version](https://img.shields.io/pypi/v/agentson.svg)](https://pypi.org/project/agentson/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![CI](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml/badge.svg)](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/pypi/pyversions/agentson.svg)](https://pypi.org/project/agentson/)
-[![CI](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml/badge.svg)](https://github.com/andiekobbietks/AgentSON/actions)
 
-> Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
+> **Status: Alpha / pre-release.** AgentSON's v1.2 schema is the canonical format decision, but the implementation is not yet a production-grade, lossless, cross-harness interchange system. Readers, importers, exporters and platform features have different levels of maturity. Verify the behaviour you depend on and retain the original source data.
 
----
+## Purpose
 
-## Why This Exists
+AgentSON is an open format and toolset for representing the operational history of AI-agent sessions: user inputs, agent outputs, tool actions, observations, state changes, hand-offs and provenance.
 
-This project started with a FreeStyle Libre 2 continuous glucose monitor.
+The long-term goal is to let a session produced by one AI coding harness be **captured, represented, validated, exchanged, inspected and potentially resumed in another**, without silently losing meaning or provenance.
 
-Managing a chronic condition means your most personal data — blood glucose readings every 5 minutes, 24/7 — lives inside a vendor's app. Abbott's FreeStyle Libre app stores your data. It doesn't export to JSON. It doesn't integrate with your AI tools. It doesn't connect to your doctor's system without jumping through NHS FHIR hoops.
+That is a direction, not a claim that arbitrary sessions can already be resumed across runtimes. AgentSON must preserve source-native evidence, identify unsupported or unmapped fields, and make conversion loss explicit.
 
-The same lock-in problem exists everywhere:
+## Design principles
 
-| Domain | Vendor | Data trapped |
-|--------|--------|--------------|
-| Health | Abbott (FreeStyle Libre 2) | Glucose readings, trends, reports |
-| AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
-| Development | Cursor, Copilot, Claude Code | Code context, edit history |
+- **Portability:** use documented, vendor-neutral structures rather than requiring one hosted service.
+- **Provenance:** retain where an event came from and distinguish observed facts from reconstructed or inferred information.
+- **Loss-aware conversion:** preserve native source material where possible; do not silently coerce unknown event types or fields.
+- **Validation:** publish versioned JSON Schemas and test fixtures so producers and consumers can check conformance.
+- **Local-first core:** reading, validation and export should not require an AgentSON-hosted service.
+- **Separation of concerns:** the interchange format, source adapters, storage, transport, viewers and managed services are distinct layers.
 
-**GDPR Article 20** gives you the right to export your data in a machine-readable format. **The EU AI Act** requires transparency about AI-generated content. Most tools don't provide this. AgentSON does.
+## What AgentSON is (and is not)
 
-The FreeStyle Libre reader (`readers/libre.py`) was the first reader built — not because glucose data is the most important, but because it's the most personal. If the format can handle medical time-series data, it can handle anything.
+| AgentSON is | AgentSON is not |
+|---|---|
+| A versioned session-trace data model | A universal agent runtime |
+| A JSON Schema-governed interchange representation | A REST API or an OpenAPI specification |
+| A place to preserve event and provenance information | Proof that every source adapter is lossless |
+| A basis for inspection, analysis and future interoperability | A guarantee that a session can be resumed in another harness |
+| An open-source format and local tooling | A compliance certification or legal determination |
 
-> **Your health data. Your code sessions. Your data. One format.**
+The separate Severity v1 specification is a data contract expressed with JSON Schema 2020-12 and Pydantic validation. It is not a REST resource model. Any API or transport built around AgentSON must define its own HTTP contract, authentication, authorisation, error model, versioning and operational controls.
 
----
+## Format and schema
 
-## The Problem
+**v1.2 is the canonical schema decision** (see [ADR-015](spec/ADR-015-canonical-schema.md), [ADR-016](spec/ADR-016-ontology-enum-reconciliation.md) and [ADR-017](spec/ADR-017-core-vs-streaming.md)).
 
-Every AI coding agent stores session data in its own proprietary database. There is no standard format, no export API, and no way to move context between tools. The data that powers AI training is locked inside vendor silos.
+- Canonical interchange is a **JSONL stream**: one JSON event per line.
+- The first event in a stream is `stream-meta`.
+- **The default exported filename remains `.agentson`**, but its contents are canonical v1.2 JSONL, not a pretty-printed session document.
+- Individual events are validated against [`spec/v1.2-entries.json`](spec/v1.2-entries.json).
+- [`spec/v1.2.json`](spec/v1.2.json) remains available for legacy/document-oriented compatibility and existing integrations; it is not the default export representation.
+- Legacy document-style `.agentson` files remain readable. The shared compatibility loader supports the CLI renderer, search, Excel export, redaction and registry-publishing metadata paths. New exports are written as JSONL.
+- Source-level session metadata and original reader event records are retained in `source_session` and `source_payload` where available; unsupported event types are preserved and marked as unmapped rather than silently discarded.
+- OpenCode's supported SQLite schema generations and fidelity limits are documented in [`docs/standards/opencode-storage-compatibility.md`](docs/standards/opencode-storage-compatibility.md); the broader reader audit is in [`docs/standards/reader-conformance-v1.2.md`](docs/standards/reader-conformance-v1.2.md).
+- The ontology defines 12 event primitives. See [`spec/ontology.md`](spec/ontology.md).
+- v1 and v1.1 are legacy schemas; do not use them for new producers.
 
-## The Solution
+### Event primitives
 
-AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
+| Primitive | Meaning |
+|---|---|
+| `stream-meta` | Stream header and participating-agent metadata |
+| `user-query` | User input |
+| `thought` | Reasoning-related content supplied by the source |
+| `action` | Tool or operation invocation |
+| `observation` | Information observed from a tool, user, system or sensor |
+| `answer` | Agent response |
+| `side-effect` | A state or artefact change |
+| `user-feedback` | User correction, reaction or clarification |
+| `system-event` | Runtime or system signal |
+| `capabilities` | Agent capability declaration |
+| `handoff` | Transfer of control |
+| `presence` | Agent presence or status |
 
-```
-┌───────────────────────────────────────────────────────────────────┐
-│                  Agent Runtime Layer (producers)                   │
-├───────────────────────────────────────────────────────────────────┤
-│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐ │
-│  │ OpenClaw│ │ClaudeCode│ │  Cursor  │ │ opencode │ │LangGraph│ │
-│  └────┬────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬────┘ │
-│  ┌────┴────┐ ┌────┴─────┐ ┌────┴─────┐ ┌────┴─────┐ ┌────┴────┐ │
-│  │ CrewAI  │ │ AutoGen  │ │ OpenAI   │ │  Gemini  │ │  Cline  │ │
-│  │         │ │          │ │ Agents   │ │   CLI    │ │  Aider  │ │
-│  └────┬────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬────┘ │
-│       │           │            │           │             │       │
-│       ▼           ▼            ▼           ▼             ▼       │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │                   .AgentSON Files (Open Spec)               │ │
-│  │               Portable, vendor-neutral, file-based          │ │
-│  └───────────────────────────┬─────────────────────────────────┘ │
-│                              │                                    │
-│               ┌──────────────┼──────────────┐                   │
-│               ▼              ▼              ▼                   │
-│  ┌─────────────────┐ ┌──────────────┐ ┌──────────────────┐    │
-│  │   Local CLI     │ │   Supabase   │ │  Web Viewer      │    │
-│  │  (search/replay)│ │  (optional)  │ │  (shared replay) │    │
-│  └─────────────────┘ └──────────────┘ └──────────────────┘    │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
-```
+A `thought` event is a source-provided data category. Its presence does not mean that every harness exposes private chain-of-thought, nor should an adapter invent reasoning content that the source did not provide.
 
----
+### Minimal JSONL example
 
-## Tool Landscape
+Each line below is a separate JSON object:
 
-AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
-
-### Reader Coverage
-
-```mermaid
-pie title Reader Coverage (v0.1.0)
-    "Working (6)" : 6
-    "Planned (27)" : 27
-```
-
-### RICE Priority (Top 10 Readers)
-
-```mermaid
-xychart-beta
-    title "RICE Score by Tool"
-    x-axis ["Cursor", "Copilot", "Claude", "Codex", "Gemini", "opencode", "Cline", "Aider", "Kiro", "Windsurf"]
-    y-axis "RICE Score" 0 --> 5000
-    bar [2700, 4000, 2400, 1920, 1400, 9999, 1350, 1350, 1120, 480]
+```jsonl
+{"type":"stream-meta","schema_version":"1.2","stream_id":"session-001","mode":"single","agents":[{"id":"assistant","name":"Assistant"}]}
+{"type":"user-query","text":"Find the cause of the failing test."}
+{"type":"action","agent":"assistant","tool":"shell.run","args":{"command":"pytest -q"},"tool_call_id":"call-001","correlation_id":"call-001"}
+{"type":"observation","agent":"assistant","source":"tool","text":"One test failed: expected 200, received 500.","correlation_id":"call-001"}
+{"type":"answer","agent":"assistant","text":"The endpoint returned an internal server error."}
 ```
 
-> opencode (RICE: ∞) already works — zero effort, full reach.
+This is an illustrative stream, not a claim that every reader emits these exact fields. Consult the schema and source-adapter documentation for required fields and mapping behaviour.
 
-### Tier 1: Core Market
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 1 | **Cursor** | IDE | $20-40/mo | Richest (70% Fortune 1000) | 🔜 Planned |
-| 2 | **Claude Code** | CLI | $20-200/mo | Deep reasoning (~$2.5B run-rate) | ✅ **Working** |
-| 3 | **Kiro** | IDE | Free-$200/mo | Spec-driven (structured by design) | 🔜 Planned |
-| 4 | **Codex CLI** | CLI | $20-200/mo | GPT-5.5 (ChatGPT base) | 🔜 Planned |
-| 5 | **Gemini CLI** | CLI | Free | 1M context (Apache 2.0) | 🔜 Planned |
-| 6 | **Windsurf/Devin Desktop** | IDE | $15-200/mo | ACP protocol (Cognition) | 🔜 Planned |
-
-### Tier 2: Open Source
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 7 | **opencode** | CLI | Free (BYOK) | 147K stars, 6.5M devs | ✅ **Working** |
-| 8 | **Cline** | VS Code ext | Free (BYOK) | 60K stars, 5M installs | 🔜 Planned |
-| 9 | **Aider** | CLI | Free (BYOK) | 43K stars, MIT | 🔜 Planned |
-| 10 | **Zed** | IDE | Free + API | ACP protocol, parallel agents | 🔜 Planned |
-| 11 | **Goose** | CLI | Free (BYOK) | Apache 2.0, Block-backed | 🔜 Planned |
-| 12 | **OpenHands** | Web+CLI | Free (BYOK) | MIT, autonomous SWE | 🔜 Planned |
-
-### Tier 3: Extensions
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 13 | **GitHub Copilot** | Multi-IDE | $10-39/mo | Widest reach (5M+ users) | 🔜 Planned |
-| 14 | **Amazon Q** | Extension | $19/user | AWS-native, enterprise | 🔜 Planned |
-| 15 | **JetBrains AI** | Built-in | $10/mo | 31% market share | 🔜 Planned |
-| 16 | **Sourcegraph Cody** | Extension | Free-$9/mo | Large codebase nav | 🔜 Planned |
-| 17 | **Qodo** | Extension | Free-$19/mo | Code review specialist | 🔜 Planned |
-| 18 | **Augment Code** | Extension | $20-60/mo | 200K context window | 🔜 Planned |
-| 19 | **Continue** | Extension | Free | Open-source, self-hosted | 🔜 Planned |
-| 20 | **Tabnine** | Extension | $12/mo | Privacy-focused, on-premise | 🔜 Planned |
-
-### Tier 4: Builders
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 21 | **Bolt.new** | Browser | Free-$20/mo | Prompt→deploy | 🔜 Planned |
-| 22 | **v0** | Browser | Free-$20/mo | UI generation | 🔜 Planned |
-| 23 | **Lovable** | Browser | Free-$20/mo | Full-stack apps | 🔜 Planned |
-| 24 | **Replit** | Browser IDE | Free-$25/mo | Full environment | 🔜 Planned |
-
-### Tier 5: Orchestrators
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 25 | **amux** | Web+PWA | Free (BYOK) | 20-50+ parallel agents | 🔜 Planned |
-| 26 | **Claude Squad** | TUI | Free (BYOK) | MIT, 10-20 agents | 🔜 Planned |
-| 27 | **Kilo Code** | IDE panel | Free-$199/mo | Apache 2.0 | 🔜 Planned |
-| 28 | **dmux** | Terminal | Free (BYOK) | MIT | 🔜 Planned |
-
-### Tier 6: Autonomous
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 29 | **Devin** | Cloud SaaS | $20-500+/mo | Fully autonomous | 🔜 Planned |
-| 30 | **Blitzy** | Cloud SaaS | Enterprise | Enterprise SWE | 🔜 Planned |
-
-### Tier 7: China Plans
-
-| # | Tool | Type | Pricing | Traces | AgentSON |
-|---|------|------|---------|--------|----------|
-| 31 | **GLM Coding** | Desktop+CLI | Subscription | GLM-5.2 | ⏸ Deferred |
-| 32 | **Kimi** | CLI | Cheap | Cost leader | ⏸ Deferred |
-| 33 | **Qwen Code** | CLI | Cheap | Growing in Asia | ⏸ Deferred |
-
----
-
-## Why AgentSON Matters
-
-### The Unsloth Analogy
-
-Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
-
-| Before | After |
-|--------|-------|
-| GPU cluster + PhD needed | Single GPU, hours |
-| No export API, vendor lock-in | One CLI command, portable JSON |
-| Big labs only | Everyone |
-
-### But It's Locked In
-
-| Tool | Exports data? | Portable? | Trainable? |
-|------|--------------|-----------|------------|
-| Cursor | No | No | No |
-| Claude Code | No | No | No |
-| Copilot | Partial (API) | No | No |
-| **AgentSON** | **Yes (JSON)** | **Yes** | **Yes** |
-
-### For Developers
-
-Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, Aider, Cline, Gemini CLI — becomes one searchable, portable, analysable record. Switch runtimes without losing your operational history. Every `.AgentSON` file is a personal engineering journal that follows you.
-
-- **Portability** — Switch tools without losing context
-- **Search** — Full-text search across all your sessions
-- **Replay** — Re-run or review any agent session offline
-- **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
-
-### For the Organisation
-
-As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows?
-
-Memory systems (MCP, bespoke databases) don't give you portable answers to those questions. AgentSON does.
-
-- **Institutional knowledge** — Preserve the operational life of every agent independently of where it ran
-- **Vendor independence** — Change runtimes, keep the record
-- **Compliance** — GDPR Art. 20 + EU AI Act Art. 52
-- **Training-data export** — Export to Unsloth/Olive for fine-tuning
-
----
-
-## Quick Start
+## Installation
 
 ```bash
-# Install
-pip install agentson
+python -m pip install agentson
+```
 
-# List sessions
+The repository's package metadata currently identifies the Python distribution as **0.1.0 / Alpha**. The schema version (v1.2) and Python package version are separate version tracks. Check the [PyPI project page](https://pypi.org/project/agentson/) for the version actually published.
+
+For optional local ECDSA signing of evidence exports, install the signing extra:
+
+```bash
+python -m pip install "agentson[signing]"
+```
+
+For development:
+
+```bash
+git clone https://github.com/andiekobbietks/AgentSON.git
+cd AgentSON
+python -m pip install -e ".[dev]"
+python -m pip check
+python -m pytest -q
+python -m build
+```
+
+## CLI quick start
+
+Export a session from a locally available OpenCode database. The resulting `.agentson` file contains v1.2 JSONL:
+
+```bash
+agentson export --tool opencode --session <session-id> --output ./sessions/
+
+# List locally available sessions
 agentson list --tool opencode
 
-# Export a session
-agentson export --tool opencode --session ses_xxx --output ./sessions/
-
-# Fine-tuning export (Unsloth format)
-agentson finetune *.AgentSON --format unsloth --output training.jsonl
-
-# Search across sessions
-agentson search "nightscout" --tool opencode
-
-# Render as Markdown
-agentson render session.AgentSON --format md
-
-# Validate against the canonical schema
+# Validate a file or recursively scan a directory
 agentson validate ./sessions/
+
+# Search exported .agentson files
+agentson search "authentication" --dir ./sessions/
+
+# Render a session as Markdown
+agentson render ./sessions/opencode_<session-id>.agentson --format md
+agentson resume ./sessions/opencode_<session-id>.agentson --target claude-code --output ./handoff.md
 ```
 
----
+The CLI exposes source selectors for OpenCode, MiniMax, Antigravity, Chrome DevTools, Libre CSV, Claude Code, VibeEdge, Gemini, Cursor, Cline and Aider. Availability and completeness are adapter-specific; a selector being present in the CLI is not, by itself, evidence of production readiness or full-fidelity support. Check the relevant reader and tests before relying on a particular source.
 
-## Schema (v1.2 — canonical)
+Use `agentson --help` and `agentson help <topic>` for the commands and options available in the installed version. Some commands are experimental or explicitly not implemented; the CLI help text is authoritative for the installed build.
 
-> v1 and v1.1 are deprecated. v1.2 is the canonical schema
-> (`spec/v1.2.json`); individual entries validate against
-> `spec/v1.2-entries.json`.
 
-```json
-{
-  "$schema": "https://agentson.dev/schema/v1.2.json",
-  "id": "session-2026-07-04-001",
-  "task": "Fix the authentication bug in the login flow",
-  "outcome": "success",
-  "tool": {"name": "opencode", "session_id": "ses_xxx"},
-  "agent": {"name": "mimo-v2.5-free", "provider": "opencode"},
-  "entries": [
-    {"type": "user-query", "text": "Fix the auth bug"},
-    {"type": "thought", "text": "Looking at the auth module..."},
-    {"type": "action", "tool": "bash", "code": "grep -r 'auth' src/", "tool_call_id": "tc_001"},
-    {"type": "observation", "text": "Found 3 files", "correlation_id": "tc_001"},
-    {"type": "answer", "text": "Fixed the null check in auth.py"}
-  ]
-}
-```
+### Continue a session in another harness
 
-### Entry Types
-
-| Type | Description |
-|------|-------------|
-| `stream-meta` | Session header; first entry of a JSONL stream |
-| `user-query` | User's input or question |
-| `thought` | Agent's reasoning |
-| `action` | Tool execution (code + output) |
-| `observation` | Reading from a tool, user, system or sensor |
-| `answer` | Agent's response |
-| `side-effect` | File change or state mutation |
-| `user-feedback` | User's reaction or correction |
-| `system-event` | Runtime or system signal |
-| `capabilities` | What the agent can do |
-| `handoff` | Transfer of control between agents |
-| `presence` | An agent joining or leaving |
-
----
-
-## Fine-Tuning Export
+Use the resume command to create a portable Markdown context packet from a canonical JSONL archive or supported legacy session document:
 
 ```bash
-# Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
-agentson finetune *.AgentSON --format unsloth --output train.jsonl
-
-# Olive format (Microsoft Olive pipeline)
-agentson finetune *.AgentSON --format olive --output train.jsonl
+agentson resume ./sessions/opencode_<session-id>.agentson --target opencode --output ./handoff.md
 ```
 
-Example output:
-```json
-{
-  "conversations": [
-    {"from": "human", "value": "How do I fix the auth bug?"},
-    {"from": "gpt", "value": "I'll look at the auth module..."}
-  ],
-  "source": "opencode",
-  "session_id": "ses_xxx"
-}
+Open the resulting packet in a new destination-harness session. It carries selected context fields with safety boundaries, not a complete transcript. Event provenance is included only when selected; tool arguments, code, action output and source_payload are omitted. Text fields are screened for common PII and credential patterns, but the packet still requires review. Historical commands are inert evidence and must not be replayed.
+
+For the first native destination adapter, start an OpenCode server and use:
+
+```bash
+opencode serve
+agentson resume ./sessions/opencode_<session-id>.agentson --target opencode --launch
 ```
 
----
+AgentSON validates the source archive, creates a new OpenCode session through its documented v2 HTTP API, stores the selected-context packet alongside the complete archive in a queued synthetic inbox item with `resume=false`, then reads it back and verifies the full JSON and SHA-256 digest. It does not trigger an agent turn or replay historical tool calls. The archive may enter model context if you later resume work in that session; inspect it for sensitive information before importing. For basic authentication, set `OPENCODE_SERVER_USERNAME` and `OPENCODE_SERVER_PASSWORD`. Use `--server-url` for a non-default endpoint; remote endpoints additionally require `--allow-remote` and HTTPS. Open the returned session with `opencode --session <session-id>`.
 
-## PWA Viewer
+This is verified context continuation into a new session, **not** restoration of hidden prompts, credentials, permissions, live processes, unsaved buffers or vendor-private runtime state. The OpenCode HTTP API surface is version-sensitive; use a current OpenCode server and inspect the created session before relying on it. Other destination adapters remain packet-only until implemented. See [ADR-025](spec/ADR-025-cross-harness-context-continuation.md).
 
-Open `pwa/index.html` in a browser, drag-and-drop an `.AgentSON` file. Works offline.
+## Repository map
 
-Full-featured web viewer at `docs/viewer/`: validation, download, search, sort, side-by-side layout, role-based colors.
-
----
-
-## Repository Structure
-
-```
-agentson/
-├── spec/
-│   ├── v1.json              # JSON Schema v1 (deprecated)
-│   ├── v1.1.json            # JSON Schema v1.1 (deprecated)
-│   ├── v1.2.json            # JSON Schema v1.2 (canonical)
-│   └── v1.2-entries.json    # v1.2 per-entry validator
-├── readers/                 # Tool-specific readers
-│   ├── opencode.py          # ✅ Working
-│   ├── minimax.py           # ✅ Working
-│   ├── antigravity.py       # ✅ Working
-│   ├── libre.py             # ✅ Working (FreeStyle Libre 2)
-│   ├── chrome_devtools.py   # ✅ Working (9 tests)
-│   └── claude_code.py       # ✅ Working
-├── importers/
-│   └── chatgpt.py           # ✅ ChatGPT conversations.json
-├── exporters/
-│   └── finetune.py          # ✅ Unsloth + Olive formats
-├── cli/
-│   ├── main.py              # CLI entry point
-│   └── supabase_client.py   # Supabase integration
-├── tests/
-│   └── test_chrome_devtools.py  # ✅ 9 tests
-├── examples/                # Example .AgentSON files
-├── pwa/                     # PWA viewer
-├── docs/                    # Live docs + viewer
-│   ├── viewer/              # Web viewer
-│   ├── sops/                # 14 SOPs
-│   ├── standards/           # Operating manual + ADRs
-│   └── index.html           # Landing page
-├── ROADMAP.md               # RICE-scored reader priorities
-├── CHANGELOG.md             # Version history
-├── PRD.md                   # Product requirements
-└── LICENSE                  # Apache 2.0
+```text
+.
+├── spec/                 # Versioned JSON Schemas, ontology and format ADRs
+├── readers/              # Source-specific session readers
+├── importers/            # Importers for external conversation formats
+├── exporters/            # Export and transformation utilities
+├── cli/                  # Command-line interface
+├── tools/                # Packaged CLI helper modules
+├── tests/                # Automated tests and fixtures
+├── examples/             # Example session data
+├── pwa/                  # Standalone browser/PWA viewer
+├── docs/                 # Project documentation and web viewer
+├── agentson_platform/    # Separate, optional platform functionality
+├── .github/workflows/    # CI workflows
+├── pyproject.toml         # Python package metadata and dependencies
+├── CHANGELOG.md           # Change history
+├── ROADMAP.md             # Planned work (not a delivery guarantee)
+├── SECURITY.md            # Vulnerability-reporting policy
+└── CONTRIBUTING.md        # Contribution and verification guidance
 ```
 
----
+The optional platform is architecturally separate from the open interchange core. Hosted storage, dashboards, billing, ingestion services and other platform functions are not prerequisites for reading or validating local AgentSON files.
 
-## Roadmap
+## Interoperability model
 
-See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
+A reliable interchange pipeline has distinct stages:
 
-**Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
+1. **Capture:** obtain source-native events through a supported export, API or reader.
+2. **Preserve:** retain the original source payload or a recoverable reference where licensing and privacy permit.
+3. **Map:** translate source events into AgentSON primitives with explicit mapping metadata.
+4. **Validate:** check the stream against the versioned schema and semantic constraints.
+5. **Exchange:** transfer the validated representation through a separately specified transport.
+6. **Inspect:** review events, provenance, omissions and conversion warnings.
+7. **Resume (future capability):** reconstruct execution only where the target runtime can safely and meaningfully interpret the captured state.
 
-**Version targets:**
-- v0.2.0 (Aug 2026): 10+ readers, real-world data
-- v0.3.0 (Sep 2026): 15+ readers, sample corpus
-- v1.0.0 (Oct 2026): 20+ readers, stable API
+A valid JSON document proves structural conformance to the schema; it does not prove semantic equivalence, complete capture, safe replay, or successful resumption. Those require source-specific fixtures, round-trip tests, loss reports and cross-runtime integration tests.
 
----
+## Privacy, security and compliance
 
-## Standards
+Agent sessions may contain credentials, personal data, confidential code, health information and other sensitive material. Treat exports as sensitive records.
 
-- [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
-- [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
-- [SOPs](https://andiekobbietks.github.io/AgentSON/sops/) — 14 Standard Operating Procedures
+- Review and redact data before sharing or publishing a session.
+- Do not commit real session exports, credentials or personal data to the repository.
+- Keep source permissions and retention obligations in force after export.
+- Do not treat an export feature as proof of GDPR compliance or an AI Act conformity assessment.
+- GDPR data portability rights depend on the legal conditions and scope in Article 20; they do not automatically cover every AI interaction or every category of data.
+- EU AI Act transparency duties are use-case- and provision-specific. AgentSON does not certify compliance.
 
----
+See [SECURITY.md](SECURITY.md) for vulnerability reporting and [CONTRIBUTING.md](CONTRIBUTING.md) for safe fixtures and development checks.
 
-## License
+## Standards and architecture
 
-[Apache 2.0](LICENSE) — Patent grant + attribution required.
+- [Production-readiness assessment](docs/production-readiness-assessment.md)
+- [ADR-023: Production readiness and the knowledge-catalogue boundary](spec/ADR-023-production-readiness-and-knowledge-catalog-architecture.md)
+- [JSON Schema v1.2](spec/v1.2.json)
+- [Flattened event schema](spec/v1.2-entries.json)
+- [Event ontology](spec/ontology.md)
+- [Architecture decisions](spec/)
+- [Operating manual](docs/standards/)
+- [Reader conformance matrix](docs/standards/reader-conformance-v1.2.md) — Field-level preservation, normalization, inference, and known adapter gaps
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
 
----
+AgentSON considers relevant government and industry guidance where applicable, including the [GDS API technical and data standards](https://www.gov.uk/guidance/gds-api-technical-and-data-standards) and the [Technology Code of Practice](https://www.gov.uk/guidance/the-technology-code-of-practice). These are design references, not a claim of blanket compliance. API-specific requirements apply when an API is actually provided; the JSON Schema alone is not an API implementation.
 
-*"The operational life of an AI agent, preserved independently of the runtime that hosted it."*
+## Contributing
+
+Contributions should preserve portability, provenance and honest feature status. Please read [CONTRIBUTING.md](CONTRIBUTING.md), add regression tests for fixes, update schemas and examples when contracts change, and distinguish implemented behaviour from planned work.
+
+## Licence
+
+AgentSON is licensed under the [Apache License 2.0](LICENSE).

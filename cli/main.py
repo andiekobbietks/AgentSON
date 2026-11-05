@@ -9,14 +9,7 @@ import os
 import sys
 from pathlib import Path
 from typing import List
-import sys as _sys
-_TOOLS_DIR = str(Path(__file__).resolve().parent.parent / "tools")
-if _TOOLS_DIR not in _sys.path:
-    _sys.path.insert(0, _TOOLS_DIR)
 from cli.help_system import WORDMARK, WORDMARK_SON_START, WORDMARK_TAGLINE
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def get_default_db_paths():
@@ -36,37 +29,11 @@ def get_default_db_paths():
 
 
 def _load_agentson(path):
-    """Load an AgentSON file that may be single-document JSON or JSONL.
+    """Load canonical JSONL or a legacy document into the shared session view."""
+    from exporters.jsonl import load_agentson_document
 
-    JSONL streams (one entry per line) are wrapped into a synthetic session
-    document so downstream renderers/searchers/fine-tuners can treat every
-    file uniformly. Returns a dict.
-    """
-    from pathlib import Path as _P
-    with open(path, "r", encoding="utf-8") as f:
-        content = f.read().strip()
-    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
-    is_jsonl = len(lines) > 1
-    if is_jsonl:
-        try:
-            json.loads(lines[0])
-            json.loads(lines[1])
-        except json.JSONDecodeError:
-            is_jsonl = False
-    if is_jsonl:
-        entries = [json.loads(ln) for ln in lines]
-        stem = _P(path).stem
-        return {
-            "id": entries[0].get("stream_id", stem) if isinstance(entries[0], dict) else stem,
-            "tool": {"name": "other", "session_id": stem},
-            "entries": entries,
-            "_format": "jsonl",
-        }
-    data = json.loads(content)
-    if isinstance(data, list):
-        stem = _P(path).stem
-        return {"id": stem, "tool": {"name": "other", "session_id": stem}, "entries": data, "_format": "jsonl"}
-    return data
+    return load_agentson_document(path)
+
 
 
 def cmd_export(args):
@@ -75,8 +42,10 @@ def cmd_export(args):
     from readers.minimax import read as read_minimax, list_sessions as list_minimax
     from readers.antigravity import read_antigravity_session, get_antigravity_sessions
     from readers.libre import read_libre_csv
+    from exporters.jsonl import write_agentson_stream_file
     
     db_paths = get_default_db_paths()
+    Path(args.output).mkdir(parents=True, exist_ok=True)
     
     if args.tool == "opencode":
         db_path = db_paths["opencode"]
@@ -90,8 +59,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['title']} ({session['id']})")
                 data = read_opencode(str(db_path), session["id"])
                 output_path = Path(args.output) / f"opencode_{session['id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -99,8 +67,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_opencode(str(db_path), args.session)
             output_path = Path(args.output) / f"opencode_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
             
     elif args.tool == "minimax":
@@ -115,8 +82,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['title']} ({session['id']})")
                 data = read_minimax(str(db_path), session["id"])
                 output_path = Path(args.output) / f"minimax_{session['id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -124,8 +90,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_minimax(str(db_path), args.session)
             output_path = Path(args.output) / f"minimax_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
             
     elif args.tool == "antigravity":
@@ -145,8 +110,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['session_id']}")
                 data = read_antigravity_session(session)
                 output_path = Path(args.output) / f"antigravity_{session['session_id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -156,8 +120,7 @@ def cmd_export(args):
                     print(f"Exporting: {session['session_id']}")
                     data = read_antigravity_session(session)
                     output_path = Path(args.output) / f"antigravity_{session['session_id']}.agentson"
-                    with open(output_path, "w", encoding="utf-8") as f:
-                        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                    write_agentson_stream_file(data, output_path, source_tool=args.tool)
                     print(f"Exported to {output_path}")
                 else:
                     print("Error: No sessions found", file=sys.stderr)
@@ -171,8 +134,7 @@ def cmd_export(args):
                 session = found[0]
                 data = read_antigravity_session(session)
                 output_path = Path(args.output) / f"antigravity_{args.session}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
                 print(f"Exported to {output_path}")
     elif args.tool == "gemini":
         from readers.gemini import read as read_gemini, list_sessions as list_gemini
@@ -185,16 +147,14 @@ def cmd_export(args):
             for s in sessions:
                 data = read_gemini(str(inp), s["id"])
                 out = Path(args.output) / f"gemini_{s['id']}.agentson"
-                with open(out, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, out, source_tool=args.tool)
                 print(f"Exported: {out}")
             print(f"Exported {len(sessions)} sessions")
         else:
             sid = args.session or "gemini-export"
             data = read_gemini(str(inp), sid)
             out = Path(args.output) / f"gemini_{sid}.agentson"
-            with open(out, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, out, source_tool=args.tool)
             print(f"Exported to {out}")
     elif args.tool == "chrome-devtools":
         from readers.chrome_devtools import read as read_chrome, list_exports as list_chrome
@@ -214,8 +174,7 @@ def cmd_export(args):
                 print(f"Exporting: {session['id']}")
                 data = read_chrome(session['path'])
                 output_path = Path(args.output) / f"chrome_{session['id']}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -223,8 +182,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_chrome(args.session)
             output_path = Path(args.output) / f"chrome_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "libre":
         if not args.input:
@@ -238,8 +196,7 @@ def cmd_export(args):
             
         data = read_libre_csv(csv_path)
         output_path = Path(args.output) / f"libre_{Path(csv_path).stem}.agentson"
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+        write_agentson_stream_file(data, output_path, source_tool=args.tool)
         print(f"Exported to {output_path}")
     elif args.tool == "cursor":
         from readers.cursor import list_sessions as list_cursor, read as read_cursor
@@ -254,8 +211,7 @@ def cmd_export(args):
                 print(f"Exporting: {session.get('title', sid)} ({sid})")
                 data = read_cursor(str(db_path), sid)
                 output_path = Path(args.output) / f"cursor_{sid}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -263,8 +219,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_cursor(str(db_path), args.session)
             output_path = Path(args.output) / f"cursor_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "cline":
         from readers.cline import list_sessions as list_cline, read as read_cline
@@ -279,8 +234,7 @@ def cmd_export(args):
                 print(f"Exporting: {session.get('title', sid)} ({sid})")
                 data = read_cline(str(tasks_dir), sid)
                 output_path = Path(args.output) / f"cline_{sid}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -288,8 +242,7 @@ def cmd_export(args):
                 sys.exit(1)
             data = read_cline(str(tasks_dir), args.session)
             output_path = Path(args.output) / f"cline_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "aider":
         from readers.aider import list_sessions as list_aider, read as read_aider
@@ -304,14 +257,12 @@ def cmd_export(args):
                 print(f"Exporting: {session.get('title', sid)} ({sid})")
                 data = read_aider(str(repo_dir), sid)
                 output_path = Path(args.output) / f"aider_{sid}.agentson"
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             data = read_aider(str(repo_dir), args.session)
             output_path = Path(args.output) / f"aider_{args.session or 'session'}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "claude-code":
         from readers.claude_code import ClaudeCodeReader
@@ -326,8 +277,7 @@ def cmd_export(args):
                 data = reader.read_session(sid)
                 if data:
                     output_path = Path(args.output) / f"claude-code_{sid}.agentson"
-                    with open(output_path, "w", encoding="utf-8") as f:
-                        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+                    write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported {len(sessions)} sessions")
         else:
             if not args.session:
@@ -338,8 +288,7 @@ def cmd_export(args):
                 print(f"Error: Session {args.session} not found", file=sys.stderr)
                 sys.exit(1)
             output_path = Path(args.output) / f"claude-code_{args.session}.agentson"
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+            write_agentson_stream_file(data, output_path, source_tool=args.tool)
             print(f"Exported to {output_path}")
     elif args.tool == "vibeedge":
         from readers.vibeedge import VibeedgeReader
@@ -367,9 +316,7 @@ def cmd_export(args):
                     if data:
                         output_path = (Path(args.output) /
                                        f"vibeedge_{sid}.agentson")
-                        with open(output_path, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=2,
-                                      ensure_ascii=False, default=str)
+                        write_agentson_stream_file(data, output_path, source_tool=args.tool)
                 print(f"Exported {len(sessions)} sessions")
             else:
                 if not args.session:
@@ -383,9 +330,7 @@ def cmd_export(args):
                     sys.exit(1)
                 output_path = (Path(args.output) /
                                f"vibeedge_{args.session}.agentson")
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False,
-                              default=str)
+                write_agentson_stream_file(data, output_path, source_tool=args.tool)
                 print(f"Exported to {output_path}")
         finally:
             reader.disconnect()
@@ -553,7 +498,7 @@ def cmd_excel(args):
     # Optionally redact PII first
     input_path = args.input
     if args.redact:
-        from pii_redactor import PIIRedactor
+        from tools.pii_redactor import PIIRedactor
         redactor = PIIRedactor(use_model=False)
         
         if args.all:
@@ -581,7 +526,7 @@ def cmd_excel(args):
 
 def cmd_redact(args):
     """Redact PII from AgentSON files."""
-    from pii_redactor import PIIRedactor, redact_all
+    from tools.pii_redactor import PIIRedactor, redact_all
     
     if args.all:
         redact_all(args.input, args.output or "examples_redacted")
@@ -755,131 +700,119 @@ def cmd_finetune(args):
 
 
 def cmd_validate(args):
-    """Validate AgentSON file(s) against v1.2 schema."""
+    """Validate AgentSON JSONL streams and session documents against v1.2."""
     import glob as globmod
-    from jsonschema import Draft202012Validator
-    
-    schema_path = Path(__file__).parent.parent / "spec" / "v1.2.json"
-    entries_path = Path(__file__).parent.parent / "spec" / "v1.2-entries.json"
-    
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    root = Path(__file__).resolve().parent.parent
+    schema_path = root / "spec" / "v1.2.json"
+    entries_path = root / "spec" / "v1.2-entries.json"
+
+    with open(schema_path, "r", encoding="utf-8") as f:
+        document_schema = json.load(f)
     with open(entries_path, "r", encoding="utf-8") as f:
         entry_schema = json.load(f)
-    
-    entry_validator = Draft202012Validator(entry_schema)
-    
-    search_dir = Path(args.input)
-    
-    if search_dir.is_file():
-        files = [search_dir]
+
+    format_checker = FormatChecker()
+    document_validator = Draft202012Validator(
+        document_schema, format_checker=format_checker
+    )
+    entry_validator = Draft202012Validator(
+        entry_schema, format_checker=format_checker
+    )
+
+    search_path = Path(args.input)
+    if search_path.is_file():
+        files = [search_path]
+    elif search_path.is_dir():
+        files = sorted({
+            Path(p)
+            for pattern in ("*.agentson", "*.AgentSON")
+            for p in globmod.glob(str(search_path / "**" / pattern), recursive=True)
+        })
     else:
-        files = []
-        for ext in ["*.agentson", "*.AgentSON"]:
-            pattern = str(search_dir / "**" / ext)
-            files += [Path(p) for p in globmod.glob(pattern, recursive=True)]
-    
+        print(f"Input path does not exist: {search_path}", file=sys.stderr)
+        sys.exit(1)
+
     if not files:
-        print(f"No .agentson files found in {search_dir}")
-        return
-    
-    total = 0
+        print(f"No .agentson files found in {search_path}", file=sys.stderr)
+        sys.exit(1)
+
     passed = 0
     failed = 0
     errors_by_type = {}
-    
-    def validate_entry(entry):
-        """Validate a single entry against the flattened entry schema."""
-        errors = list(entry_validator.iter_errors(entry))
-        return [e.message for e in errors]
-    
+
+    def describe_errors(errors):
+        messages = []
+        for error in sorted(errors, key=lambda item: str(list(item.absolute_path))):
+            location = ".".join(str(part) for part in error.absolute_path) or "$"
+            messages.append(f"{location}: {error.message}")
+        return messages
+
     for filepath in files:
-        total += 1
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                content = f.read().strip()
-            
-            lines = [l.strip() for l in content.split("\n") if l.strip()]
-            
-            # Detect format
-            is_jsonl = False
-            if len(lines) > 1:
-                try:
-                    json.loads(lines[0])
-                    json.loads(lines[1])
-                    is_jsonl = True
-                except json.JSONDecodeError:
-                    pass
-            
+            content = filepath.read_text(encoding="utf-8").strip()
+            if not content:
+                raise ValueError("File is empty")
+
+            lines = [line.strip() for line in content.splitlines() if line.strip()]
+            try:
+                first_value = json.loads(lines[0])
+            except json.JSONDecodeError:
+                first_value = None
+
+            # A one-line stream is still JSONL when its object is an event.
+            is_jsonl = isinstance(first_value, dict) and "type" in first_value
+
             if is_jsonl:
-                entries = [json.loads(l) for l in lines]
-                
+                entries = [json.loads(line) for line in lines]
+                messages = []
                 if entries[0].get("type") != "stream-meta":
-                    print(f"  WARN {filepath.name}: First entry is not stream-meta")
-                
-                entry_errors = []
-                for i, entry in enumerate(entries):
-                    errors = validate_entry(entry)
-                    for msg in errors:
-                        entry_errors.append((i + 1, msg))
-                
-                if entry_errors:
-                    print(f"  FAIL {filepath.name}: {len(entry_errors)} validation error(s)")
-                    for line_num, msg in entry_errors[:3]:
-                        print(f"    Entry {line_num}: {msg[:100]}")
-                    if len(entry_errors) > 3:
-                        print(f"    ... and {len(entry_errors) - 3} more")
-                    failed += 1
-                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
-                else:
-                    print(f"  PASS {filepath.name} ({len(entries)} entries, JSONL)")
-                    passed += 1
+                    messages.append("1: first JSONL event must be stream-meta")
+                for index, entry in enumerate(entries, start=1):
+                    if not isinstance(entry, dict):
+                        messages.append(f"{index}: event must be a JSON object")
+                        continue
+                    for message in describe_errors(entry_validator.iter_errors(entry)):
+                        messages.append(f"{index}: {message}")
+                format_name = "JSONL"
+                entry_count = len(entries)
             else:
                 data = json.loads(content)
-                
-                top_errors = []
-                for field in ["id", "tool", "entries"]:
-                    if field not in data:
-                        top_errors.append(f"Missing required field: {field}")
-                
-                if top_errors:
-                    print(f"  FAIL {filepath.name}: {'; '.join(top_errors)}")
-                    failed += 1
-                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
-                    continue
-                
-                entries = data.get("entries", [])
-                entry_errors = []
-                for i, entry in enumerate(entries):
-                    errors = validate_entry(entry)
-                    for msg in errors:
-                        entry_errors.append((i + 1, msg))
-                
-                if entry_errors:
-                    print(f"  FAIL {filepath.name}: {len(entry_errors)} validation error(s)")
-                    for line_num, msg in entry_errors[:3]:
-                        print(f"    Entry {line_num}: {msg[:100]}")
-                    if len(entry_errors) > 3:
-                        print(f"    ... and {len(entry_errors) - 3} more")
-                    failed += 1
-                    errors_by_type["schema"] = errors_by_type.get("schema", 0) + 1
-                else:
-                    print(f"  PASS {filepath.name} ({len(entries)} entries, JSON)")
-                    passed += 1
-                    
-        except json.JSONDecodeError as e:
-            print(f"  FAIL {filepath.name}: Invalid JSON — {e}")
+                if not isinstance(data, dict):
+                    raise ValueError("Session document must be a JSON object")
+                messages = describe_errors(document_validator.iter_errors(data))
+                format_name = "JSON document"
+                entry_count = len(data.get("entries", [])) if isinstance(data.get("entries"), list) else 0
+
+            if messages:
+                print(f"  FAIL {filepath.name}: {len(messages)} validation error(s)")
+                for message in messages[:5]:
+                    print(f"    {message[:180]}")
+                if len(messages) > 5:
+                    print(f"    ... and {len(messages) - 5} more")
+                failed += 1
+                errors_by_type["validation"] = errors_by_type.get("validation", 0) + 1
+            else:
+                print(f"  PASS {filepath.name} ({entry_count} entries, {format_name})")
+                passed += 1
+
+        except json.JSONDecodeError as error:
+            print(f"  FAIL {filepath.name}: invalid JSON — {error}")
             failed += 1
             errors_by_type["json_parse"] = errors_by_type.get("json_parse", 0) + 1
-        except Exception as e:
-            print(f"  FAIL {filepath.name}: {e}")
+        except (OSError, UnicodeError, ValueError) as error:
+            print(f"  FAIL {filepath.name}: {error}")
             failed += 1
-            errors_by_type["other"] = errors_by_type.get("other", 0) + 1
-    
-    print(f"\n{'='*60}")
+            errors_by_type["input"] = errors_by_type.get("input", 0) + 1
+
+    total = passed + failed
+    print(f"\n{'=' * 60}")
     print(f"Results: {passed}/{total} passed, {failed} failed")
     if errors_by_type:
         print(f"Errors by type: {errors_by_type}")
-    
-    if failed > 0:
+
+    if failed:
         sys.exit(1)
 
 
@@ -1131,6 +1064,35 @@ TOPICS:
     recon_parser.add_argument("--no-ai-act-marks", action="store_true", help="Skip EU AI Act Art. 50(2) marking")
     recon_parser.add_argument("--strict", action="store_true", help="Fail on zero entries or missing sources")
 
+    # resume command (portable cross-harness context continuation)
+    resume_parser = subparsers.add_parser(
+        "resume", help="Create a portable continuation packet for another AI harness"
+    )
+    resume_parser.add_argument("input", help="Input .agentson JSONL or legacy session")
+    resume_parser.add_argument(
+        "--target",
+        choices=["generic", "opencode", "claude-code", "codex", "cursor", "cline"],
+        default="generic",
+        help="Destination harness profile for the portable context packet",
+    )
+    resume_parser.add_argument("--output", help="Output Markdown packet (default: <input>.resume-<target>.md)")
+    resume_parser.add_argument(
+        "--launch", action="store_true",
+        help="For --target opencode, import and verify the archive in a new session without starting the agent",
+    )
+    resume_parser.add_argument(
+        "--server-url", default="http://127.0.0.1:4096",
+        help="OpenCode server URL for --launch (default: http://127.0.0.1:4096)",
+    )
+    resume_parser.add_argument(
+        "--title", default="AgentSON continuation",
+        help="Title for the new native OpenCode session",
+    )
+    resume_parser.add_argument(
+        "--allow-remote", action="store_true",
+        help="Allow an explicit HTTPS OpenCode server outside localhost",
+    )
+
     # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
     browser_parser = subparsers.add_parser(
         "browser", help="NOT IMPLEMENTED — planned MCP capture (agentson_mcp, see ADR-022)"
@@ -1226,6 +1188,8 @@ TOPICS:
             print("Error: `agentson reconstruct` is not implemented (cli/reconstruct.py is missing).", file=sys.stderr)
             sys.exit(1)
         cmd_reconstruct(args)
+    elif args.command == "resume":
+        cmd_resume(args)
     elif args.command == "browser":
         cmd_browser(args)
     elif args.command == "watch":
@@ -1316,6 +1280,57 @@ TOPICS:
             parser.print_help()
 
 
+def cmd_resume(args):
+    """Create a portable packet and optionally hand it to a native destination."""
+    from importers.continuation import build_continuation_packet, write_continuation_packet
+
+    output = args.output or (str(Path(args.input).with_suffix("")) + f".resume-{args.target}.md")
+    input_path = Path(args.input)
+    output_path = Path(output)
+    try:
+        if input_path.resolve(strict=True) == output_path.resolve(strict=False):
+            raise ValueError("Continuation output must not overwrite the input AgentSON archive")
+        if output_path.exists() and input_path.exists() and os.path.samefile(input_path, output_path):
+            raise ValueError("Continuation output must not overwrite the input AgentSON archive")
+        packet = build_continuation_packet(args.input, target=args.target)
+        destination = write_continuation_packet(args.input, output, target=args.target)
+        if args.launch:
+            if args.target != "opencode":
+                raise ValueError("--launch is currently supported only with --target opencode")
+            from consumers.opencode import import_archive, verify_import
+            password = os.environ.get("OPENCODE_SERVER_PASSWORD")
+            imported = import_archive(
+                args.input,
+                base_url=args.server_url,
+                allow_remote=args.allow_remote,
+                password=password,
+                title=args.title,
+                context_packet=packet,
+            )
+            verified = verify_import(
+                imported,
+                args.input,
+                base_url=args.server_url,
+                allow_remote=args.allow_remote,
+                password=password,
+            )
+            if not verified.get("verified"):
+                raise RuntimeError("OpenCode archive read-back verification failed")
+            session_id = imported["session_id"]
+    except (OSError, ValueError, json.JSONDecodeError, RuntimeError) as exc:
+        print(f"Error creating continuation: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Continuation packet created: {destination}")
+    if args.launch:
+        print(f"Native OpenCode archive imported and verified: {session_id}")
+        print(f"Open it with: opencode --session {session_id}")
+        print("The complete archive was queued as an inert synthetic item with resume=false; no model turn or historical tool call was run.")
+    else:
+        print("Open it in the destination harness as context for a new session.")
+    print("This restores portable working context, not private runtime state or tool permissions.")
+
+
 def cmd_browser(args):
     """Browser capture -- NOT IMPLEMENTED.
 
@@ -1350,7 +1365,7 @@ def cmd_browser(args):
 
 def cmd_publish(args):
     """Publish AgentSON session to Docker Hub or LXD Hub."""
-    from distribute import publish
+    from tools.distribute import publish
 
     result = publish(
         session_path=args.input,

@@ -1,0 +1,90 @@
+name: OpenCode live consumer integration
+
+on:
+  pull_request:
+    paths:
+      - "consumers/**"
+      - "importers/continuation.py"
+      - "exporters/jsonl.py"
+      - "tests/test_opencode_consumer.py"
+      - "tests/integration/test_opencode_live.py"
+      - "tests/fixtures/conformance/**"
+      - "spec/v1.2.json"
+      - ".github/workflows/opencode-integration.yml"
+      - "pyproject.toml"
+  push:
+    branches: [master, "feat/**"]
+    paths:
+      - "consumers/**"
+      - "importers/continuation.py"
+      - "exporters/jsonl.py"
+      - "tests/test_opencode_consumer.py"
+      - "tests/integration/test_opencode_live.py"
+      - "tests/fixtures/conformance/**"
+      - "spec/v1.2.json"
+      - ".github/workflows/opencode-integration.yml"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opencode-live-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-opencode:
+    name: OpenCode 2.2.5 live archive import
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install pinned OpenCode CLI
+        run: npm install --global @opencode/cli@2.2.5
+      - name: Record OpenCode version
+        run: opencode --version
+      - name: Install project and test dependencies
+        run: python -m pip install -e . pytest
+      - name: Start isolated OpenCode server
+        env:
+          OPENCODE_SERVER_PASSWORD: agentson-ci-only-password
+          OPENCODE_PURE: "1"
+          OPENCODE_DISABLE_PROJECT_CONFIG: "1"
+        run: |
+          mkdir -p "$RUNNER_TEMP/agentson-opencode"
+          cd "$RUNNER_TEMP/agentson-opencode"
+          nohup opencode serve --hostname 127.0.0.1 --port 4096 \
+            > "$RUNNER_TEMP/opencode-server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/opencode-server.pid"
+      - name: Wait for OpenCode API
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --user opencode:agentson-ci-only-password http://127.0.0.1:4096/api/info; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/opencode-server.log"
+          exit 1
+      - name: Run live archive import and verification
+        env:
+          AGENTSON_OPENCODE_URL: http://127.0.0.1:4096
+          OPENCODE_SERVER_PASSWORD: agentson-ci-only-password
+        run: python -m pytest -q -s tests/integration/test_opencode_live.py
+      - name: Stop OpenCode server
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/opencode-server.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/opencode-server.pid")" || true
+          fi
+          cat "$RUNNER_TEMP/opencode-server.log" || true

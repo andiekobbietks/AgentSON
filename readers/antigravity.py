@@ -14,15 +14,23 @@ Usage:
 
 import sqlite3
 import json
+import base64
+import hashlib
 import os
 import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 
 # Default Antigravity IDE path
 DEFAULT_DB_PATH = os.path.expanduser(
     r"~\.gemini\antigravity-ide\conversations"
 )
+
+
+def _connect_readonly(db_path: str):
+    """Open the source conversation database without permitting writes."""
+    return sqlite3.connect(Path(db_path).resolve().as_uri() + "?mode=ro", uri=True)
 
 
 def get_antigravity_sessions(db_path: Optional[str] = None) -> List[Dict]:
@@ -42,7 +50,7 @@ def get_antigravity_sessions(db_path: Optional[str] = None) -> List[Dict]:
     # Use the most recent one
     db_path = max(db_files, key=os.path.getmtime)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect_readonly(db_path)
     cursor = conn.cursor()
 
     # Get trajectory metadata
@@ -120,7 +128,7 @@ def read_antigravity_session(session: Dict) -> Dict:
     """Read an Antigravity IDE session and return canonicalised data."""
     db_path = session["db_path"]
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect_readonly(db_path)
     cursor = conn.cursor()
 
     # Get all steps
@@ -145,6 +153,9 @@ def read_antigravity_session(session: Dict) -> Dict:
     entries = []
     total_tokens = 0
     cost = 0.0
+    # This is extraction time, not event time. Do not fabricate a timestamp
+    # for a step when the source database does not expose one.
+    extracted_at = datetime.now(timezone.utc).isoformat()
 
     for step in steps:
         idx, step_type, status, has_sub, payload, fmt = step
@@ -153,7 +164,6 @@ def read_antigravity_session(session: Dict) -> Dict:
         entry = {
             "role": "assistant" if step_type in [14, 15, 23] else "tool",
             "type": step_type,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
             "metadata": {
                 "status": status,
                 "has_subtrajectory": has_sub,
@@ -190,6 +200,21 @@ def read_antigravity_session(session: Dict) -> Dict:
         elif step_type == 99:
             entry["role"] = "assistant"  # Unknown
 
+        # Preserve the exact protobuf/binary payload before heuristic text
+        # extraction. A decoded snippet is a projection, not a substitute.
+        raw_payload = bytes(payload) if payload is not None else b""
+        entry["source_payload"] = {
+            "step_row": {
+                "idx": idx,
+                "step_type": step_type,
+                "status": status,
+                "has_subtrajectory": has_sub,
+                "step_format": fmt,
+            },
+            "step_payload_base64": base64.b64encode(raw_payload).decode("ascii") if raw_payload else None,
+            "step_payload_sha256": hashlib.sha256(raw_payload).hexdigest() if raw_payload else None,
+            "decoded_json": json_data if payload and json_data else None,
+        }
         entries.append(entry)
 
     return {
@@ -210,8 +235,26 @@ def read_antigravity_session(session: Dict) -> Dict:
             "name": "Antigravity IDE",
             "version": "1.0.0"
         },
-        "started_at": datetime.now(timezone.utc).isoformat(),
-        "ended_at": datetime.now(timezone.utc).isoformat(),
+        # Extraction time is metadata, never a fabricated source event time.
+        "metadata": {"extracted_at": extracted_at},
+        "source_metadata": {
+            "trajectory_metadata_blobs": [
+                {
+                    "id": row[0],
+                    "data_base64": base64.b64encode(bytes(row[1] or b"")).decode("ascii"),
+                    "sha256": hashlib.sha256(bytes(row[1] or b"")).hexdigest(),
+                }
+                for row in meta_blobs
+            ],
+            "generation_metadata_rows": [
+                {
+                    "idx": row[0],
+                    "data_base64": base64.b64encode(bytes(row[1] or b"")).decode("ascii"),
+                    "sha256": hashlib.sha256(bytes(row[1] or b"")).hexdigest(),
+                }
+                for row in gen_meta
+            ],
+        },
         "entries": entries,
         "metrics": {
             "total_tokens": total_tokens,

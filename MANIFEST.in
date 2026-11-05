@@ -1,4 +1,4 @@
-include spec/v1.json
+recursive-include spec *.json
 include supabase/schema.sql
 include examples/*.AgentSON
 include pwa/manifest.json

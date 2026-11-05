@@ -5,6 +5,9 @@ Automatically detects and redacts PII from .agentson files before exporting or s
 
 import json
 import re
+import io
+import os
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -126,6 +129,8 @@ class PIIRedactor:
             r'xox[bpas]-[A-Za-z0-9\-]+',  # Slack token
             r'Bearer [A-Za-z0-9\-._~+/]+=*',  # Bearer token
             r'eyJ[A-Za-z0-9\-._]+\.eyJ[A-Za-z0-9\-._]+\.[A-Za-z0-9\-._]+',  # JWT
+            r'(?i)\b(?:password|passwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|authorization)\s*[:=]\s*["\']?[^\s,"\']+',  # Credential assignments
+            r'(?i)\bBasic\s+[A-Za-z0-9+/]{12,}={0,2}',  # Basic-auth material
         ]
         for pattern in secret_prefixes:
             for match in re.finditer(pattern, text):
@@ -235,25 +240,79 @@ class PIIRedactor:
         all_redactions = []
         redacted_data = json.loads(json.dumps(data))  # Deep copy
         
-        # Process all entries
-        for entry in redacted_data.get("entries", []):
-            # Redact text fields
-            for field in ["text", "code", "output", "query"]:
-                if field in entry and entry[field]:
-                    redacted_text, redactions = self.redact_text(str(entry[field]))
-                    if redactions:
-                        entry[field] = redacted_text
-                        all_redactions.extend(redactions)
-            
-            # Redact args if present
-            if "args" in entry and isinstance(entry["args"], dict):
-                for key, value in entry["args"].items():
-                    if isinstance(value, str):
-                        redacted_value, redactions = self.redact_text(value)
+        # Redact canonical text-bearing fields and nested source evidence.
+        sensitive_fields = {
+            "text", "code", "output", "query", "content", "prompt",
+            "message", "command", "path", "file_path", "project_path",
+            "working_directory", "directory", "cwd", "diff", "task", "title",
+        }
+
+        def redact_nested(value, redact_all_strings=False):
+            if isinstance(value, dict):
+                # MiniMax source rows represent binary SQLite values as
+                # {"encoding": "base64", "data": "...", "sha256": "..."}.
+                # Omit that payload too, not just fields named *_base64.
+                if value.get("encoding") == "base64" and isinstance(value.get("data"), str) and value["data"]:
+                    value["data"] = None
+                    value["data_omitted"] = True
+                    all_redactions.append({
+                        "type": "opaque_binary_payload_omitted",
+                        "text": "[OPAQUE_BINARY_OMITTED]",
+                        "start": 0,
+                        "end": 0,
+                    })
+                for key, child in list(value.items()):
+                    # Opaque binary evidence cannot be reliably PII-redacted
+                    # in place. Omit it from redacted copies but retain its
+                    # adjacent digest and an explicit omission marker.
+                    if isinstance(child, str) and key.endswith("_base64") and child:
+                        value[key] = None
+                        value[key + "_omitted"] = True
+                        all_redactions.append({
+                            "type": "opaque_binary_payload_omitted",
+                            "text": "[OPAQUE_BINARY_OMITTED]",
+                            "start": 0,
+                            "end": 0,
+                        })
+                    elif isinstance(child, str) and (redact_all_strings or key in sensitive_fields):
+                        redacted_text, redactions = self.redact_text(child)
                         if redactions:
-                            entry["args"][key] = redacted_value
+                            value[key] = redacted_text
                             all_redactions.extend(redactions)
-        
+                    elif isinstance(child, (dict, list)):
+                        redact_nested(
+                            child,
+                            redact_all_strings or key in {"args", "source_payload", "source_metadata"},
+                        )
+            elif isinstance(value, list):
+                for index, child in enumerate(value):
+                    if isinstance(child, str) and redact_all_strings:
+                        redacted_text, redactions = self.redact_text(child)
+                        if redactions:
+                            value[index] = redacted_text
+                            all_redactions.extend(redactions)
+                    elif isinstance(child, (dict, list)):
+                        redact_nested(child, redact_all_strings)
+
+        # Every string beneath source_session is source evidence, including
+        # metadata keys not yet known to this version of the reader.
+        redact_nested(redacted_data.get("source_session", {}), redact_all_strings=True)
+        for key in ("task", "title"):
+            value = redacted_data.get(key)
+            if isinstance(value, str):
+                redacted_text, redactions = self.redact_text(value)
+                if redactions:
+                    redacted_data[key] = redacted_text
+                    all_redactions.extend(redactions)
+        for entry in redacted_data.get("entries", []):
+            if isinstance(entry, dict):
+                redact_nested(entry)
+
+        # JSONL streams keep their authoritative session metadata in the first event.
+        if redacted_data.get("_format") == "jsonl":
+            entries = redacted_data.get("entries", [])
+            if entries and isinstance(entries[0], dict) and entries[0].get("type") == "stream-meta":
+                entries[0]["source_session"] = redacted_data.get("source_session", {})
         return redacted_data, all_redactions
     
     def redact_file(self, input_path: str, output_path: str = None) -> Dict:
@@ -267,10 +326,12 @@ class PIIRedactor:
         Returns:
             Dictionary with redaction statistics
         """
-        # Load file
-        with open(input_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
+        # Load canonical JSONL or a legacy document-style .agentson file.
+        from exporters.jsonl import load_agentson_document, write_agentson_stream
+        data = load_agentson_document(input_path)
+        output_format = data.get("_format", "document")
+        source_tool = data.get("tool", {}).get("name", "other")
+
         # Redact
         redacted_data, redactions = self.redact_agentson(data)
         
@@ -278,9 +339,32 @@ class PIIRedactor:
         if output_path is None:
             output_path = input_path
         
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(redacted_data, f, indent=2, ensure_ascii=False)
-        
+        # Serialise and validate completely before touching the destination.
+        buffer = io.StringIO()
+        if output_format == "jsonl":
+            write_agentson_stream(redacted_data, buffer, source_tool=source_tool)
+        else:
+            redacted_data.pop("_format", None)
+            json.dump(redacted_data, buffer, indent=2, ensure_ascii=False)
+
+        output_path = str(output_path)
+        output_dir = os.path.dirname(os.path.abspath(output_path))
+        os.makedirs(output_dir, exist_ok=True)
+        temporary_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                "w", encoding="utf-8", dir=output_dir, delete=False
+            ) as temporary:
+                temporary_path = temporary.name
+                temporary.write(buffer.getvalue())
+                temporary.flush()
+                os.fsync(temporary.fileno())
+            os.replace(temporary_path, output_path)
+            temporary_path = None
+        finally:
+            if temporary_path and os.path.exists(temporary_path):
+                os.unlink(temporary_path)
+
         # Return statistics
         stats = {
             "input_file": input_path,

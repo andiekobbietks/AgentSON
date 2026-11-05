@@ -38,8 +38,8 @@ def publish_docker(
     if not session_path.exists():
         raise FileNotFoundError(f"Session not found: {session_path}")
 
-    with open(session_path, "r") as f:
-        session = json.load(f)
+    from exporters.jsonl import load_agentson_document
+    session = load_agentson_document(session_path)
 
     session_id = session.get("id", session_path.stem)
     full_tag = f"{registry}/{image_tag}" if registry else image_tag
@@ -49,7 +49,7 @@ def publish_docker(
 COPY {session_path.name} /session.agentson
 LABEL agentson.session.id="{session_id}"
 LABEL agentson.tool="{session.get('tool', {}).get('name', 'unknown')}"
-LABEL agentson.entries="{len(session.get('entries', []))}"
+LABEL agentson.entries="{sum(1 for entry in session.get('entries', []) if isinstance(entry, dict) and entry.get('type') != 'stream-meta')}"
 LABEL org.opencontainers.image.title="AgentSON Session"
 LABEL org.opencontainers.image.description="Agent session provenance artifact"
 LABEL org.opencontainers.image.created="{datetime.now(timezone.utc).isoformat()}"
@@ -119,8 +119,8 @@ def publish_lxd(
     if not session_path.exists():
         raise FileNotFoundError(f"Session not found: {session_path}")
 
-    with open(session_path, "r") as f:
-        session = json.load(f)
+    from exporters.jsonl import load_agentson_document
+    session = load_agentson_document(session_path)
 
     session_id = session.get("id", session_path.stem)
 

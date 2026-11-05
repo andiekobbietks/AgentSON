@@ -187,9 +187,12 @@ def test_export_session(claude_dir, tmp_path):
     assert os.path.exists(result)
     assert result.endswith(".agentson")
 
-    with open(result) as f:
-        data = json.load(f)
-    assert data["tool"]["name"] == "claude-code"
+    with open(result, encoding="utf-8") as f:
+        events = [json.loads(line) for line in f if line.strip()]
+    assert events[0]["type"] == "stream-meta"
+    assert events[0]["schema_version"] == "1.2"
+    assert events[0]["source_session"]["tool"] == "claude-code"
+    assert any(event["type"] == "answer" for event in events)
 
 
 def test_read_nonexistent_session(claude_dir):

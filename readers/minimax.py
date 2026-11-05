@@ -40,8 +40,11 @@ User messages have `msg_content` (the raw user text) and no tool_calls.
 
 import sqlite3
 import json
+import base64
+import hashlib
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 
 
 class MiniMaxReader:
@@ -55,7 +58,11 @@ class MiniMaxReader:
         self.conn: Optional[sqlite3.Connection] = None
 
     def connect(self):
-        self.conn = sqlite3.connect(self.db_path)
+        # Session extraction must never mutate the user's Mavis database.
+        if self.db_path == ":memory:":
+            self.conn = sqlite3.connect(self.db_path)
+        else:
+            self.conn = sqlite3.connect(Path(self.db_path).resolve().as_uri() + "?mode=ro", uri=True)
         self.conn.row_factory = sqlite3.Row
 
     def disconnect(self):
@@ -128,7 +135,7 @@ class MiniMaxReader:
 
         msg_rows = self._safe_select(
             "session_messages",
-            preferred=["msg_id", "role", "data", "timestamp"],
+            preferred=self._table_columns("session_messages"),
             where="session_id = ?",
             order_by="timestamp",
             params=(session_id,),
@@ -136,10 +143,7 @@ class MiniMaxReader:
 
         token_rows = self._safe_select(
             "token_usage",
-            preferred=[
-                "input_tokens", "output_tokens", "reasoning_tokens",
-                "cache_read_tokens", "cache_write_tokens", "cost_usd", "ts",
-            ],
+            preferred=self._table_columns("token_usage"),
             where="session_id = ?",
             order_by="ts",
             params=(session_id,),
@@ -147,7 +151,7 @@ class MiniMaxReader:
 
         peer_rows = self._safe_select(
             "session_peers",
-            preferred=["parent_session_id", "agent_name", "task_tree_id", "created_at"],
+            preferred=self._table_columns("session_peers"),
             where="session_id = ?",
             order_by="created_at",
             params=(session_id,),
@@ -178,6 +182,7 @@ class MiniMaxReader:
                 blob = {}
 
             role = blob.get("role") or msg["role"]
+            entries_before_message = len(entries)
             if role == "user":
                 text = blob.get("msg_content") or ""
                 if text:
@@ -196,6 +201,7 @@ class MiniMaxReader:
                                 "ai_generated": False,
                                 "detectable": False,
                             },
+                            "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                         }
                     )
             elif role == "assistant":
@@ -218,6 +224,7 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
+                            "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                         }
                     )
 
@@ -264,6 +271,10 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
+                            "source_payload": {
+                                "message_row": self._source_row(msg), "message_data": blob,
+                                "tool_call": tc, "tool_call_args_raw": args_raw,
+                            },
                         }
                     )
 
@@ -281,6 +292,10 @@ class MiniMaxReader:
                                     "confidence": "confirmed",
                                     "source": "mcp",
                                     "timestamp_ms": ts,
+                                },
+                                "source_payload": {
+                                    "message_row": self._source_row(msg), "message_data": blob,
+                                    "tool_call": tc, "tool_call_result_raw": tc.get("tool_call_result_data"),
                                 },
                             }
                         )
@@ -304,8 +319,18 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
+                            "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                         }
                     )
+
+            if len(entries) == entries_before_message:
+                entries.append({
+                    "type": "system-event",
+                    "source": "other",
+                    "timestamp": ts,
+                    "text": "MiniMax message contained no mapped content (role: {})".format(role),
+                    "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
+                })
 
         # Sort entries by timestamp (stream-meta should stay first because it's
         # the session start; keep ties stable)
@@ -356,6 +381,11 @@ class MiniMaxReader:
                 "shell": "powershell",
             },
             "entries": entries,
+            "source_metadata": {
+                "session_row": self._source_row(sess),
+                "token_usage_rows": [self._source_row(row) for row in token_rows],
+                "peer_rows": [self._source_row(row) for row in peer_rows],
+            },
             "metadata": {
                 "total_tokens": total_input + total_output,
                 "input_tokens": total_input,
@@ -388,6 +418,23 @@ class MiniMaxReader:
         }
 
     # --- helpers ---
+
+    @staticmethod
+    def _source_row(row) -> Dict[str, Any]:
+        """Make a complete SQLite row JSON-safe without discarding binary columns."""
+        result = {}
+        for key, value in dict(row).items():
+            if isinstance(value, memoryview):
+                value = value.tobytes()
+            if isinstance(value, bytes):
+                result[key] = {
+                    "encoding": "base64",
+                    "data": base64.b64encode(value).decode("ascii"),
+                    "sha256": hashlib.sha256(value).hexdigest(),
+                }
+            else:
+                result[key] = value
+        return result
 
     @staticmethod
     def _stream_meta_entry(sess: sqlite3.Row, peer_rows: List[sqlite3.Row]) -> Dict[str, Any]:

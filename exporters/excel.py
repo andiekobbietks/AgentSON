@@ -16,9 +16,9 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 def export_to_excel(input_path: str, output_path: str = None):
     """Export an .agentson file to Excel with charts and analytics."""
     
-    # Load the .agentson file
-    with open(input_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    # Load canonical JSONL or a legacy document-style .agentson file.
+    from exporters.jsonl import load_agentson_document
+    data = load_agentson_document(input_path)
     
     # Create output path
     if output_path is None:
@@ -36,6 +36,12 @@ def export_to_excel(input_path: str, output_path: str = None):
     ws_overview['A1'].font = Font(name='Calibri', size=16, bold=True, color='2F5496')
     ws_overview.merge_cells('A1:E1')
     
+    # Exclude the stream header from the event timeline and entry count.
+    entries = [
+        entry for entry in data.get('entries', [])
+        if entry.get('type') != 'stream-meta'
+    ]
+
     # Session metadata
     metadata = [
         ("Session ID", data.get('id', 'N/A')),
@@ -44,7 +50,7 @@ def export_to_excel(input_path: str, output_path: str = None):
         ("Model", data.get('agent', {}).get('provider', 'N/A')),
         ("Started", data.get('started_at', 'N/A')),
         ("Ended", data.get('ended_at', 'N/A')),
-        ("Total Entries", len(data.get('entries', []))),
+        ("Total Entries", len(entries)),
         ("Total Tokens", data.get('metadata', {}).get('total_tokens', 'N/A')),
         ("Cost", data.get('metadata', {}).get('cost', 'N/A')),
     ]
@@ -65,7 +71,6 @@ def export_to_excel(input_path: str, output_path: str = None):
         cell.fill = PatternFill(start_color='2F5496', end_color='2F5496', fill_type='solid')
     
     # Data
-    entries = data.get('entries', [])
     for idx, entry in enumerate(entries, 1):
         ws_entries.cell(row=idx+1, column=1, value=idx)
         ws_entries.cell(row=idx+1, column=2, value=entry.get('type', 'N/A'))

@@ -7,6 +7,8 @@ Serves as:
 - Deep-dive help for every adapter, protocol, and command
 """
 
+from __future__ import annotations
+
 import sys
 import json
 from pathlib import Path
