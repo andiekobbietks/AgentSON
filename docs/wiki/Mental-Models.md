@@ -8,10 +8,10 @@ How we think about problems before writing code.
 
 **The simplest solution that works is the best solution.**
 
-If you can solve a problem with a 20-line Python script, don't build a microservice. If a JSON file does the job, don't reach for a database. Complexity is a cost, not a feature.
+If you can solve a problem with a small, well-tested component, don't build a microservice. If a self-contained JSON session archive meets the need, don't introduce a database dependency. Complexity is a cost, not a feature.
 
 **In practice:**
-- AgentSON is a JSON file, not a database
+- The canonical AgentSON archive is a JSON session envelope, not a database
 - The viewer is a single HTML file, no build step
 - The CLI is a flat Python module, no framework
 
@@ -66,16 +66,16 @@ A GTX 1050 with 2GB VRAM means no 7B models locally. That constraint drove fine-
 
 ## One File, One Truth
 
-**A single file should contain everything needed.**
+**A canonical archive should be independently readable and inspectable.**
 
-A .AgentSON file has the schema, the entries, the metadata, the context. You don't need a database, a config file, and a log. One file. One truth.
+A .agentson archive contains the session envelope, ordered entries and metadata needed to interpret the recorded session. It must not depend on a hidden database, config file or service. Large or separately governed artefacts may be external references only when explicit and integrity-verifiable; the archive must report when an artefact is unavailable. One archive remains the portable record.
 
 **In practice:**
-- One .AgentSON = one complete session
+- One .agentson archive = one independently readable session record
 - One SOP = one complete procedure
 - One HTML file = one complete viewer
 
-**The test:** Can you send someone one file and have everything they need?
+**The test:** Can a recipient inspect the session record from one archive, identify every external dependency and detect any missing referenced artefact?
 
 ---
 
