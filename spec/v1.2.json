@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agentson.dev/schema/v1.2.json",
   "title": "AgentSON v1.2 — Streaming & Inter-Agent Collaboration",
-  "description": "Canonical format for AI agent session traces. 12 primitive types defined in spec/ontology.md. JSONL stream format.",
+  "description": "Canonical v1.2 session archive envelope: one JSON object with ordered entries. The 12 event primitives are defined in spec/ontology.md. This schema does not validate a JSONL stream.",
   "type": "object",
   "required": [
     "id",
