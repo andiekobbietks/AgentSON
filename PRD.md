@@ -709,15 +709,13 @@ AgentSON is not a hypothetical product. The problem it solves has been demonstra
 
 **AgentSON = Agent + JSON**
 
-It's "Yet Another JSON" — but metadata-rich and built for the agentic era. Like JSON itself, it's simple, readable, and works everywhere. The difference: this one captures the full trace of what an AI agent did, thought, and produced.
+It's "Yet Another JSON" — but metadata-rich and built for the agentic era. Like JSON itself, it's simple, readable, and works everywhere. The difference: this one records the session inputs, outputs, actions, observations and effects exposed by the source. Internal reasoning is included only when the source provides it and capture is permitted.
 
-The only thing left is to build it.
+The canonical schema and early tooling exist. Cross-harness conformance, loss accounting and safe reconstruction/resumption still require implementation and evidence.
 
 ---
 
-*"Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments."*
-
-*AgentSON is that.*
+*AgentSON aims to make AI-agent session records portable and inspectable across independent harnesses, with provenance and limitations made explicit.*
 
 
 ---
