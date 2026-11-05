@@ -15,6 +15,9 @@ def build_continuation_packet(input_path: str, target: str = "generic") -> str:
     if not isinstance(events, list):
         raise ValueError("AgentSON session entries must be a list")
     events = [event for event in events if isinstance(event, dict)]
+    if document.get("_format") == "jsonl":
+        from exporters.jsonl import validate_v1_2_events
+        validate_v1_2_events(events)
     meta = events[0] if events and events[0].get("type") == "stream-meta" else {}
     source = meta.get("source_session", {}) if isinstance(meta, dict) else {}
     tool_data = document.get("tool", {})
