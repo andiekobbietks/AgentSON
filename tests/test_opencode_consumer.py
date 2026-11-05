@@ -200,3 +200,34 @@ def test_http_requests_use_basic_auth_header_without_url_credentials():
     expected = base64.b64encode(b"opencode:ci-test-password").decode("ascii")
     assert request.get_header("Authorization") == f"Basic {expected}"
     assert "ci-test-password" not in request.full_url
+
+
+def test_import_accepts_canonical_agentson_jsonl_file(tmp_path):
+    from exporters.jsonl import write_agentson_stream
+
+    archive = _archive()
+    source = tmp_path / "canonical.agentson"
+    with source.open("w", encoding="utf-8") as handle:
+        write_agentson_stream(archive, handle, source_tool=archive["tool"]["name"])
+
+    calls = []
+
+    def fake_request(base_url, path, payload, method, timeout):
+        calls.append((path, payload, method))
+        if path == "/api/session":
+            return {"data": {"id": "ses_from_jsonl"}}
+        return {"data": {"id": "msg_capsule"}}
+
+    with patch("consumers.opencode._request_json", side_effect=fake_request):
+        imported = import_archive(source)
+
+    assert imported["session_id"] == "ses_from_jsonl"
+    assert calls[1][0] == "/api/session/ses_from_jsonl/synthetic"
+    capsule = calls[1][1]["text"]
+    embedded = capsule.split("<agentson-archive>\\n", 1)[1].split(
+        "\\n</agentson-archive>", 1
+    )[0]
+    projected = json.loads(embedded)
+    assert projected["id"] == archive["id"]
+    assert projected["metadata"]["agentson_wire_format"] == "v1.2-jsonl"
+    assert len(projected["entries"]) == len(archive["entries"]) + 1
