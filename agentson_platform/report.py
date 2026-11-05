@@ -1,3 +1,4 @@
+# AgentSON core runtime: report
 """Markdown + JSON report renderers.
 
 Both files are written from the same digest, so they cannot disagree on a

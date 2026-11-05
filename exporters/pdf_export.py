@@ -1,3 +1,4 @@
+# AgentSON core runtime: pdf export
 """
 AgentSON PDF Exporter - Export .agentson files to formatted PDF using PyLaTeX.
 """

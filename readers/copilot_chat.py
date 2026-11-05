@@ -1,3 +1,4 @@
+# AgentSON core runtime: copilot chat
 """
 GitHub Copilot Chat session reader.
 

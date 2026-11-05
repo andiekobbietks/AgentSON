@@ -1,3 +1,4 @@
+# AgentSON core runtime: claude code
 """
 Claude Code session reader.
 

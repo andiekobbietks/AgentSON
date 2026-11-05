@@ -1,3 +1,4 @@
+# AgentSON core runtime: classifier slm
 """SLM-enhanced classification, with fallback to Tier 1 rules.
 
 Described in AGENTS.md as a stub with graceful fallback, and that is

@@ -1,3 +1,4 @@
+# AgentSON core runtime: structure
 """AgentSON premium pipeline: structure session streams into graph / lake / CSV.
 
 WHY: the data-collection/structuring work belongs to the tool (user's demand),

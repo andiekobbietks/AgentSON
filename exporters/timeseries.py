@@ -1,3 +1,4 @@
+# AgentSON core runtime: timeseries
 """
 Time-series exporter for AgentSON.
 

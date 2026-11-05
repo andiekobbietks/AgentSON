@@ -1,3 +1,4 @@
+# AgentSON core runtime: server
 """
 Local playground server for AgentSON Platform.
 

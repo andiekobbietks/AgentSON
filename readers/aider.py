@@ -1,3 +1,4 @@
+# AgentSON core runtime: aider
 """
 AgentSON Reader: aider
 ======================

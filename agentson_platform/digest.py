@@ -1,3 +1,4 @@
+# AgentSON core runtime: digest
 """ComplianceDigest — the shape both report renderers read.
 
 Every count here is derived from the findings list at call time, never

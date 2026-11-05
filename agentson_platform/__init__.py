@@ -1,3 +1,4 @@
+# AgentSON core runtime:   init  
 """Data Rights Intelligence Platform — crawl, classify, report.
 
 Crawl -> Classify -> Report. Each stage is a module:

@@ -1,3 +1,4 @@
+# AgentSON core runtime:   init  
 """AgentSON importers."""
 from .chatgpt import import_chatgpt
 from .mcp import import_mcp

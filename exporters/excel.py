@@ -1,3 +1,4 @@
+# AgentSON core runtime: excel
 """
 AgentSON Excel Exporter - Export .agentson files to well-formatted Excel with charts and analytics.
 """

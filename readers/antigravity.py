@@ -1,3 +1,4 @@
+# AgentSON core runtime: antigravity
 """
 Antigravity IDE SQLite reader for AgentSON.
 

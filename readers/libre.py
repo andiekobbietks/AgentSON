@@ -1,3 +1,4 @@
+# AgentSON core runtime: libre
 """
 FreeStyle Libre 2 CSV reader for AgentSON.
 

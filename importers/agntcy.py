@@ -1,3 +1,4 @@
+# AgentSON core runtime: agntcy
 """AGNTCY Agent Protocol Importer for AgentSON.
 
 Maps AGNTCY protocol traces to AgentSON 12-primitive ontology.
