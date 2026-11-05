@@ -38,8 +38,8 @@ def publish_docker(
     if not session_path.exists():
         raise FileNotFoundError(f"Session not found: {session_path}")
 
-    with open(session_path, "r") as f:
-        session = json.load(f)
+    from exporters.jsonl import load_agentson_document
+    session = load_agentson_document(session_path)
 
     session_id = session.get("id", session_path.stem)
     full_tag = f"{registry}/{image_tag}" if registry else image_tag
@@ -119,8 +119,8 @@ def publish_lxd(
     if not session_path.exists():
         raise FileNotFoundError(f"Session not found: {session_path}")
 
-    with open(session_path, "r") as f:
-        session = json.load(f)
+    from exporters.jsonl import load_agentson_document
+    session = load_agentson_document(session_path)
 
     session_id = session.get("id", session_path.stem)
 
