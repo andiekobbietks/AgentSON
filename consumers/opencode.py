@@ -167,6 +167,7 @@ def _load_agentson_input(source: Union[str, Path, Mapping[str, Any]]) -> Dict[st
             "agentson_wire_format": document.get("_format", "legacy-document"),
         },
     }
+    archive = {key: value for key, value in archive.items() if value is not None}
     return _load_archive(archive)
 
 
