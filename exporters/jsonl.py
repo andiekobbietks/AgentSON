@@ -356,3 +356,30 @@ def write_agentson_stream(document: Any, handle: Any, source_tool: Optional[str]
         handle.write(json.dumps(event, ensure_ascii=False, separators=(",", ":"), default=str))
         handle.write("\n")
     return events
+
+def write_agentson_stream_file(document: Any, output_path: Any, source_tool: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Validate and serialise a stream before atomically replacing its destination."""
+    import os
+    import tempfile
+
+    events = to_v1_2_events(document, source_tool=source_tool)
+    validate_v1_2_events(events)
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w", encoding="utf-8", dir=str(destination.parent), delete=False
+        ) as temporary:
+            temporary_path = temporary.name
+            for event in events:
+                temporary.write(json.dumps(event, ensure_ascii=False, separators=(",", ":"), default=str))
+                temporary.write("\\n")
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        os.replace(temporary_path, destination)
+        temporary_path = None
+    finally:
+        if temporary_path and os.path.exists(temporary_path):
+            os.unlink(temporary_path)
+    return events
