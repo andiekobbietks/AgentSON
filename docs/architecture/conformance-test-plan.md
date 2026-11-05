@@ -38,13 +38,14 @@ The suite and fixtures are:
 - `.github/workflows/conformance.yml`
 - Production-reader regression: `tests/test_opencode_real_sample.py`
 - OpenCode consumer contract tests: `tests/test_opencode_consumer.py`
-- Live OpenCode v2 integration: `tests/integration/test_opencode_live.py`
+- Live ChatGPT-export → AgentSON → OpenCode v2 integration: `tests/integration/test_opencode_live.py`
+- Synthetic ChatGPT-shaped source fixture: `tests/fixtures/chatgpt_synthetic_export.json`
 - ChatGPT importer v1.2 conformance: `tests/test_chatgpt_importer.py`
 - Receiving adapter: `consumers/opencode.py`
 
 The canonical fixture is deliberately synthetic and labelled as such. It exercises the v1.2 envelope, the 12-primitive entry validator, source identifiers, source sequence, correlation, source-specific extensions, action-without-observation semantics and the absence of a mandatory `stream-meta` event.
 
-The OpenCode consumer targets HTTP API v2. It creates a session and injects the full archive as one synthetic message with `resume: false`, so the agent loop is not scheduled immediately. The synthetic message can still enter model context on a later turn; this is not isolated storage. Mock tests verify validation, synthetic insertion, payload preservation, endpoint restrictions, future-context disclosure and cleanup. A live integration test starts pinned OpenCode CLI 2.2.5, imports the fixture, reads the deferred synthetic item back through the v2 session inbox API and compares the embedded archive and digest. This establishes archive-capsule storage fidelity against the tested OpenCode version, not native event reconstruction or full semantic C2 interoperability. See [OpenCode Consumer Profile](opencode-consumer-profile.md).
+The OpenCode consumer targets HTTP API v2. It creates a session and injects the full archive as one synthetic message with `resume: false`, so the agent loop is not scheduled immediately. The synthetic message can still enter model context on a later turn; this is not isolated storage. Mock tests verify validation, synthetic insertion, payload preservation, endpoint restrictions, future-context disclosure and cleanup. A live integration test runs the production ChatGPT importer against an explicitly synthetic ChatGPT-shaped export fixture, sends the resulting v1.2 archive to pinned OpenCode CLI 2.2.5, reads the deferred synthetic item back through the v2 session inbox API and compares the embedded archive and digest. This exercises the producer-to-consumer adapter pipeline with synthetic source data and establishes archive-capsule storage fidelity against the tested OpenCode version. It does not yet prove a real-export C2 result or native event reconstruction. See [OpenCode Consumer Profile](opencode-consumer-profile.md).
 
 ## 4. Required adapter test contract
 
@@ -75,7 +76,7 @@ The following matrix is a test programme, not a claim that these pairs currently
 | Producer | Consumer | Current evidence | Next requirement |
 |---|---|---|---|
 | OpenCode | AgentSON OpenCode consumer | OpenCode reader and v2 consumer adapter exist; 32 focused tests and a pinned CLI 2.2.5 live import/read-back test pass. | Capture a version-identified source session through the production reader, then compare producer semantics against the consumer archive; native event mapping remains a separate gap. |
-| ChatGPT export | OpenCode | ChatGPT importer emits schema-tested v1.2; OpenCode archive-capsule consumer exists. | Add a source-backed ChatGPT fixture through the receiving adapter and live read-back. |
+| ChatGPT export | OpenCode | Production ChatGPT importer → v1.2 archive → live OpenCode 2.2.5 inbox read-back passes using an explicitly synthetic source fixture. | Repeat with a permissioned, sanitised real ChatGPT export fixture and add semantic comparison before claiming C2. |
 | Claude Code | OpenCode | Dedicated source reader exists; no consumer pair test. | Add a sanitised source fixture and live receiving-harness test. |
 | Aider | Cline | Dedicated readers exist; no canonical archive consumer import path. | Implement and test a receiving adapter; do not treat reader presence as import support. |
 | Cursor | Copilot Chat | Reader evidence only; no canonical archive consumer import path. | Implement and test a receiving adapter; do not treat reader presence as import support. |
