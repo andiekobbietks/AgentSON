@@ -144,7 +144,18 @@ Use the resume command to create a portable Markdown context packet from a canon
 agentson resume ./sessions/session.agentson --target opencode --output ./handoff.md
 ```
 
-Open the resulting packet in a new destination-harness session. It carries the available conversation history, decisions and tool records, with explicit provenance and safety boundaries. Historical commands are inert evidence and must not be replayed. This is context continuation into a new session, **not** restoration of hidden prompts, credentials, permissions, live processes, unsaved buffers or vendor-private runtime state. See [ADR-025](spec/ADR-025-cross-harness-context-continuation.md).
+Open the resulting packet in a new destination-harness session. It carries the available conversation history, decisions and tool records, with explicit provenance and safety boundaries. Historical commands are inert evidence and must not be replayed.
+
+For the first native destination adapter, start an OpenCode server and use:
+
+```bash
+opencode serve
+agentson resume ./sessions/session.agentson --target opencode --launch
+```
+
+AgentSON creates a new OpenCode session through its documented HTTP API, queues the packet with `resume=false`, and reads the session messages back to verify that the handoff was stored. It does not trigger an agent turn or replay historical tool calls. If the server uses basic authentication, set `OPENCODE_SERVER_USERNAME` and `OPENCODE_SERVER_PASSWORD`; use `--server-url` when it is not listening at `http://127.0.0.1:4096`. Open the returned session with `opencode --session <session-id>`.
+
+This is verified context continuation into a new session, **not** restoration of hidden prompts, credentials, permissions, live processes, unsaved buffers or vendor-private runtime state. The OpenCode HTTP API surface is version-sensitive; use a current OpenCode server and inspect the created session before relying on it. Other destination adapters remain packet-only until implemented. See [ADR-025](spec/ADR-025-cross-harness-context-continuation.md).
 
 ## Repository map
 
