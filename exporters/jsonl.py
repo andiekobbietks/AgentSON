@@ -83,6 +83,8 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
     event["agent"] = str(event.get("agent") or default_agent)
     if event.get("correlation_id") is not None:
         event["correlation_id"] = str(event["correlation_id"])
+    else:
+        event.pop("correlation_id", None)
     if event.get("duration_ms") is not None:
         try:
             event["duration_ms"] = int(event["duration_ms"])
@@ -90,6 +92,8 @@ def _map_event(source_event: Any, default_agent: str) -> Dict[str, Any]:
             event.pop("duration_ms", None)
     if event.get("tool_call_id") is not None:
         event["tool_call_id"] = str(event["tool_call_id"])
+    else:
+        event.pop("tool_call_id", None)
 
     provenance = dict(_json_object(event.get("provenance")))
     allowed_confidence = {"confirmed", "inferred", "estimated", "ml_generated", "unknown"}
@@ -187,9 +191,15 @@ def to_v1_2_events(document: Any, source_tool: Optional[str] = None) -> List[Dic
     existing_stream = bool(source_entries and isinstance(source_entries[0], dict)
                            and source_entries[0].get("type") == "stream-meta")
     if existing_stream:
-        events = [dict(item) if isinstance(item, dict) else {"type": "system-event", "text": str(item), "source": "other"}
-                  for item in source_entries]
-        meta = events[0]
+        if not isinstance(source_entries[0], dict):
+            raise ValueError("Existing JSONL stream metadata at position 0 must be an object")
+        meta = dict(source_entries[0])
+        events = [meta]
+        for position, item in enumerate(source_entries[1:], start=1):
+            if not isinstance(item, dict):
+                raise ValueError(f"Existing JSONL event at position {position} must be an object")
+            events.append(_map_event(item, agent_id))
+
         meta.setdefault("schema_version", "1.2")
         meta.setdefault("stream_id", sid)
         meta.setdefault("mode", "single")
