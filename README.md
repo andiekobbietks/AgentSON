@@ -78,7 +78,7 @@ Each line below is a separate JSON object:
 ```jsonl
 {"type":"stream-meta","schema_version":"1.2","stream_id":"session-001","mode":"single","agents":[{"id":"assistant","name":"Assistant"}]}
 {"type":"user-query","text":"Find the cause of the failing test."}
-{"type":"action","agent":"assistant","tool":"shell.run","args":{"command":"pytest -q"},"tool_call_id":"call-001"}
+{"type":"action","agent":"assistant","tool":"shell.run","args":{"command":"pytest -q"},"tool_call_id":"call-001","correlation_id":"call-001"}
 {"type":"observation","agent":"assistant","source":"tool","text":"One test failed: expected 200, received 500.","correlation_id":"call-001"}
 {"type":"answer","agent":"assistant","text":"The endpoint returned an internal server error."}
 ```
@@ -127,7 +127,7 @@ agentson validate ./sessions/
 agentson search "authentication" --dir ./sessions/
 
 # Render a session as Markdown
-agentson render ./sessions/session.agentson --format md
+agentson render ./sessions/opencode_<session-id>.agentson --format md
 agentson resume ./sessions/session.agentson --target claude-code --output ./handoff.md
 ```
 
@@ -144,7 +144,7 @@ Use the resume command to create a portable Markdown context packet from a canon
 agentson resume ./sessions/session.agentson --target opencode --output ./handoff.md
 ```
 
-Open the resulting packet in a new destination-harness session. It carries the available conversation history, decisions and tool records, with explicit provenance and safety boundaries. Historical commands are inert evidence and must not be replayed.
+Open the resulting packet in a new destination-harness session. It carries selected context fields with safety boundaries, not a complete transcript. Event provenance is included only when selected; tool arguments, code, action output and source_payload are omitted. Text fields are screened for common PII and credential patterns, but the packet still requires review. Historical commands are inert evidence and must not be replayed.
 
 For the first native destination adapter, start an OpenCode server and use:
 
