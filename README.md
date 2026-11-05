@@ -35,7 +35,7 @@ That is a direction, not a claim that arbitrary sessions can already be resumed 
 | A basis for inspection, analysis and future interoperability | A guarantee that a session can be resumed in another harness |
 | An open-source format and local tooling | A compliance certification or legal determination |
 
-AgentSON's severity specification is a data contract expressed with JSON Schema and Pydantic-style validation. It is not a REST resource model. Any API or transport built around AgentSON must define its own HTTP contract, authentication, authorisation, error model, versioning and operational controls.
+The separate Severity v1 specification is a data contract expressed with JSON Schema 2020-12 and Pydantic validation. It is not a REST resource model. Any API or transport built around AgentSON must define its own HTTP contract, authentication, authorisation, error model, versioning and operational controls.
 
 ## Format and schema
 
