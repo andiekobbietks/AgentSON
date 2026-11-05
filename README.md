@@ -218,7 +218,7 @@ For supported source adapters, your AI work can be preserved as a searchable, po
 - **Portability** — Switch tools without losing context
 - **Search** — Full-text search across all your sessions
 - **Inspection** — Review the recorded session offline without executing imported actions
-- **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
+- **Ownership** — No unsolicited telemetry; core archive operations work offline; optional source integrations disclose their dependencies
 
 ### For the Organisation
 
