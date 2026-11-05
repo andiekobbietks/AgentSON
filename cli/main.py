@@ -1304,6 +1304,7 @@ def cmd_resume(args):
                 base_url=args.server_url,
                 allow_remote=args.allow_remote,
                 password=password,
+                title=args.title,
             )
             verified = verify_import(
                 imported,
