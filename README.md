@@ -26,7 +26,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/agentson.svg)](https://pypi.org/project/agentson/)
 [![CI](https://github.com/andiekobbietks/AgentSON/actions/workflows/ci.yml/badge.svg)](https://github.com/andiekobbietks/AgentSON/actions)
 
-> Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
+> AgentSON aims to make AI-agent session records as portable and interoperable as API descriptions and development environments.
 
 ---
 
