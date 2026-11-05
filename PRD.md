@@ -84,7 +84,7 @@ To export from Antigravity required a **third** script — and the built-in expo
 - Agent memory standards are emerging (memorywire, May 2026) — but they address memory persistence, not action traces
 - Academic benchmark datasets exist (Mind2Web, UI-TARS, GUI-Owl) — but they capture curated lab tasks, not live, unstructured work
 
-**The missing piece is a portable, vendor-neutral format for capturing real, ordinary work sessions — not benchmark construction, not memory persistence, but the full trace of what an agent did, thought, and produced during a live session.**
+**The missing piece is a portable, vendor-neutral format for capturing real, ordinary work sessions — not benchmark construction, not memory persistence, but a structured record of the inputs, outputs, actions, observations and effects that a source harness actually exposes. Internal reasoning is included only when the source explicitly provides it and capture is permitted by the applicable policy.**
 
 ---
 
