@@ -1,6 +1,8 @@
 # Architecture Decision Records (ADRs)
 
-ADRs capture significant architectural decisions with context and rationale.
+ADRs capture significant architectural decisions with context and rationale. Repository-level ADRs are authoritative; this page is an index/mirror.
+
+**Two namespaces exist:** Operating ADRs live in `docs/standards/adrs/`; Specification ADRs live in `spec/`. Both series reuse identifiers 015 and 016. Always include the namespace and path when referring to either one.
 
 ---
 
@@ -19,6 +21,15 @@ ADRs capture significant architectural decisions with context and rationale.
 | 009 | [OSI Open Interchange](ADR-009) | 2026-07-05 | Accepted |
 | 010 | [GDPR Data Liberation](ADR-010) | 2026-07-05 | Accepted |
 | 011 | [Rename to AgentSON](ADR-011) | 2026-07-05 | Accepted |
+| 012 | [Academic Literature Relationship](ADR-012) | 2026-07-05 | Accepted |
+| 013 | [CLI Scope Violation (finetune/push/pull)](ADR-013) | 2026-07-06 | Accepted |
+| 014 | [Observation Entry Type Missing](ADR-014) | 2026-07-06 | Accepted |
+| Operating ADR-015 | [Rename to AgentSON](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/adrs/adr-015-rename-agenson-to-agentson.md) | 2026-07-05 | Accepted |
+| Operating ADR-016 | [Intrinsic Before Extrinsic](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/adrs/adr-016-intrinsic-before-extrinsic.md) | 2026-07-06 | Accepted |
+| Specification ADR-015 | [Canonical Schema](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md) | 2026-07-07 | Superseded by Specification ADR-024 |
+| Specification ADR-016 | [Ontology↔Enum Reconciliation](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-016-ontology-enum-reconciliation.md) | 2026-07-07 | Accepted |
+| Specification ADR-017 | [Core vs Streaming Separation](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-017-core-vs-streaming.md) | 2026-07-07 | Accepted (review against Specification ADR-024) |
+| Specification ADR-024 | [Canonical Session Archive and Cross-Harness Interoperability](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md) | 2026-11-05 | Accepted as documentation architecture baseline |
 
 ---
 
