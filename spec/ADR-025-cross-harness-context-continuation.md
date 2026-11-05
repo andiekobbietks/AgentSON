@@ -47,7 +47,7 @@ The packet must not claim restoration of hidden prompts, credentials, tool permi
 - Assert that the packet contains a clear untrusted-data boundary and no auto-execution instruction.
 - Test CLI invocation through the public entry point.
 - For each destination adapter, use a disposable test workspace and verify the resulting session via the destination's own read API.
-- OpenCode adapter tests must verify session creation, packet admission with resume=false, basic-auth handling, and read-back confirmation. The live integration check must use a disposable OpenCode server and session.
+- OpenCode adapter tests must verify session creation, archive admission with resume=false, basic-auth handling, JSONL-to-envelope projection, digest read-back confirmation, endpoint policy and best-effort cleanup. The live integration check must use a disposable OpenCode server and session.
 - Publish a per-adapter capability matrix; never generalise one adapter's success to all harnesses.
 
 ## Consequences
