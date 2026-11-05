@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [master]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -53,3 +52,30 @@ jobs:
         run: |
           test -n "$(find dist -maxdepth 1 -name '*.whl' -print -quit)"
           test -n "$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)"
+
+      - name: Verify schemas are included in the wheel and source distribution
+        shell: bash
+        run: |
+          python - <<'PY'
+          import glob
+          import tarfile
+          import zipfile
+
+          wheel = glob.glob("dist/*.whl")[0]
+          with zipfile.ZipFile(wheel) as archive:
+              names = set(archive.namelist())
+              assert "spec/v1.2.json" in names
+              assert "spec/v1.2-entries.json" in names
+
+          source = glob.glob("dist/*.tar.gz")[0]
+          with tarfile.open(source, "r:gz") as archive:
+              names = set(archive.getnames())
+              assert any(name.endswith("/spec/v1.2.json") for name in names)
+              assert any(name.endswith("/spec/v1.2-entries.json") for name in names)
+          PY
+
+      - name: Smoke-test the built wheel
+        run: |
+          python -m pip install --force-reinstall --no-deps dist/*.whl
+          python -c "from importlib.resources import files; assert files('spec').joinpath('v1.2.json').is_file(); assert files('spec').joinpath('v1.2-entries.json').is_file()"
+          agentson --help
