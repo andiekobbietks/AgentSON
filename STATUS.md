@@ -52,3 +52,13 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - Repository-relative Markdown links were checked across the documentation set; no broken repository links were found. Short links such as `ADR-001` and `SOP-001` are intentional links to separately hosted wiki pages.
 - No application code or runtime behaviour was changed by the interoperability documentation work.
 - The local test suite, schema conformance tests and CI have not yet been run for this update. PR #60 must remain under review until its checks and maintainer review are complete.
+
+
+## Cross-harness conformance programme (05 November 2026)
+
+- Added `tests/conformance/test_canonical_archive.py` and the explicitly synthetic fixture `tests/fixtures/conformance/cross_harness_session_v1_2.json`.
+- Added `.github/workflows/conformance.yml` to run the canonical archive contract tests on relevant pull requests and pushes.
+- Added `docs/architecture/conformance-test-plan.md`, linked from the main architecture, README and wiki mirror index.
+- **CI evidence:** GitHub Actions run [42019019478](https://github.com/andiekobbietks/AgentSON/actions/runs/42019019478) completed successfully; 9 canonical archive contract tests passed in 0.22s on 05 November 2026.
+- This is **C0 archive validity plus limited neutral JSON preservation evidence**. It is not C2 cross-harness adapter interoperability, C3 reconstruction or C4 resumption. The full project test suite has not been run as part of this work.
+- Known conformance blockers are documented: ChatGPT importer emits the legacy v1 schema URI and `tool.name=chatgpt`, which is not accepted by the current v1.2 tool-name enum; the OpenCode real-sample regression test reimplements mapping logic instead of invoking the production reader; no canonical consumer import matrix or normative machine-readable loss-report contract exists.
