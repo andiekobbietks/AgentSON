@@ -162,10 +162,13 @@ def import_archive(
         "archive_sha256": digest,
         "entry_count": len(archive.get("entries", [])),
         "execution_triggered": False,
+        "immediate_agent_loop_started": False,
+        "future_model_context_exposure": True,
         "native_event_reconstruction": False,
         "resumption_supported": False,
         "losses": [
             "The archive is stored as one opaque synthetic message, not native OpenCode events.",
+            "The synthetic message can enter model context on a later turn; resume=False prevents immediate execution only.",
             "OpenCode-specific tool state, workspace state and model checkpoint are not restored.",
         ],
     }
