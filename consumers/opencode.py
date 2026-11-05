@@ -197,20 +197,21 @@ def verify_import(
 
     response = _request_json(
         endpoint,
-        f"{API_PREFIX}/session/{session_id}/message",
+        f"{API_PREFIX}/session/{session_id}/inbox",
         {},
         "GET",
         timeout,
     )
     messages = response.get("data") if isinstance(response, dict) else None
     if not isinstance(messages, list):
-        raise OpenCodeImportError("OpenCode v2 message-list response did not contain a data array")
+        raise OpenCodeImportError("OpenCode v2 inbox response did not contain a data array")
 
     expected_digest = _archive_digest(archive)
     for message in messages:
         if not isinstance(message, dict) or message.get("type") != "synthetic":
             continue
-        text = message.get("text")
+        payload = message.get("payload", {})
+        text = payload.get("text") if isinstance(payload, dict) else None
         if not isinstance(text, str):
             continue
         start = "<agentson-archive>\n"
@@ -233,8 +234,8 @@ def verify_import(
             "session_id": session_id,
             "archive_sha256": actual_digest,
             "entry_count": len(recovered.get("entries", [])),
-            "message_count": len(messages),
+            "inbox_item_count": len(messages),
             "native_event_reconstruction": False,
             "resumption_supported": False,
         }
-    raise OpenCodeImportError("No AgentSON archive capsule was found in the OpenCode session")
+    raise OpenCodeImportError("No AgentSON archive capsule was found in the OpenCode session inbox")
