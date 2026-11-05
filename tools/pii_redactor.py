@@ -129,6 +129,8 @@ class PIIRedactor:
             r'xox[bpas]-[A-Za-z0-9\-]+',  # Slack token
             r'Bearer [A-Za-z0-9\-._~+/]+=*',  # Bearer token
             r'eyJ[A-Za-z0-9\-._]+\.eyJ[A-Za-z0-9\-._]+\.[A-Za-z0-9\-._]+',  # JWT
+            r'(?i)\b(?:password|passwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|authorization)\s*[:=]\s*["\']?[^\s,"\']+',  # Credential assignments
+            r'(?i)\bBasic\s+[A-Za-z0-9+/]{12,}={0,2}',  # Basic-auth material
         ]
         for pattern in secret_prefixes:
             for match in re.finditer(pattern, text):
