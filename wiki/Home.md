@@ -30,7 +30,7 @@ Data portability and AI transparency obligations depend on the applicable law, r
 
 A session produced by one AI coding harness should be capturable, representable, validatable, exchangeable and inspectable in another without silently losing meaning or provenance. Where the receiving harness supports compatible state and permissions, AgentSON should also support controlled reconstruction and resumption.
 
-Portability, reconstruction and resumption are separate guarantees. See [Session Interoperability Architecture](../docs/architecture/session-interoperability.md) and [ADR-024](../spec/ADR-024-canonical-session-archive-and-interoperability.md).
+Portability, reconstruction and resumption are separate guarantees. See [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) and [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md).
 
 ## Wiki Pages
 
@@ -49,11 +49,11 @@ Portability, reconstruction and resumption are separate guarantees. See [Session
 
 ## Source-of-truth documents
 
-- [Product Requirements](../PRD.md)
-- [Session Interoperability Architecture](../docs/architecture/session-interoperability.md)
-- [Canonical Schema v1.2](../spec/v1.2.json)
-- [Event Ontology](../spec/ontology.md)
-- [ADR-024](../spec/ADR-024-canonical-session-archive-and-interoperability.md)
+- [Product Requirements](https://github.com/andiekobbietks/AgentSON/blob/master/PRD.md)
+- [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- [Canonical Schema v1.2](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json)
+- [Event Ontology](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md)
+- [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md)
 
 ## Quick Links
 
