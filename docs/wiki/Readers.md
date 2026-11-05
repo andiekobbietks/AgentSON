@@ -27,6 +27,17 @@ The source tree also contains importers for A2A, AGNTCY, ChatGPT and MCP under `
 
 The executable baseline, conformance levels, producer/consumer test requirements and known gaps are maintained in the [Cross-Harness Conformance Test Plan](../architecture/conformance-test-plan.md). Do not infer interoperability from the presence of two reader modules or two independent reader test files.
 
+
+## Receiving-harness consumers
+
+Consumers accept canonical AgentSON archives and transfer them into a target harness. They are separate from source readers and importers.
+
+| Target harness | Module | Current profile | Evidence and limitations |
+|---|---|---|---|
+| OpenCode v2 | `consumers/opencode.py` | Experimental archive capsule using a queued synthetic inbox item (`delivery: queue`, `resume: false`) | Mock API contract tests pass. A live OpenCode CLI 2.2.5 import/read-back job is pending. Archive is stored as one opaque queued item, not native event reconstruction; it can enter model context when later delivered. Not a C2/C3/C4 claim. |
+
+The consumer profile is documented in [OpenCode Consumer Profile](../architecture/opencode-consumer-profile.md). Use the conformance plan for the distinction between archive storage fidelity, semantic C2 interoperability, reconstruction and resumption.
+
 ## Capability labels
 
 Use these labels per adapter and per operation:
