@@ -73,5 +73,5 @@ No additional PRs should be opened until the queue is reduced below the SOP-016 
 - Added `verify_import()`: reads the durable session inbox and compares the embedded archive and SHA-256 digest with the source.
 - Added mocked API contract tests and `tests/integration/test_opencode_live.py`; CI pins OpenCode CLI `@opencode/cli@2.2.5`.
 - Security boundary: `resume: false` prevents immediate agent-loop execution, but the synthetic content can enter model context on a later turn. The adapter reports `future_model_context_exposure: true`; this is not isolated archive storage.
-- **Latest focused test evidence:** 31 tests passed in 0.74s in the canonical archive job of run [42078774232](https://github.com/andiekobbietks/AgentSON/actions/runs/42078774232).
-- **Live OpenCode v2 run:** pending. A passing archive read-back is not a C2 semantic interoperability claim because the source producer and native event reconstruction are not yet exercised end-to-end.
+- **Latest focused test evidence:** run [42080278756](https://github.com/andiekobbietks/AgentSON/actions/runs/42080278756) passed 32 tests and one live ChatGPT-export → AgentSON → OpenCode 2.2.5 integration test using a synthetic source fixture.
+- **Evidence boundary:** the adapter pipeline and archive-capsule storage are demonstrated. A permissioned real export and semantic comparison are still required for source-backed C2; native reconstruction and resumption remain unclaimed.
