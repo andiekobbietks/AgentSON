@@ -35,8 +35,8 @@ Use [Readers](Readers) to check module inventory and evidence. A module being pr
 ## Understand the format
 
 - [Schema](Schema) — canonical envelope and event vocabulary.
-- [Session interoperability architecture](../docs/architecture/session-interoperability.md) — capture, exchange, inspection, reconstruction and resumption.
-- [ADR-024](../spec/ADR-024-canonical-session-archive-and-interoperability.md) — canonical archive decision.
+- [Session interoperability architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) — capture, exchange, inspection, reconstruction and resumption.
+- [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md) — canonical archive decision.
 
 ## Important distinctions
 
