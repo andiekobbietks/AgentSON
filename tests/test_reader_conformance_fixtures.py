@@ -4,6 +4,8 @@ Fixtures are deliberately labelled synthetic: they model documented source
 shapes and contain no user data. They exercise the adapters, not just the
 shared serializer.
 """
+import base64
+import hashlib
 import json
 import sqlite3
 from pathlib import Path
@@ -126,8 +128,12 @@ def test_minimax_sqlite_fixture_through_reader(tmp_path):
     finally:
         reader.disconnect()
     assert any(e["type"] == "user-query" for e in session["entries"])
-    assert any(e["type"] == "action" and e.get("tool_call_id") == "mavis_tool_01" for e in session["entries"])
+    mavis_action = next(e for e in session["entries"] if e["type"] == "action" and e.get("tool_call_id") == "mavis_tool_01")
+    assert mavis_action["source_payload"]["tool_call"]["tool_call_args"] == json.dumps({"command": "pytest -q"})
+    assert mavis_action["source_payload"]["tool_call_args_raw"] == json.dumps({"command": "pytest -q"})
     assert any(e["type"] == "observation" and e.get("correlation_id") == "mavis_tool_01" for e in session["entries"])
+    assert session["source_metadata"]["session_row"]["framework_session_id"] == "native-framework-session"
+    assert session["source_metadata"]["token_usage_rows"][0]["reasoning_tokens"] == 20
     events = _export_and_validate(session, tmp_path / "minimax.agentson", "minimax")
     assert events[0]["mode"] == "single"
     assert events[0]["stream_id"] == "mavis-fixture-001"
@@ -160,6 +166,10 @@ def test_antigravity_sqlite_fixture_through_reader(tmp_path):
     events = _export_and_validate(session, tmp_path / "antigravity.agentson", "antigravity")
     assert events[0]["source_session"]["source_metadata"]["variant"]["name"] == "Antigravity IDE"
     assert events[1]["source_payload"]["type"] == 21
+    raw_step = base64.b64decode(events[1]["source_payload"]["step_payload_base64"])
+    assert raw_step == payload
+    assert events[1]["source_payload"]["step_payload_sha256"] == hashlib.sha256(payload).hexdigest()
+    assert base64.b64decode(events[0]["source_session"]["source_metadata"]["trajectory_metadata_blobs"][0]["data_base64"]) == b"{}"
 
 
 def test_opencode_sqlite_native_fixture_through_reader(tmp_path):
