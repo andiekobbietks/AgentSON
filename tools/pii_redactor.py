@@ -235,25 +235,33 @@ class PIIRedactor:
         all_redactions = []
         redacted_data = json.loads(json.dumps(data))  # Deep copy
         
-        # Process all entries
-        for entry in redacted_data.get("entries", []):
-            # Redact text fields
-            for field in ["text", "code", "output", "query"]:
-                if field in entry and entry[field]:
-                    redacted_text, redactions = self.redact_text(str(entry[field]))
-                    if redactions:
-                        entry[field] = redacted_text
-                        all_redactions.extend(redactions)
-            
-            # Redact args if present
-            if "args" in entry and isinstance(entry["args"], dict):
-                for key, value in entry["args"].items():
-                    if isinstance(value, str):
-                        redacted_value, redactions = self.redact_text(value)
+        # Redact canonical text-bearing fields and nested source evidence.
+        sensitive_fields = {
+            "text", "code", "output", "query", "content", "prompt",
+            "message", "command", "path", "file_path", "project_path",
+            "working_directory", "directory", "cwd", "diff",
+        }
+
+        def redact_nested(value, redact_all_strings=False):
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    if isinstance(child, str) and (redact_all_strings or key in sensitive_fields):
+                        redacted_text, redactions = self.redact_text(child)
                         if redactions:
-                            entry["args"][key] = redacted_value
+                            value[key] = redacted_text
                             all_redactions.extend(redactions)
-        
+                    elif isinstance(child, (dict, list)):
+                        redact_nested(child, redact_all_strings or key == "args")
+            elif isinstance(value, list):
+                for child in value:
+                    if isinstance(child, (dict, list)):
+                        redact_nested(child, redact_all_strings)
+
+        redact_nested(redacted_data.get("source_session", {}))
+        for entry in redacted_data.get("entries", []):
+            if isinstance(entry, dict):
+                redact_nested(entry)
+
         return redacted_data, all_redactions
     
     def redact_file(self, input_path: str, output_path: str = None) -> Dict:
@@ -267,10 +275,12 @@ class PIIRedactor:
         Returns:
             Dictionary with redaction statistics
         """
-        # Load file
-        with open(input_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
+        # Load canonical JSONL or a legacy document-style .agentson file.
+        from exporters.jsonl import load_agentson_document, write_agentson_stream
+        data = load_agentson_document(input_path)
+        output_format = data.get("_format", "document")
+        source_tool = data.get("tool", {}).get("name", "other")
+
         # Redact
         redacted_data, redactions = self.redact_agentson(data)
         
@@ -279,8 +289,11 @@ class PIIRedactor:
             output_path = input_path
         
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(redacted_data, f, indent=2, ensure_ascii=False)
-        
+            if output_format == "jsonl":
+                write_agentson_stream(redacted_data, f, source_tool=source_tool)
+            else:
+                json.dump(redacted_data, f, indent=2, ensure_ascii=False)
+
         # Return statistics
         stats = {
             "input_file": input_path,
