@@ -4,6 +4,20 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 
 ## [Unreleased]
 
+### Changed
+
+- Make canonical v1.2 JSONL the actual `agentson export` output for all currently wired readers while retaining the established `.agentson` filename extension.
+- Preserve source session metadata in the `stream-meta.source_session` field and original reader-level event records in `source_payload`.
+- Retain legacy document-style `.agentson` files as a supported read/compatibility path; new exports no longer write pretty-printed session documents.
+- Recognise one-event `.agentson` JSONL streams in the general CLI loader.
+
+### Added
+
+- Add a shared JSONL serializer that normalises legacy reader documents into v1.2 event streams, validates the stream before writing, and preserves unmapped source events with explicit unknown provenance.
+- Extend the v1.2 entry schema to describe `source_payload` and `source_session` evidence-preservation fields.
+- Add regression tests for canonical export, timestamp conversion, metadata retention, unknown-event preservation and existing-stream handling.
+
+
 ### Fixed
 
 - `agentson validate` now distinguishes a one-event JSONL stream from a session document, validates JSONL events against the flattened v1.2 event schema, validates document files against the complete v1.2 schema, checks declared formats, and returns a failing exit status for invalid input or empty directories.
