@@ -1,7 +1,7 @@
 # AndieKobbieTech — Operating Manual
 
 **Version:** 1.0
-**Date:** 05 July 2026
+**Date:** 05 November 2026 (interoperability alignment)
 **Author:** Andrea Enning (AndieKobbieTech)
 
 ---
@@ -108,8 +108,7 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 > four links above were dangling. `agentson_platform/` now exists and is
 > the only specification those decisions have.
 >
-> ADR-015, 016, 017 and 022 were missing from this index for a different
-> reason: they live in `spec/`, not in `adrs/`.
+ > Specification ADR-015, 016, 017, 022 and 024 live in `spec/`, not in `adrs/`, and are now indexed above as a separate namespace. Operating ADR-015 and Operating ADR-016 are different records in `docs/standards/adrs/`; the duplicate numbers are historical and must be cited with their namespace.
 
 → [Read ADRs](adrs/)
 
@@ -127,6 +126,13 @@ How I manage work day-to-day.
 | [Incident Response](workflow.md#incident-response) | What to do when something breaks |
 
 → [Read Workflow Rules](workflow.md)
+
+### Repository governance procedures
+
+- [SOP-015: AI-Agent Repository Operating Procedure](../../SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md)
+- [SOP-016: Work-In-Progress Governance](../../SOPs/SOP-016-Work-In-Progress-Governance.md)
+
+The legacy wiki publishing procedure is separately identified as Wiki SOP W-015. Do not confuse it with repository SOP-015.
 
 ---
 
