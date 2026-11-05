@@ -304,3 +304,143 @@ def test_opencode_sqlite_reader_rejects_unknown_session(tmp_path):
             reader.read_session("missing-session")
     finally:
         reader.disconnect()
+
+
+def test_opencode_v2_sqlite_schema_and_state_fidelity(tmp_path):
+    """Exercise the current session_v2/session_message/session_part schema."""
+    from readers.opencode import OpencodeReader
+
+    db_path = tmp_path / "opencode-v2-synthetic.sqlite"
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript("""
+        CREATE TABLE session_v2 (
+            id TEXT PRIMARY KEY, project_id TEXT, workspace_id TEXT, parent_id TEXT,
+            slug TEXT, directory TEXT, path TEXT, title TEXT, version TEXT,
+            metadata TEXT, cost REAL, tokens_input INTEGER, tokens_output INTEGER,
+            tokens_reasoning INTEGER, tokens_cache_read INTEGER, tokens_cache_write INTEGER,
+            agent TEXT, model TEXT, time_created INTEGER, time_updated INTEGER,
+            time_archived INTEGER
+        );
+        CREATE TABLE session_message (
+            id TEXT PRIMARY KEY, session_id TEXT, type TEXT, seq INTEGER,
+            time_created INTEGER, time_updated INTEGER, data TEXT
+        );
+        CREATE TABLE session_part (
+            message_id TEXT, session_id TEXT, ordinal INTEGER, type TEXT,
+            call_id TEXT, time_created INTEGER, time_updated INTEGER, data TEXT
+        );
+        CREATE TABLE session_inbox (
+            id TEXT PRIMARY KEY, session_id TEXT, type TEXT, payload TEXT,
+            delivery TEXT, enqueued_seq INTEGER, time_created INTEGER
+        );
+    """)
+    start = 1793869200000
+    model = {"id": "openai/gpt-test", "providerID": "openai", "variant": "high"}
+    conn.execute(
+        "INSERT INTO session_v2 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("ses-v2-fixture", "project-fixture", None, None, "fixture", "/workspace/v2",
+         "{}", "OpenCode v2 fidelity", "2.2.5", json.dumps({"purpose": "conformance"}),
+         0.03, 200, 90, 12, 40, 5, "build", json.dumps(model),
+         start, start + 9000, None),
+    )
+    messages = [
+        ("msg-v2-user", "user", 1, {"text": "Run the v2 test suite.", "files": [], "agents": [], "skills": []}),
+        ("msg-v2-assistant", "assistant", 2, {
+            "agent": "build", "model": model, "finish": "tool-calls",
+            "cost": 0.03, "tokens": {"input": 200, "output": 90, "reasoning": 12},
+            "time": {"created": start + 1000, "completed": start + 8000},
+        }),
+        ("msg-v2-shell", "shell", 3, {
+            "command": "git status --short", "status": "completed", "exit": 0,
+            "output": "working tree clean",
+        }),
+        ("msg-v2-idle", "idle", 4, {"outcome": "succeeded"}),
+        ("msg-v2-future", "future-kind", 5, {"opaque": {"preserve": True}}),
+    ]
+    for message_id, msg_type, seq, data in messages:
+        conn.execute(
+            "INSERT INTO session_message VALUES (?,?,?,?,?,?,?)",
+            (message_id, "ses-v2-fixture", msg_type, seq, start + seq * 1000,
+             start + seq * 1000, json.dumps(data)),
+        )
+    parts = [
+        ("msg-v2-assistant", 0, "reasoning", None, start + 2100,
+         {"type": "reasoning", "text": "Inspect the current v2 schema.",
+          "time": {"created": start + 2100, "completed": start + 2200}}),
+        ("msg-v2-assistant", 1, "tool", "call-v2-complete", start + 3000,
+         {"type": "tool", "id": "tool-v2-complete", "name": "bash",
+          "state": {"status": "completed", "input": {"command": "pytest -q"},
+                    "content": [{"type": "text", "text": "7 passed"}],
+                    "metadata": {"exit": 0}}}),
+        ("msg-v2-assistant", 2, "tool", "call-v2-error", start + 4000,
+         {"type": "tool", "id": "tool-v2-error", "name": "bash",
+          "state": {"status": "error", "input": {"command": "false"},
+                    "error": {"name": "ToolError", "message": "exit code 1"},
+                    "content": [{"type": "text", "text": "exit code 1"}]}}),
+        ("msg-v2-assistant", 3, "tool", "call-v2-running", start + 5000,
+         {"type": "tool", "id": "tool-v2-running", "name": "read",
+          "state": {"status": "running", "input": {"filePath": "README.md"},
+                    "metadata": {"partial": True}}}),
+        ("msg-v2-assistant", 4, "text", None, start + 6000,
+         {"type": "text", "text": "The v2 export has completed."}),
+    ]
+    for message_id, ordinal, part_type, call_id, timestamp, data in parts:
+        conn.execute(
+            "INSERT INTO session_part VALUES (?,?,?,?,?,?,?,?)",
+            (message_id, "ses-v2-fixture", ordinal, part_type, call_id,
+             timestamp, timestamp, json.dumps(data)),
+        )
+    inbox_payload = {"text": "Please also inspect the README."}
+    conn.execute(
+        "INSERT INTO session_inbox VALUES (?,?,?,?,?,?,?)",
+        ("inbox-v2-1", "ses-v2-fixture", "user", json.dumps(inbox_payload),
+         "delivered", 6, start + 7000),
+    )
+    conn.commit()
+    conn.close()
+
+    reader = OpencodeReader(str(db_path))
+    reader.connect()
+    try:
+        assert reader.schema_generation == "2.x"
+        listed = reader.list_sessions()
+        session = reader.read_session("ses-v2-fixture")
+    finally:
+        reader.disconnect()
+
+    assert listed[0]["id"] == "ses-v2-fixture"
+    assert listed[0]["parent_id"] is None
+    assert listed[0]["tokens_input"] == 200
+    assert session["tool"]["version"] == "2.2.5"
+    assert session["agent"]["name"] == "openai/gpt-test"
+    assert session["metadata"]["tokens_reasoning"] == 12
+    assert session["metadata"]["tokens_cache_read"] == 40
+    assert session["metadata"]["total_tokens"] == 302
+    assert session["context"]["working_directory"] == "/workspace/v2"
+
+    user = next(e for e in session["entries"] if e["type"] == "user-query")
+    assert user["text"] == "Run the v2 test suite."
+    thought = next(e for e in session["entries"] if e["type"] == "thought")
+    assert thought["text"] == "Inspect the current v2 schema."
+    actions = [e for e in session["entries"] if e["type"] == "action"]
+    by_id = {e.get("tool_call_id"): e for e in actions}
+    assert by_id["call-v2-complete"]["status"] == "success"
+    assert by_id["call-v2-complete"]["output"] == "7 passed"
+    assert by_id["call-v2-error"]["status"] == "error"
+    assert "exit code 1" in by_id["call-v2-error"]["output"]
+    assert by_id["call-v2-running"]["status"] == "running"
+    assert by_id["call-v2-running"]["source_payload"]["part_data"]["state"]["metadata"]["partial"]
+    shell = next(e for e in actions if e["tool"] == "shell")
+    assert shell["code"] == "git status --short"
+    assert shell["output"] == "working tree clean"
+
+    future = next(e for e in session["entries"] if e["type"] == "system-event" and "future-kind" in e["text"])
+    assert future["source_payload"]["message_data"]["opaque"]["preserve"] is True
+    inbox = next(e for e in session["entries"] if e["type"] == "system-event" and "inbox" in e["text"])
+    assert inbox["source_payload"]["inbox"]["payload"] == json.dumps(inbox_payload)
+
+    events = _export_and_validate(session, tmp_path / "opencode-v2.agentson", "opencode")
+    exported = next(e for e in events if e.get("tool_call_id") == "call-v2-complete")
+    assert exported["source_payload"]["part_data"]["id"] == "tool-v2-complete"
+    assert events[0]["source_session"]["source_metadata"]["schema_generation"] == "2.x"
+    assert events[0]["source_session"]["source_metadata"]["session_row"]["version"] == "2.2.5"
