@@ -137,7 +137,8 @@ class OpencodeReader:
                         entries.append({
                             "type": "user-query",
                             "text": part_data.get("text", ""),
-                            "timestamp": msg["time_created"]
+                            "timestamp": msg["time_created"],
+                            "source_payload": {"message": dict(msg), "part": dict(part)}
                         })
                         
             elif role == "assistant":
@@ -155,7 +156,8 @@ class OpencodeReader:
                         entries.append({
                             "type": "answer",
                             "text": part_data.get("text", ""),
-                            "timestamp": msg["time_created"]
+                            "timestamp": msg["time_created"],
+                            "source_payload": {"message": dict(msg), "part": dict(part)}
                         })
                     elif part_type == "reasoning":
                         # Real opencode sessions emit standalone reasoning
@@ -164,7 +166,8 @@ class OpencodeReader:
                         entries.append({
                             "type": "thought",
                             "text": part_data.get("text", ""),
-                            "timestamp": (part_data.get("time") or {}).get("start", msg["time_created"])
+                            "timestamp": (part_data.get("time") or {}).get("start", msg["time_created"]),
+                            "source_payload": {"message": dict(msg), "part": dict(part)}
                         })
                     elif part_type == "tool":
                         # Current opencode schema: tool name at top level,
@@ -178,7 +181,8 @@ class OpencodeReader:
                             "code": json.dumps(state.get("input", {})),
                             "output": self._resolve_truncated_output(raw_output),
                             "status": "success" if status_raw == "completed" else (status_raw or "unknown"),
-                            "timestamp": (state.get("time") or {}).get("start", msg["time_created"])
+                            "timestamp": (state.get("time") or {}).get("start", msg["time_created"]),
+                            "source_payload": {"message": dict(msg), "part": dict(part)}
                         })
                     elif part_type == "tool-invocation":
                         # Older opencode schema shape, kept as a fallback
@@ -204,6 +208,7 @@ class OpencodeReader:
                 "action": "todo_update",
                 "text": todo["content"],
                 "status": todo["status"],
+                "source_payload": {"todo": dict(todo)},
             }
             entries.append(entry)
         
