@@ -129,7 +129,7 @@ capabilities          side-effect
 
 > "Is this the only format solving this problem at the international level?"
 
-**Yes.** The 12-primitive ontology is the only formal event model for AI agent sessions. No other standard defines what an agent "did" in a vendor-neutral way. The ontology is the source of truth; the schema enforces it.
+The 12-primitive ontology is AgentSON's chosen event model and the source of truth for its schema. This ADR does not establish that no other event models or adjacent standards exist; comparative research is required before making an exclusivity claim.
 
 ---
 
