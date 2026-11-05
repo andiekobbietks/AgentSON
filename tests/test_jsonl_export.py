@@ -75,3 +75,36 @@ def test_invalid_stream_without_stream_meta_is_rejected():
         assert "stream-meta" in str(exc)
     else:
         raise AssertionError("Expected invalid stream to be rejected")
+
+
+
+def test_cli_export_path_writes_jsonl_with_agentson_suffix(tmp_path, monkeypatch):
+    from argparse import Namespace
+    import cli.main as cli_main
+    import readers.minimax as minimax_reader
+
+    db_path = tmp_path / "minimax.sqlite"
+    db_path.write_bytes(b"fixture")
+    output_dir = tmp_path / "exports"
+    session = {
+        "id": "minimax-session",
+        "tool": {"name": "minimax", "session_id": "native-minimax-session"},
+        "entries": [{"type": "user-query", "text": "hello"}],
+    }
+    monkeypatch.setattr(cli_main, "get_default_db_paths", lambda: {"minimax": db_path})
+    monkeypatch.setattr(minimax_reader, "read", lambda _path, _sid: session)
+
+    cli_main.cmd_export(Namespace(
+        tool="minimax",
+        output=str(output_dir),
+        all=False,
+        session="native-minimax-session",
+        input=None,
+    ))
+
+    exported = output_dir / "minimax_native-minimax-session.agentson"
+    assert exported.exists()
+    lines = exported.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert json.loads(lines[0])["type"] == "stream-meta"
+    assert json.loads(lines[1])["type"] == "user-query"
