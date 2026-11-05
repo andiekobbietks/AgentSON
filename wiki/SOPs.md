@@ -1,6 +1,6 @@
 # Standard Operating Procedures (SOPs)
 
-15 SOPs covering health data, AI sessions, infrastructure, and wiki deployment.
+This page indexes the legacy wiki procedures. Repository governance procedures SOP-015 and SOP-016 are maintained under the root SOPs directory; the duplicate numbering is historical and must not be used to identify them interchangeably.
 
 ---
 
@@ -22,7 +22,16 @@
 | 012 | [Setting Up Juggluco on Mother's Phone](SOP-012) | Health |
 | 013 | [NHS FHIR Integration](SOP-013) | Health |
 | 014 | [West Africa Voice Alerts](SOP-014) | Health/Localization |
-| 015 | [Creating GitHub Wiki (Manual + Programmatic)](SOP-015) | Infrastructure |
+| W-015 | [Creating GitHub Wiki (Manual + Programmatic)](SOP-015-Creating-GitHub-Wiki) | Infrastructure (legacy wiki procedure) |
+
+---
+
+## Repository governance SOPs
+
+- [SOP-015: AI-Agent Repository Operating Procedure](../SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md)
+- [SOP-016: Work-In-Progress Governance](../SOPs/SOP-016-Work-In-Progress-Governance.md)
+
+These repository procedures govern branch/PR workflow and take precedence over legacy wiki instructions about authentication or pushing. Do not embed access tokens in Git URLs, shell history or documentation.
 
 ---
 
