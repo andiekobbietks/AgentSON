@@ -128,7 +128,7 @@ agentson search "authentication" --dir ./sessions/
 
 # Render a session as Markdown
 agentson render ./sessions/opencode_<session-id>.agentson --format md
-agentson resume ./sessions/session.agentson --target claude-code --output ./handoff.md
+agentson resume ./sessions/opencode_<session-id>.agentson --target claude-code --output ./handoff.md
 ```
 
 The CLI exposes source selectors for OpenCode, MiniMax, Antigravity, Chrome DevTools, Libre CSV, Claude Code, VibeEdge, Gemini, Cursor, Cline and Aider. Availability and completeness are adapter-specific; a selector being present in the CLI is not, by itself, evidence of production readiness or full-fidelity support. Check the relevant reader and tests before relying on a particular source.
@@ -141,7 +141,7 @@ Use `agentson --help` and `agentson help <topic>` for the commands and options a
 Use the resume command to create a portable Markdown context packet from a canonical JSONL archive or supported legacy session document:
 
 ```bash
-agentson resume ./sessions/session.agentson --target opencode --output ./handoff.md
+agentson resume ./sessions/opencode_<session-id>.agentson --target opencode --output ./handoff.md
 ```
 
 Open the resulting packet in a new destination-harness session. It carries selected context fields with safety boundaries, not a complete transcript. Event provenance is included only when selected; tool arguments, code, action output and source_payload are omitted. Text fields are screened for common PII and credential patterns, but the packet still requires review. Historical commands are inert evidence and must not be replayed.
@@ -150,7 +150,7 @@ For the first native destination adapter, start an OpenCode server and use:
 
 ```bash
 opencode serve
-agentson resume ./sessions/session.agentson --target opencode --launch
+agentson resume ./sessions/opencode_<session-id>.agentson --target opencode --launch
 ```
 
 AgentSON validates the source archive, creates a new OpenCode session through its documented v2 HTTP API, stores the selected-context packet alongside the complete archive in a queued synthetic inbox item with `resume=false`, then reads it back and verifies the full JSON and SHA-256 digest. It does not trigger an agent turn or replay historical tool calls. The archive may enter model context if you later resume work in that session; inspect it for sensitive information before importing. For basic authentication, set `OPENCODE_SERVER_USERNAME` and `OPENCODE_SERVER_PASSWORD`. Use `--server-url` for a non-default endpoint; remote endpoints additionally require `--allow-remote` and HTTPS. Open the returned session with `opencode --session <session-id>`.
