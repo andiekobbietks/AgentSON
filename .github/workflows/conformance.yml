@@ -36,4 +36,4 @@ jobs:
       - name: Install conformance test dependencies
         run: python -m pip install --upgrade pytest jsonschema
       - name: Validate canonical archive contract
-        run: python -m pytest -q tests/conformance/test_canonical_archive.py tests/test_opencode_real_sample.py
+        run: python -m pytest -q tests/conformance/test_canonical_archive.py tests/test_opencode_real_sample.py tests/test_chatgpt_importer.py
