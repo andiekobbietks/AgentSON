@@ -109,13 +109,14 @@ def test_packet_redacts_credentials_and_renders_handoff_side_effect_fields(tmp_p
         "id": "sensitive",
         "tool": {"name": "fixture"},
         "entries": [
-            {"type": "user-query", "text": "Use token ghp_abcdefghijklmnopqrstuvwxyz1234567890"},
+            {"type": "user-query", "text": "Use token ghp_abcdefghijklmnopqrstuvwxyz1234567890 and password=supersecret123"},
             {"type": "handoff", "from": "planner", "to": "builder", "conch": "build"},
             {"type": "side-effect", "action": "file_write", "path": "/private/report.txt"},
         ],
     }), encoding="utf-8")
     packet = build_continuation_packet(str(source))
     assert "ghp_abcdefghijklmnopqrstuvwxyz1234567890" not in packet
+    assert "supersecret123" not in packet
     assert "[SECRET]" in packet
     assert "- from: planner" in packet
     assert "- to: builder" in packet
