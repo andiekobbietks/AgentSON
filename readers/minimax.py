@@ -224,7 +224,7 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
-                            "source_payload": {"message_row": dict(msg), "message_data": blob},
+                            "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                         }
                     )
 
@@ -272,7 +272,7 @@ class MiniMaxReader:
                                 "detectable": True,
                             },
                             "source_payload": {
-                                "message_row": dict(msg), "message_data": blob,
+                                "message_row": self._source_row(msg), "message_data": blob,
                                 "tool_call": tc, "tool_call_args_raw": args_raw,
                             },
                         }
@@ -294,7 +294,7 @@ class MiniMaxReader:
                                     "timestamp_ms": ts,
                                 },
                                 "source_payload": {
-                                    "message_row": dict(msg), "message_data": blob,
+                                    "message_row": self._source_row(msg), "message_data": blob,
                                     "tool_call": tc, "tool_call_result_raw": tc.get("tool_call_result_data"),
                                 },
                             }
@@ -319,7 +319,7 @@ class MiniMaxReader:
                                 "marking_scheme": "agentson-v1.2",
                                 "detectable": True,
                             },
-                            "source_payload": {"message_row": dict(msg), "message_data": blob},
+                            "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                         }
                     )
 
@@ -329,7 +329,7 @@ class MiniMaxReader:
                     "source": "other",
                     "timestamp": ts,
                     "text": "MiniMax message contained no mapped content (role: {})".format(role),
-                    "source_payload": {"message_row": dict(msg), "message_data": blob},
+                    "source_payload": {"message_row": self._source_row(msg), "message_data": blob},
                 })
 
         # Sort entries by timestamp (stream-meta should stay first because it's
