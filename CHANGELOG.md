@@ -2,7 +2,17 @@
 
 All notable changes to AgentSON will be documented here. AgentSON uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Documentation
+- Established the cross-harness session interoperability architecture and separated capture, portability, reconstruction and resumption claims.
+- Recorded ADR-024: canonical v1.2 archive is the JSON session envelope; ADR-015's JSONL-canonical decision is superseded. JSONL stream code remains a separate contract gap.
+- Reconciled README, PRD, operating manual and checked-in wiki mirrors; added semantic-loss accounting, provenance, privacy-safe fixtures and adapter capability labels.
+- Clarified that downstream fine-tuning exports are not lossless session interchange.
+
 ## [0.2.1] - 2026-07-08
+
+> Historical release notes below reflect the decisions recorded at that release. The JSONL-canonical statement is superseded by Specification ADR-024; the current canonical archive is the v1.2 JSON session envelope.
 
 ### Added
 
