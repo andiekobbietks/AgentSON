@@ -152,3 +152,77 @@ def import_archive(
             "OpenCode-specific tool state, workspace state and model checkpoint are not restored.",
         ],
     }
+
+
+def verify_import(
+    result: Mapping[str, Any],
+    source: Union[str, Path, Mapping[str, Any]],
+    *,
+    base_url: str = DEFAULT_BASE_URL,
+    allow_remote: bool = False,
+    timeout: float = 15.0,
+) -> Dict[str, Any]:
+    """Read an imported capsule back from OpenCode and compare it to its source.
+
+    This verifies archive-capsule storage fidelity only. It does not prove
+    native OpenCode event reconstruction or session resumption.
+    """
+    if timeout <= 0:
+        raise ValueError("timeout must be greater than zero")
+    archive = _load_archive(source)
+    endpoint = _validate_endpoint(base_url, allow_remote)
+    session_id = result.get("session_id")
+    if not isinstance(session_id, str) or not session_id:
+        raise OpenCodeImportError("Import result does not contain a valid OpenCode session_id")
+
+    messages = _request_json(
+        endpoint, f"/session/{session_id}/message", {}, "GET", timeout
+    )
+    if not isinstance(messages, list):
+        raise OpenCodeImportError("OpenCode message-list response was not a JSON array")
+
+    expected_digest = hashlib.sha256(
+        json.dumps(archive, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        info = message.get("info", {})
+        if isinstance(info, dict) and info.get("role") not in (None, "user"):
+            continue
+        parts = message.get("parts", [])
+        if not isinstance(parts, list):
+            continue
+        for part in parts:
+            if not isinstance(part, dict) or part.get("type") != "text":
+                continue
+            text = part.get("text")
+            if not isinstance(text, str):
+                continue
+            start = "<agentson-archive>\\n"
+            end = "\\n</agentson-archive>"
+            if start not in text or end not in text:
+                continue
+            embedded = text.split(start, 1)[1].split(end, 1)[0]
+            try:
+                recovered = json.loads(embedded)
+            except json.JSONDecodeError as exc:
+                raise OpenCodeImportError("Stored AgentSON capsule contains invalid JSON") from exc
+            if recovered != archive:
+                raise OpenCodeImportError("Stored AgentSON capsule differs from the source archive")
+            actual_digest = hashlib.sha256(
+                json.dumps(recovered, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            if actual_digest != expected_digest:
+                raise OpenCodeImportError("Stored AgentSON capsule digest does not match source")
+            return {
+                "verified": True,
+                "verification": "opencode-live-readback",
+                "session_id": session_id,
+                "archive_sha256": actual_digest,
+                "entry_count": len(recovered.get("entries", [])),
+                "message_count": len(messages),
+                "native_event_reconstruction": False,
+                "resumption_supported": False,
+            }
+    raise OpenCodeImportError("No AgentSON archive capsule was found in the OpenCode session")
