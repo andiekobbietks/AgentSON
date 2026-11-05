@@ -22,10 +22,10 @@ ADRs capture significant architectural decisions with context and rationale. Rep
 | 012 | [Academic Literature Relationship](ADR-012) | 2026-07-05 | Accepted |
 | 013 | [CLI Scope Violation (finetune/push/pull)](ADR-013) | 2026-07-06 | Accepted |
 | 014 | [Observation Entry Type Missing](ADR-014) | 2026-07-06 | Accepted |
-| 015 | [Canonical Schema](../spec/ADR-015-canonical-schema.md) | 2026-07-07 | Superseded by ADR-024 |
+| 015 | [Canonical Schema](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md) | 2026-07-07 | Superseded by ADR-024 |
 | 016 | [Ontology↔Enum Reconciliation](ADR-016) | 2026-07-07 | Accepted |
-| 017 | [Core vs Streaming Separation](../spec/ADR-017-core-vs-streaming.md) | 2026-07-07 | Accepted (review against ADR-024) |
-| 024 | [Canonical Session Archive and Cross-Harness Interoperability](../spec/ADR-024-canonical-session-archive-and-interoperability.md) | 2026-11-05 | Accepted as documentation architecture baseline |
+| 017 | [Core vs Streaming Separation](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-017-core-vs-streaming.md) | 2026-07-07 | Accepted (review against ADR-024) |
+| 024 | [Canonical Session Archive and Cross-Harness Interoperability](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md) | 2026-11-05 | Accepted as documentation architecture baseline |
 
 ---
 
