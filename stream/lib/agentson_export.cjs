@@ -1,3 +1,4 @@
+// AgentSON stream module for agentson export.
 const fs = require('fs');
 const { appendFileSync, existsSync, readFileSync } = require('fs');
 const { resolve, basename } = require('path');

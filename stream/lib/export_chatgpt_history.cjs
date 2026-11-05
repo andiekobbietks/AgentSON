@@ -1,3 +1,4 @@
+// AgentSON stream module for export chatgpt history.
 const WebSocket = require('ws');
 const fs = require('fs');
 

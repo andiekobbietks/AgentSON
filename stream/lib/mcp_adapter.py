@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""AgentSON stream module for mcp adapter."""
+
 """
 AgentSON MCP Adapter
 Connects to Chrome DevTools MCP server via mcp-use and emits to .agentson stream.

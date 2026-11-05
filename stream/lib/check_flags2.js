@@ -1,3 +1,4 @@
+// AgentSON stream module for check flags2.
 // Check chrome://flags page content to verify flag state
 const resp = await fetch('http://localhost:9222/json');
 const targets = await resp.json();

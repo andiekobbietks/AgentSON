@@ -1,3 +1,4 @@
+// AgentSON stream module for check task apis.
 // Check for Chrome task APIs (Summarizer, Translator, Language Detector)
 const resp = await fetch('http://localhost:9222/json');
 const targets = await resp.json();

@@ -1,3 +1,4 @@
+// AgentSON stream module for chatgpt adapter.
 const WebSocket = require('ws');
 const fs = require('fs');
 const { appendFileSync, existsSync } = require('fs');

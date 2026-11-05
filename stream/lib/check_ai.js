@@ -1,3 +1,4 @@
+// AgentSON stream module for check ai.
 const resp = await fetch('http://localhost:9222/json');
 const targets = await resp.json();
 const target = targets.find(t => !t.url.startsWith('chrome-extension://'));
