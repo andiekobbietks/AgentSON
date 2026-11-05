@@ -1,6 +1,6 @@
 # AgentSON Wiki
 
-**Agent + JSON** — The open interchange format for AI agent session traces.
+**Agent + JSON** — Open interchange for AI-agent sessions across harnesses.
 
 > Nobody has done for agent session logs what OpenAPI did for REST APIs or what containers.dev did for dev environments.
 
@@ -26,12 +26,18 @@ The same lock-in problem exists everywhere:
 
 ---
 
+## Product vision
+
+A session produced by one AI coding harness should be capturable, representable, validatable, exchangeable and inspectable in another without silently losing meaning or provenance. Where the receiving harness supports compatible state and permissions, AgentSON should also support controlled reconstruction and resumption.
+
+Portability, reconstruction and resumption are separate guarantees. See [Session Interoperability Architecture](../docs/architecture/session-interoperability.md) and [ADR-024](../spec/ADR-024-canonical-session-archive-and-interoperability.md).
+
 ## Wiki Pages
 
 | Page | Description |
 |------|-------------|
 | [Getting Started](Getting-Started) | Install, export your first session, understand the format |
-| [Schema](Schema) | JSON Schema v1.1 reference — entry types, trajectory semantics |
+| [Schema](Schema) | Canonical v1.2 JSON session envelope, event vocabulary and validation |
 | [Readers](Readers) | Tool-specific readers — what works, what's planned |
 | [ADRs](ADRs) | Architecture Decision Records — why decisions were made |
 | [SOPs](SOPs) | Standard Operating Procedures — health data, AI sessions, infra |
@@ -40,6 +46,14 @@ The same lock-in problem exists everywhere:
 | [Contributing](Contributing) | How to add a reader, write tests, submit PRs |
 
 ---
+
+## Source-of-truth documents
+
+- [Product Requirements](../PRD.md)
+- [Session Interoperability Architecture](../docs/architecture/session-interoperability.md)
+- [Canonical Schema v1.2](../spec/v1.2.json)
+- [Event Ontology](../spec/ontology.md)
+- [ADR-024](../spec/ADR-024-canonical-session-archive-and-interoperability.md)
 
 ## Quick Links
 
