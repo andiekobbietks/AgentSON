@@ -52,7 +52,7 @@ def test_live_opencode_import_and_readback():
     finally:
         _request_json(
             BASE_URL,
-            f"/session/{imported['session_id']}",
+            f"/api/session/{imported['session_id']}",
             {},
             "DELETE",
             15.0,
