@@ -1098,6 +1098,18 @@ TOPICS:
         help="Destination harness profile (packet remains portable)",
     )
     resume_parser.add_argument("--output", help="Output Markdown packet (default: <input>.resume-<target>.md)")
+    resume_parser.add_argument(
+        "--launch", action="store_true",
+        help="For --target opencode, create a native session and queue the packet without running the agent",
+    )
+    resume_parser.add_argument(
+        "--server-url", default="http://127.0.0.1:4096",
+        help="OpenCode server URL for --launch (default: http://127.0.0.1:4096)",
+    )
+    resume_parser.add_argument(
+        "--title", default="AgentSON continuation",
+        help="Title for the new native OpenCode session",
+    )
 
     # browser command (agentson_mcp — chrome-devtools-mcp via mcp-use)
     browser_parser = subparsers.add_parser(
@@ -1287,18 +1299,32 @@ TOPICS:
 
 
 def cmd_resume(args):
-    """Create a safe, portable continuation packet for another harness."""
-    from importers.continuation import write_continuation_packet
+    """Create a portable packet and optionally hand it to a native destination."""
+    from importers.continuation import build_continuation_packet, write_continuation_packet
 
     output = args.output or (str(Path(args.input).with_suffix("")) + f".resume-{args.target}.md")
     try:
+        packet = build_continuation_packet(args.input, target=args.target)
         destination = write_continuation_packet(args.input, output, target=args.target)
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
-        print(f"Error creating continuation packet: {exc}", file=sys.stderr)
+        if args.launch:
+            if args.target != "opencode":
+                raise ValueError("--launch is currently supported only with --target opencode")
+            from importers.opencode_resume import create_opencode_session
+            session_id = create_opencode_session(
+                packet, server_url=args.server_url, title=args.title
+            )
+    except (OSError, ValueError, json.JSONDecodeError, RuntimeError) as exc:
+        print(f"Error creating continuation: {exc}", file=sys.stderr)
         sys.exit(1)
+
     print(f"Continuation packet created: {destination}")
-    print("Open it in the destination harness as context for a new session.")
-    print("This restores working context, not private runtime state or tool permissions.")
+    if args.launch:
+        print(f"Native OpenCode session created and context verified: {session_id}")
+        print(f"Open it with: opencode --session {session_id}")
+        print("The packet was queued with resume=false; no model turn or historical tool call was run.")
+    else:
+        print("Open it in the destination harness as context for a new session.")
+    print("This restores portable working context, not private runtime state or tool permissions.")
 
 
 def cmd_browser(args):
