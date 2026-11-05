@@ -7,7 +7,7 @@
 
 ## Purpose
 
-This profile provides a receiving-harness path for a canonical AgentSON archive. It creates an OpenCode session and stores the complete archive in one synthetic message. It uses the v2 synthetic-message endpoint with `resume: false`, which admits the message without scheduling the agent loop.
+This profile provides a receiving-harness path for a canonical AgentSON archive. It creates an OpenCode session and stores the complete archive in one synthetic message. It uses the v2 synthetic-message endpoint with `delivery: "queue"` and `resume: false`, which admits the message without scheduling the agent loop.
 
 The adapter is deliberately an **archive capsule**, not a claim that OpenCode natively understands or restores every AgentSON event primitive.
 
@@ -17,7 +17,7 @@ The adapter is deliberately an **archive capsule**, not a claim that OpenCode na
 2. Validate the complete envelope against the repository's v1.2 JSON Schema.
 3. Require a local OpenCode endpoint by default (`127.0.0.1`, `::1`, or `localhost`).
 4. Create a new session using `POST /api/session`.
-5. Submit one synthetic message to `POST /api/session/{sessionID}/synthetic`, setting `resume: false`.
+5. Submit one synthetic message to `POST /api/session/{sessionID}/synthetic`, setting `delivery: "queue"` and `resume: false`.
 6. If message insertion fails after session creation, attempt to delete the newly created empty session.
 7. Return the OpenCode session ID, source identifiers, entry count, a deterministic archive digest, and declared limitations.
 8. Verify read-back from `GET /api/session/{sessionID}/inbox`, extracting the synthetic message and comparing the embedded archive and digest.
