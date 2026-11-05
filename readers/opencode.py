@@ -243,6 +243,9 @@ class OpencodeReader:
                 "shell": "powershell"
             },
             "entries": entries,
+            # Keep the complete native SQLite session row as provenance;
+            # parsed fields above are a useful projection, not a replacement.
+            "source_metadata": {"session_row": dict(session)},
             "metadata": {
                 "total_tokens": (session["tokens_input"] or 0) + (session["tokens_output"] or 0),
                 "cost": session["cost"] or 0.0,
