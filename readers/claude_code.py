@@ -202,7 +202,10 @@ class ClaudeCodeReader:
                 # Extract user message text
                 msg = entry.get("message", {})
                 content = msg.get("content", [])
-                text = self._extract_text(content)
+                text = self._extract_text(
+                    [block for block in content if not (isinstance(block, dict) and block.get('type') == 'tool_result')]
+                    if isinstance(content, list) else content
+                )
                 if text:
                     if not task:
                         task = text[:200]
