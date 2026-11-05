@@ -369,8 +369,7 @@ def cmd_export(args):
                         output_path = (Path(args.output) /
                                        f"vibeedge_{sid}.agentson")
                         with open(output_path, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=2,
-                                      ensure_ascii=False, default=str)
+                            write_agentson_stream(data, f, source_tool=args.tool)
                 print(f"Exported {len(sessions)} sessions")
             else:
                 if not args.session:
@@ -385,8 +384,7 @@ def cmd_export(args):
                 output_path = (Path(args.output) /
                                f"vibeedge_{args.session}.agentson")
                 with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False,
-                              default=str)
+                    write_agentson_stream(data, f, source_tool=args.tool)
                 print(f"Exported to {output_path}")
         finally:
             reader.disconnect()
