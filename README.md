@@ -227,6 +227,41 @@ Memory systems (MCP, bespoke databases) don't give you portable answers to those
 
 ---
 
+## Market & Regulatory Positioning
+
+AgentSON is designed as **vendor-neutral agent execution-history interoperability infrastructure**, not as a single-purpose compliance product. The same portable execution record can support several adjacent needs:
+
+| Market | Organisational need | How AgentSON can help |
+|---|---|---|
+| AI agent developers and framework vendors | Export and inspect histories across runtimes | A common representation instead of framework-specific logs |
+| Enterprise AI operations | Investigate failures, tool calls, decisions and incidents | Searchable, correlated records across agents and providers |
+| Agent observability and evaluation | Compare runs and understand failures | Structured events with preserved provenance and semantics |
+| AI training and dataset engineering | Turn execution histories into reusable datasets | Trace extraction with explicit transformation and loss accounting |
+| Multi-agent orchestration | Understand interactions and handoffs | Correlated events, agent identities and handoff records |
+| AI platform migration | Move between providers, frameworks and environments | A portable record independent of the originating runtime |
+| Research and reproducibility | Reconstruct experimental execution histories | Evidence of event sequences, model metadata and observations |
+| AI governance and assurance | Support audits and investigations | Traceability and provenance for downstream governance processes |
+
+These are applications of the same underlying interoperability layer, not separate products or claims that every capability is already implemented.
+
+### EU AI Act: a strong regulatory use case
+
+Article 12 of the EU AI Act is a particularly relevant use case. It requires high-risk AI systems to technically allow the automatic recording of events (logs) over the system's lifetime. The logs are intended to support the identification of situations that may result in risk, post-market monitoring, and monitoring of system operation by deployers.
+
+AgentSON's structured, portable execution histories could support organisations building the logging, inspection and evidence workflows needed for these purposes. Capturing event types, timestamps, correlations, source provenance and transformation history can make records more useful across tools and runtime environments.
+
+**Article 12 does not mandate AgentSON or a universal interchange format.** Nor does a valid AgentSON export, by itself, establish compliance. Suitability depends on the AI system, the applicable requirements, the events actually captured, and the surrounding implementation and organisational controls. Relevant considerations can include logging completeness, integrity, access control, security, retention and lawful handling of personal data. Other provisions, including Article 19 and Article 26(6), address log retention responsibilities for providers and deployers respectively.
+
+### Product positioning
+
+- **Core product:** capture, correlate, preserve, search, export and exchange heterogeneous agent execution histories in a vendor-neutral representation.
+- **Commercial applications:** developer tooling, observability, evaluation, debugging, migration, training-data preparation, multi-agent operations and research reproducibility.
+- **Regulatory application:** support logging and evidence workflows for applicable requirements, with Article 12 as a particularly strong high-risk AI use case.
+
+Regulation can create demand for reliable execution records without defining the limits of the infrastructure. AgentSON remains an interoperability project; it does not claim to provide regulatory certification or complete compliance.
+
+---
+
 ## Quick Start
 
 ```bash
