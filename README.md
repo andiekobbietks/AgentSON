@@ -262,6 +262,57 @@ Regulation can create demand for reliable execution records without defining the
 
 ---
 
+## Agent Workspaces, Harnesses & Cloudflare OS
+
+AgentSON is intended to preserve agent execution history across the environments in which agents are built, orchestrated and run. This includes individual coding harnesses, multi-agent frameworks, managed agent runtimes and organisational agent workspaces.
+
+### Cloudflare OS as a future integration target
+
+[Cloudflare OS](https://github.com/cloudflare/cloudflare-os) is a relevant reference implementation and potential integration target: an open platform for organisational agent workspaces, applications and controlled access to company resources. It is not itself a single agent harness. It sits above and alongside the runtimes, tools and services that agents use.
+
+AgentSON's role would be complementary:
+
+- **Cloudflare OS provides the workspace and execution environment.** It can organise agent work, connect tools and resources, and apply its own runtime and access-control model.
+- **AgentSON provides a portable record.** It aims to capture and preserve the operational history of agents, tools, handoffs and outcomes in a vendor-neutral format that can be inspected and used outside the originating environment.
+- **OpenTelemetry remains an important observability integration.** AgentSON should interoperate with existing traces and instrumentation rather than present itself as a replacement for OpenTelemetry or a platform's native tracing.
+
+The intended outcome is that an organisation could retain useful AgentSON records when it changes agent workspaces, harnesses, model providers or execution infrastructure. Cloudflare OS is one prospective environment in that wider ecosystem, not a required dependency.
+
+### Integration direction (planned; not implemented)
+
+A future Cloudflare integration should be developed as an adapter, with capability discovery and explicit versioning rather than assumptions about undocumented internals.
+
+| Integration area | Potential AgentSON treatment |
+|---|---|
+| Agent and workspace lifecycle | Record starts, completions, failures, cancellations and relevant workspace identifiers |
+| Harness and model activity | Preserve model/provider metadata, run identifiers and available execution context |
+| Tool calls and results | Represent calls, results, errors and correlation identifiers as linked events |
+| Agent delegation and handoffs | Preserve source agent, destination agent, parent/child relationships and handoff outcome |
+| OpenTelemetry traces | Import or correlate supported spans while retaining trace/span IDs and source attributes |
+| Resource access and policy decisions | Record available authorisation, approval and resource-observation evidence with its source and limitations |
+| Artifacts and outputs | Reference outputs and content digests where available; avoid silently copying secrets or sensitive payloads |
+
+**Important boundaries**
+
+1. Cloudflare OS integration is a future direction. AgentSON does not currently claim a native Cloudflare OS adapter, automatic Gatekeeper-event capture, or complete Cloudflare Agents tracing support.
+2. Capture must use supported extension points, documented APIs, export mechanisms or OpenTelemetry interfaces. It must not depend on scraping private databases or undocumented implementation details.
+3. An imported span or platform event is evidence of what the source instrumented and exposed; it is not proof that every internal agent action was captured.
+4. Preserve source provenance, original identifiers, timestamps, event semantics and transformation metadata. Where conversion loses information, record that loss rather than implying a lossless translation.
+5. Apply data minimisation and redaction before export. Prompts, tool arguments, resource identifiers and outputs may contain credentials, personal data or confidential organisational information.
+6. AgentSON records can support investigation, evaluation and assurance workflows, but do not by themselves prove policy compliance, security or regulatory conformity.
+
+### Suggested integration sequence
+
+1. **Define the mapping:** document how supported Cloudflare Agents / OpenTelemetry events map to the canonical AgentSON v1.2 model, and identify fields that require a schema extension or a later schema version.
+2. **Build a read-only proof of concept:** ingest a small, documented trace or exported event set and produce validated AgentSON output without changing the source workspace.
+3. **Test fidelity:** verify correlation across agent runs, model calls, tool executions, errors and handoffs; test missing fields, retries, clock differences and partial traces.
+4. **Validate privacy and security:** add redaction, secret handling, access controls and retention guidance before handling real organisational data.
+5. **Publish an adapter and fixtures:** release reproducible examples and compatibility tests so the integration remains independently usable and maintainable.
+
+The architectural principle is simple: **the platform may execute and observe the agent; AgentSON should help make the resulting operational record portable.**
+
+---
+
 ## Quick Start
 
 ```bash
