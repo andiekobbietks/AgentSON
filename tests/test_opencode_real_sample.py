@@ -1,22 +1,8 @@
-"""
-Regression test for readers/opencode.py against a REAL opencode
-message/parts export (tests/fixtures/opencode_real_sample.json),
-not a synthetic hand-built fixture.
+"""Exercise the production OpenCode reader against a sanitised real-shape sample.
 
-Per CONVENTIONS.md: "Test against real reference data, not
-synthetic-only examples. Synthetic test data lies."
-
-This fixture surfaced two real bugs in the reader that the
-synthetic-only test in test_opencode.py never caught:
-
-1. `type: "reasoning"` parts were silently dropped (real opencode
-   sessions emit these as standalone parts; the reader only handled
-   text/tool-invocation types).
-2. `type: "tool"` parts (current opencode schema) use a different
-   shape than the `type: "tool-invocation"` shape the reader was
-   built against - tool name at top level, input/output/status
-   nested under "state". The old shape is kept as a fallback for
-   older exports, not removed.
+Unlike a copied mapping function, this test calls OpencodeReader's actual
+conversion method. The fixture is a single source message/parts export, so
+session metadata is supplied as a minimal source-shaped record.
 """
 import json
 from pathlib import Path
@@ -24,98 +10,84 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-FIXTURE_PATH = Path(__file__).parent / "fixtures" / "opencode_real_sample.json"
+from jsonschema import Draft202012Validator
+from readers.opencode import OpencodeReader
 
 
-def _convert_message_and_parts(message: dict, parts: list) -> list:
-    """
-    Minimal re-implementation of the message/part -> entries mapping
-    in OpencodeReader._convert_to_agentson, scoped to a single
-    message + its parts (the real sample is one message, not a full
-    session/db export, so we exercise the mapping logic directly
-    rather than standing up a fake sqlite db for a single record).
-    """
-    entries = []
-    role = message.get("role", "unknown")
-
-    if role == "assistant":
-        for part_data in parts:
-            part_type = part_data.get("type", "")
-
-            if part_type == "text":
-                entries.append({
-                    "type": "answer",
-                    "text": part_data.get("text", ""),
-                })
-            elif part_type == "reasoning":
-                entries.append({
-                    "type": "thought",
-                    "text": part_data.get("text", ""),
-                })
-            elif part_type == "tool":
-                state = part_data.get("state", {}) or {}
-                status_raw = state.get("status", "")
-                entries.append({
-                    "type": "action",
-                    "tool": part_data.get("tool", "unknown"),
-                    "code": json.dumps(state.get("input", {})),
-                    "output": str(state.get("output", "")),
-                    "status": "success" if status_raw == "completed" else (status_raw or "unknown"),
-                })
-            elif part_type == "tool-invocation":
-                entries.append({
-                    "type": "action",
-                    "tool": part_data.get("toolName", "unknown"),
-                    "code": json.dumps(part_data.get("args", {})),
-                    "output": str(part_data.get("result", "")),
-                    "status": "success" if not part_data.get("error") else "error",
-                })
-
-    return entries
+ROOT = Path(__file__).resolve().parent
+FIXTURE_PATH = ROOT / "fixtures" / "opencode_real_sample.json"
+SCHEMA_PATH = ROOT.parent / "spec" / "v1.2.json"
 
 
-def test_real_sample_reasoning_part_not_dropped():
-    """The 'reasoning' part in the real sample must become a thought entry."""
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    entries = _convert_message_and_parts(fixture["message"], fixture["parts"])
+def _convert_with_production_reader(fixture: dict) -> dict:
+    message = fixture["message"]
+    parts = fixture["parts"]
+    session = {
+        "id": message["sessionID"],
+        "model": json.dumps({
+            "id": message.get("modelID", "unknown"),
+            "providerID": message.get("providerID", "opencode"),
+            "variant": message.get("variant", "default"),
+        }),
+        "time_created": message["time"]["created"],
+        "time_updated": message["time"]["completed"],
+        "directory": message.get("path", {}).get("cwd", ""),
+        "tokens_input": message.get("tokens", {}).get("input", 0),
+        "tokens_output": message.get("tokens", {}).get("output", 0),
+        "cost": message.get("cost", 0.0),
+    }
+    messages = [{
+        "id": message["id"],
+        "time_created": message["time"]["created"],
+        "data": json.dumps({"role": message.get("role", "unknown")}),
+    }]
+    source_parts = [
+        {
+            "id": part.get("id", f"part-{index}"),
+            "message_id": message["id"],
+            "time_created": (part.get("time") or {}).get("start", message["time"]["created"]),
+            "data": json.dumps(part),
+        }
+        for index, part in enumerate(parts)
+    ]
 
-    thought_entries = [e for e in entries if e["type"] == "thought"]
-    assert len(thought_entries) == 1, (
-        f"Expected 1 thought entry from the reasoning part, got {len(thought_entries)}. "
-        "This is the exact bug: reasoning parts were silently dropped."
-    )
-    assert thought_entries[0]["text"] == "Now run the test script."
-    print("PASS: test_real_sample_reasoning_part_not_dropped")
+    # The conversion method is the production mapping path used by read_session.
+    reader = OpencodeReader.__new__(OpencodeReader)
+    return reader._convert_to_agentson(session, messages, source_parts, [])
 
 
-def test_real_sample_tool_part_mapped_correctly():
-    """The 'tool' part (current schema) must become an action entry with correct fields."""
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    entries = _convert_message_and_parts(fixture["message"], fixture["parts"])
+def test_real_sample_exercises_production_reader_and_keeps_reasoning():
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    archive = _convert_with_production_reader(fixture)
 
-    action_entries = [e for e in entries if e["type"] == "action"]
-    assert len(action_entries) == 1, (
-        f"Expected 1 action entry from the tool part, got {len(action_entries)}. "
-        "This is the exact bug: 'tool' parts weren't recognized (only 'tool-invocation' was)."
-    )
-    action = action_entries[0]
+    thoughts = [entry for entry in archive["entries"] if entry["type"] == "thought"]
+    assert len(thoughts) == 1
+    assert thoughts[0]["text"] == "Now run the test script."
+
+
+def test_real_sample_exercises_production_reader_and_keeps_tool_action():
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    archive = _convert_with_production_reader(fixture)
+
+    actions = [entry for entry in archive["entries"] if entry["type"] == "action"]
+    assert len(actions) == 1
+    action = actions[0]
     assert action["tool"] == "bash"
     assert action["status"] == "success"
     assert "test_claude_code_run.py" in action["code"]
     assert "ALL TESTS PASSED" in action["output"]
-    print("PASS: test_real_sample_tool_part_mapped_correctly")
 
 
-def test_real_sample_entry_count():
-    """Sanity check: this message should yield exactly 2 entries (1 thought, 1 action)."""
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    entries = _convert_message_and_parts(fixture["message"], fixture["parts"])
-    assert len(entries) == 2, f"Expected 2 entries total, got {len(entries)}: {entries}"
-    print("PASS: test_real_sample_entry_count")
+def test_real_sample_reader_output_validates_against_v1_2_envelope():
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    archive = _convert_with_production_reader(fixture)
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    errors = list(Draft202012Validator(schema).iter_errors(archive))
+    assert not errors, "; ".join(error.message for error in errors)
 
 
-if __name__ == "__main__":
-    test_real_sample_reasoning_part_not_dropped()
-    test_real_sample_tool_part_mapped_correctly()
-    test_real_sample_entry_count()
-    print("\nAll real-sample regression tests passed!")
+def test_real_sample_does_not_invent_an_observation():
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    archive = _convert_with_production_reader(fixture)
+    assert any(entry["type"] == "action" for entry in archive["entries"])
+    assert not any(entry["type"] == "observation" for entry in archive["entries"])

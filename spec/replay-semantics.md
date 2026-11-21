@@ -1,13 +1,15 @@
 # AgentSON Replay Semantics
 
-**Status:** Draft v1.0
-**Date:** 06 July 2026
+**Status:** Draft / experimental JSONL stream-execution design; not the canonical v1.2 archive contract
+**Date:** 06 July 2026 (scope clarified 05 November 2026)
 
 ---
 
 ## Overview
 
-Replay is the process of executing an .agentson stream to reproduce agent behavior. This specification defines how to interpret and execute the stream.
+This document is a historical design for executing a line-oriented AgentSON stream. It does not define the canonical v1.2 JSON session envelope, and it does not establish that a replay engine is implemented.
+
+**Safety boundary:** parsing, validating and inspecting an imported archive are read-only operations. Imported commands, tool calls, URLs and outputs are untrusted and must never execute by default. Any future execution/replay feature requires explicit user authorisation, capability checks, isolation/sandboxing and a separate security review. This draft is not permission to execute arbitrary imported actions.
 
 ---
 
@@ -15,7 +17,7 @@ Replay is the process of executing an .agentson stream to reproduce agent behavi
 
 ### 1. Deterministic Ordering
 
-Events are processed in **file order** (line-by-line JSONL). The stream is append-only and immutable.
+For this draft stream profile, events are processed in **line order** in the JSONL transport. The canonical v1.2 archive instead preserves event order in its JSON `entries` array. The two containers must not be conflated.
 
 ```
 Line 1: stream-meta

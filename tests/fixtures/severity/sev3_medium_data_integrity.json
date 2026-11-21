@@ -1,0 +1,33 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-3",
+    "label": "Medium",
+    "category": "data_integrity"
+  },
+  "priority": "P2",
+  "confidence": {
+    "level": "medium",
+    "score": 0.65,
+    "source": "scoring_model"
+  },
+  "status": "detected",
+  "impact": {
+    "scope": "single_session",
+    "dimensions": ["integrity"],
+    "description": "Event sequence contains a non-monotonic timestamp gap."
+  },
+  "evidence": {
+    "event_ids": ["evt_020", "evt_021"],
+    "session_ids": ["sess_xyz789"],
+    "start_offset": 0,
+    "end_offset": 120,
+    "excerpt": "timestamp 1783400001000 followed by 1783400000000"
+  },
+  "method": "scoring_model",
+  "assessed_at": "2026-11-04T17:10:00Z",
+  "assessed_by": "agentson_platform.anomaly",
+  "rule_id": "timestamp-inversion",
+  "rationale": "Timestamp inversion lowers confidence in replay accuracy.",
+  "overrides": null
+}

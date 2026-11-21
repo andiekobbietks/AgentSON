@@ -1,0 +1,33 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-2",
+    "label": "High",
+    "category": "reliability"
+  },
+  "priority": "P1",
+  "confidence": {
+    "level": "inferred",
+    "score": 0.78,
+    "source": "cross_session_correlation"
+  },
+  "status": "triaged",
+  "impact": {
+    "scope": "multi_session",
+    "dimensions": ["reliability", "integrity"],
+    "description": "Same tool fails repeatedly across three sessions."
+  },
+  "evidence": {
+    "event_ids": ["evt_100", "evt_101", "evt_102", "evt_103", "evt_104", "evt_105"],
+    "session_ids": ["sess_a1", "sess_a2", "sess_a3"],
+    "start_offset": 10,
+    "end_offset": 200,
+    "excerpt": "tool_error: mcp.tools.call returned 500"
+  },
+  "method": "scoring_model",
+  "assessed_at": "2026-11-04T17:25:00Z",
+  "assessed_by": "agentson_platform.correlator",
+  "rule_id": "repeated-tool-failure",
+  "rationale": "Failure pattern spans sessions; individual events are not severe.",
+  "overrides": null
+}

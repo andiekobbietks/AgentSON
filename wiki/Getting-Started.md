@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/Getting-Started.md`](../docs/wiki/Getting-Started.md). This file is retained for historical links only.
+
 # Getting Started
 
 ## Installation

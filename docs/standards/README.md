@@ -1,14 +1,14 @@
 # AndieKobbieTech — Operating Manual
 
 **Version:** 1.0
-**Date:** 05 July 2026
+**Date:** 05 November 2026 (interoperability alignment)
 **Author:** Andrea Enning (AndieKobbieTech)
 
 ---
 
 ## What This Is
 
-This is the full operating manual for how I build, think, and work. It covers:
+This is the operating manual for how the project is designed, built, verified and maintained. The product architecture is defined separately in [the session interoperability architecture](../architecture/session-interoperability.md) and its governing [ADR-024](../../spec/ADR-024-canonical-session-archive-and-interoperability.md). This manual covers:
 
 - **Mental Models** — how I approach problems
 - **Coding Standards** — how I write code
@@ -28,7 +28,7 @@ How I think about problems before I write code.
 | [Own Your Data](mental-models.md#own-your-data) | Never depend on a vendor for something you can store yourself |
 | [Build to Learn](mental-models.md#build-to-learn) | Build things to understand them, not just to use them |
 | [Constraint-Driven](mental-models.md#constraint-driven) | Limitations are features, not bugs |
-| [One File, One Truth](mental-models.md#one-file-one-truth) | A single file should contain everything needed |
+| [One File, One Truth](mental-models.md#one-file-one-truth) | A session archive is independently readable; external artefacts are explicit and integrity-verifiable |
 
 → [Read Mental Models](mental-models.md)
 
@@ -43,17 +43,36 @@ How I write code. Non-negotiable.
 | [No PII in Repo](coding-standards.md#no-pii-in-repo) | Never commit personal file paths, names, or identifiers |
 | [No Telemetry](coding-standards.md#no-telemetry) | No phone-home, no analytics, no tracking |
 | [Vendor Neutral](coding-standards.md#vendor-neutral) | Never depend on one company's API or format |
-| [Single File Output](coding-standards.md#single-file-output) | One .AgentSON file = one complete session |
+| [Single File Output](coding-standards.md#single-file-output) | One canonical archive contains the session record; no hidden sidecar dependency |
 | [Minimal Dependencies](coding-standards.md#minimal-dependencies) | If you can do it in 20 lines, don't import a library |
 | [Test Against Real Data](coding-standards.md#test-against-real-data) | Synthetic test data lies. Real data tells the truth |
+| [Privacy-Safe Test Data](coding-standards.md#privacy-safe-test-data) | Real exports are sanitised and approved before repository use |
+| [Honest Labels](coding-standards.md#honest-labels) | Claims must match implementation and test evidence |
+| [Bug Response Procedure](coding-standards.md#bug-response-procedure) | Reproduce, scope, fix and verify before claiming resolution |
+| [Python Style](coding-standards.md#python-style) | Consistent typed and documented public interfaces |
+| [Commit Messages](coding-standards.md#commit-messages) | Structured messages explain what and why |
 
 → [Read Coding Standards](coding-standards.md)
+
+---
+
+## Session Interoperability Architecture
+
+The product-level contract is not defined by coding standards or by historical wiki examples. It is defined by:
+
+- [Session Interoperability Architecture](../architecture/session-interoperability.md) — capture, canonical representation, validation, exchange, inspection, reconstruction, resumption, provenance and loss accounting.
+- [ADR-024](../../spec/ADR-024-canonical-session-archive-and-interoperability.md) — canonical v1.2 session-envelope decision and the distinction between archive and JSONL stream transport.
+- [ADR-015](../../spec/ADR-015-canonical-schema.md) — historical JSONL decision, now superseded by ADR-024.
+
+The evidence chain is: **Principle → Requirement → Contract → Implementation → Automated verification → Evidence → Known limitation.**
 
 ---
 
 ## Architecture Decision Records (ADRs)
 
 Why I made specific decisions. Each ADR captures context, decision, and consequences.
+
+**Identifier rule:** the repository contains two historical ADR namespaces. **Operating ADRs** live under `docs/standards/adrs/`; **Specification ADRs** live under `spec/`. Both series contain ADR-015 and ADR-016, so always cite the namespace and file path (for example, Operating ADR-015 versus Specification ADR-015).
 
 | ADR | Decision |
 |---|---|
@@ -71,9 +90,12 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-012](adrs/adr-012-academic-literature-relationship.md) | AgentSON's relationship to academic trace-provenance literature |
 | [ADR-013](adrs/adr-013-cli-scope-violation-finetune-push-pull.md) | `finetune`, `push`, and `pull` violate the core/downstream scope rule |
 | [ADR-014](adrs/adr-014-observation-entry-type-missing-from-spec.md) | `"observation"` is missing from the entry `type` enum |
-| [ADR-015](../../spec/ADR-015-canonical-schema.md) | Canonical Schema Decision — JSONL is canonical |
-| [ADR-016](../../spec/ADR-016-ontology-enum-reconciliation.md) | Ontology / Enum Reconciliation |
-| [ADR-017](../../spec/ADR-017-core-vs-streaming.md) | Core vs Streaming Primitive Separation |
+| Operating ADR-015 | [Rename to AgentSON](adrs/adr-015-rename-agenson-to-agentson.md) |
+| Operating ADR-016 | [Intrinsic Before Extrinsic](adrs/adr-016-intrinsic-before-extrinsic.md) |
+| Specification ADR-015 | [Canonical Schema](../../spec/ADR-015-canonical-schema.md) — historical JSONL decision, superseded by ADR-024 |
+| Specification ADR-016 | [Ontology / Enum Reconciliation](../../spec/ADR-016-ontology-enum-reconciliation.md) |
+| Specification ADR-017 | [Core vs Streaming Primitive Separation](../../spec/ADR-017-core-vs-streaming.md) |
+| Specification ADR-024 | [Canonical session archive and cross-harness interoperability](../../spec/ADR-024-canonical-session-archive-and-interoperability.md) |
 | [ADR-022](../../spec/ADR-022-reconciling-readers-with-ontology.md) | Reconciling the Readers with the Ontology |
 | ~~ADR-018~~ | **Never written.** Data Rights Intelligence Platform — managed service separation |
 | ~~ADR-019~~ | **Never written.** LLM analysis — three-tier privacy model |
@@ -86,8 +108,7 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 > four links above were dangling. `agentson_platform/` now exists and is
 > the only specification those decisions have.
 >
-> ADR-015, 016, 017 and 022 were missing from this index for a different
-> reason: they live in `spec/`, not in `adrs/`.
+ > Specification ADR-015, 016, 017, 022 and 024 live in `spec/`, not in `adrs/`, and are now indexed above as a separate namespace. Operating ADR-015 and Operating ADR-016 are different records in `docs/standards/adrs/`; the duplicate numbers are historical and must be cited with their namespace.
 
 → [Read ADRs](adrs/)
 
@@ -105,6 +126,13 @@ How I manage work day-to-day.
 | [Incident Response](workflow.md#incident-response) | What to do when something breaks |
 
 → [Read Workflow Rules](workflow.md)
+
+### Repository governance procedures
+
+- [SOP-015: AI-Agent Repository Operating Procedure](../../SOPs/SOP-015-AI-Agent-Repository-Operating-Procedure.md)
+- [SOP-016: Work-In-Progress Governance](../../SOPs/SOP-016-Work-In-Progress-Governance.md)
+
+The legacy wiki publishing procedure is separately identified as Wiki SOP W-015. Do not confuse it with repository SOP-015.
 
 ---
 

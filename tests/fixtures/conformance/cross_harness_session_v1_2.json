@@ -1,0 +1,86 @@
+{
+  "$schema": "https://agentson.dev/schema/v1.2.json",
+  "id": "conformance-session-001",
+  "tool": {
+    "name": "opencode",
+    "version": "fixture-1.0",
+    "session_id": "source-session-001"
+  },
+  "agent": {
+    "name": "fixture-agent",
+    "provider": "fixture-provider",
+    "variant": "test"
+  },
+  "task": "Demonstrate portable event preservation across consumers",
+  "entries": [
+    {
+      "type": "user-query",
+      "text": "Inspect the example repository state.",
+      "timestamp": 1793880000000,
+      "source_event_id": "src-msg-001",
+      "source_sequence": 1,
+      "provenance": {
+        "source": "export",
+        "confidence": "confirmed"
+      }
+    },
+    {
+      "type": "action",
+      "tool": "filesystem.read",
+      "args": {
+        "path": "README.md"
+      },
+      "status": "success",
+      "timestamp": 1793880001000,
+      "tool_call_id": "src-call-001",
+      "correlation_id": "corr-001",
+      "source_event_id": "src-tool-001",
+      "source_sequence": 2,
+      "extensions": {
+        "fixture-source": {
+          "native_part_type": "tool",
+          "native_call_id": "src-call-001"
+        }
+      },
+      "provenance": {
+        "source": "export",
+        "confidence": "confirmed"
+      }
+    },
+    {
+      "type": "observation",
+      "text": "README content was returned by the source tool.",
+      "source": "tool",
+      "timestamp": 1793880002000,
+      "correlation_id": "corr-001",
+      "source_event_id": "src-result-001",
+      "source_sequence": 3,
+      "provenance": {
+        "source": "export",
+        "confidence": "confirmed"
+      }
+    },
+    {
+      "type": "answer",
+      "text": "The source recorded the README inspection.",
+      "timestamp": 1793880003000,
+      "source_event_id": "src-msg-002",
+      "source_sequence": 4,
+      "provenance": {
+        "source": "export",
+        "confidence": "confirmed"
+      }
+    }
+  ],
+  "metadata": {
+    "messages": 2,
+    "parts": 2,
+    "exported_at": "2026-11-05T11:30:00Z"
+  },
+  "extensions": {
+    "fixture": {
+      "purpose": "conformance-baseline",
+      "synthetic": true
+    }
+  }
+}

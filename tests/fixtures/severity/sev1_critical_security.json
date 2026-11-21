@@ -1,0 +1,33 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-1",
+    "label": "Critical",
+    "category": "security"
+  },
+  "priority": "P0",
+  "confidence": {
+    "level": "confirmed",
+    "score": 0.99,
+    "source": "provenance.confidence"
+  },
+  "status": "detected",
+  "impact": {
+    "scope": "system_wide",
+    "dimensions": ["confidentiality", "integrity", "availability"],
+    "description": "Live API key exposed in a public trace."
+  },
+  "evidence": {
+    "event_ids": ["evt_001", "evt_002"],
+    "session_ids": ["sess_abc123"],
+    "start_offset": 142,
+    "end_offset": 189,
+    "excerpt": "sk-live-51..."
+  },
+  "method": "rule",
+  "assessed_at": "2026-11-04T17:00:00Z",
+  "assessed_by": "agentson_platform.classifier",
+  "rule_id": "api-key-exposed",
+  "rationale": "High-entropy secret matching API-key pattern found in transcript.",
+  "overrides": null
+}

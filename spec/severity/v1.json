@@ -1,0 +1,407 @@
+{
+  "$defs": {
+    "AssessmentMethod": {
+      "description": "How the assessment was produced.\n\nSeverity must never depend exclusively on AI judgement. The method field\nrecords which of the four approved mechanisms produced the assessment,\nso downstream reporting can weight it accordingly.",
+      "enum": [
+        "rule",
+        "scoring_model",
+        "ai_assisted",
+        "human_approval"
+      ],
+      "title": "AssessmentMethod",
+      "type": "string"
+    },
+    "Category": {
+      "description": "Nature of the underlying finding.\n\nA category is independent of severity: a privacy issue can be SEV-5 or\nSEV-1 depending on impact and evidence.",
+      "enum": [
+        "security",
+        "privacy",
+        "data_integrity",
+        "availability",
+        "reliability",
+        "correctness",
+        "safety",
+        "compliance",
+        "supply_chain",
+        "performance",
+        "compatibility",
+        "maintainability"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "Confidence": {
+      "description": "Certainty in the finding and its classification.",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/ConfidenceLevel",
+          "description": "Confidence tier."
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional numeric score, e.g. from a scoring model.",
+          "title": "Score"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Source of the confidence value, e.g. 'provenance.confidence'.",
+          "title": "Source"
+        }
+      },
+      "required": [
+        "level"
+      ],
+      "title": "Confidence",
+      "type": "object"
+    },
+    "ConfidenceLevel": {
+      "description": "Certainty in the finding and its severity assignment.\n\nThis combines the ``provenance.confidence`` values from the AgentSON\nontology (``confirmed``, ``inferred``, ``estimated``, ``ml_generated``,\n``unknown``) with the ``high`` / ``medium`` / ``low`` gradations commonly\nused by scoring models.",
+      "enum": [
+        "confirmed",
+        "inferred",
+        "estimated",
+        "ml_generated",
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "title": "ConfidenceLevel",
+      "type": "string"
+    },
+    "EvidenceRef": {
+      "description": "Reference to originating evidence.\n\nAn assessment never modifies the original event stream. It correlates\nevents by ID and, where available, by session and byte offsets so a\nreviewer can open the source transcript and inspect the evidence in place.",
+      "properties": {
+        "event_ids": {
+          "description": "IDs of the events that constitute the evidence.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Event Ids",
+          "type": "array"
+        },
+        "session_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Sessions that contain the referenced events.",
+          "title": "Session Ids"
+        },
+        "start_offset": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Start offset of the evidence in the source text, if known.",
+          "title": "Start Offset"
+        },
+        "end_offset": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "End offset of the evidence in the source text, if known.",
+          "title": "End Offset"
+        },
+        "excerpt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short, read-only excerpt for display; not the evidence itself.",
+          "title": "Excerpt"
+        }
+      },
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "Impact": {
+      "description": "Impact statement for a finding.",
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/ImpactScope",
+          "description": "How widely the impact is felt."
+        },
+        "dimensions": {
+          "description": "CIA-style impact dimensions affected.",
+          "items": {
+            "$ref": "#/$defs/ImpactDimension"
+          },
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Free-form impact statement.",
+          "title": "Description"
+        }
+      },
+      "required": [
+        "scope"
+      ],
+      "title": "Impact",
+      "type": "object"
+    },
+    "ImpactDimension": {
+      "description": "Dimensions the finding affects.",
+      "enum": [
+        "confidentiality",
+        "integrity",
+        "availability",
+        "accountability",
+        "safety",
+        "privacy",
+        "reliability",
+        "correctness"
+      ],
+      "title": "ImpactDimension",
+      "type": "string"
+    },
+    "ImpactScope": {
+      "description": "How widely the finding's impact is felt.",
+      "enum": [
+        "single_session",
+        "multi_session",
+        "single_agent",
+        "multi_agent",
+        "system_wide",
+        "external"
+      ],
+      "title": "ImpactScope",
+      "type": "string"
+    },
+    "PriorityLevel": {
+      "description": "Urgency identifiers, from emergency to deferred.",
+      "enum": [
+        "P0",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "title": "PriorityLevel",
+      "type": "string"
+    },
+    "Severity": {
+      "description": "Severity assignment for a single finding.\n\n``level`` is the stable, machine-readable value. ``label`` is the\nhuman-readable form and must agree with ``level``. ``category`` describes\nwhat kind of problem the finding represents.",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/SeverityLevel",
+          "description": "Stable severity identifier such as SEV-2."
+        },
+        "label": {
+          "$ref": "#/$defs/SeverityLabel",
+          "description": "Human-readable label that matches ``level``."
+        },
+        "category": {
+          "$ref": "#/$defs/Category",
+          "description": "Nature of the finding; not a severity level."
+        }
+      },
+      "required": [
+        "level",
+        "label",
+        "category"
+      ],
+      "title": "Severity",
+      "type": "object"
+    },
+    "SeverityLabel": {
+      "description": "Human-readable severity labels that map one-to-one to ``SeverityLevel``.",
+      "enum": [
+        "Critical",
+        "High",
+        "Medium",
+        "Low",
+        "Informational"
+      ],
+      "title": "SeverityLabel",
+      "type": "string"
+    },
+    "SeverityLevel": {
+      "description": "Stable machine-readable severity identifiers.",
+      "enum": [
+        "SEV-1",
+        "SEV-2",
+        "SEV-3",
+        "SEV-4",
+        "SEV-5"
+      ],
+      "title": "SeverityLevel",
+      "type": "string"
+    },
+    "Status": {
+      "description": "Lifecycle state of a finding.",
+      "enum": [
+        "detected",
+        "triaged",
+        "accepted",
+        "in_progress",
+        "resolved",
+        "verified",
+        "dismissed"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "description": "A complete, versioned finding assessment.\n\nThis object is the public contract for severity, priority, confidence,\nstatus and impact in AgentSON. It is designed to be embedded in reports,\nstored in derived indexes, or carried as a separate assessment stream\nwithout changing the original JSONL event stream.",
+  "properties": {
+    "schema_version": {
+      "const": "agentson.severity.v1",
+      "default": "agentson.severity.v1",
+      "description": "Version of this assessment object.",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity",
+      "description": "Severity of the finding."
+    },
+    "priority": {
+      "$ref": "#/$defs/PriorityLevel",
+      "description": "Urgency of response."
+    },
+    "confidence": {
+      "$ref": "#/$defs/Confidence",
+      "description": "Certainty in the finding."
+    },
+    "status": {
+      "$ref": "#/$defs/Status",
+      "description": "Lifecycle state of the finding."
+    },
+    "impact": {
+      "$ref": "#/$defs/Impact",
+      "description": "Scope and dimensions of impact."
+    },
+    "evidence": {
+      "$ref": "#/$defs/EvidenceRef",
+      "description": "Originating evidence, referenced by ID."
+    },
+    "method": {
+      "$ref": "#/$defs/AssessmentMethod",
+      "description": "Mechanism that produced this assessment."
+    },
+    "assessed_at": {
+      "description": "ISO 8601 timestamp when the assessment was produced.",
+      "title": "Assessed At",
+      "type": "string"
+    },
+    "assessed_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Identifier of the classifier, model or human assessor.",
+      "title": "Assessed By"
+    },
+    "rule_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ID of the deterministic rule or scoring model used.",
+      "title": "Rule Id"
+    },
+    "rationale": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Short explanation of how severity was derived.",
+      "title": "Rationale"
+    },
+    "overrides": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Human override trail: previous value, reason, approver.",
+      "title": "Overrides"
+    }
+  },
+  "required": [
+    "severity",
+    "priority",
+    "confidence",
+    "status",
+    "impact",
+    "evidence",
+    "method"
+  ],
+  "title": "AgentSON Severity and Risk Classification v1",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentson.dev/schema/severity/v1.json"
+}

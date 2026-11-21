@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/SOP-015-Creating-GitHub-Wiki.md`](../docs/wiki/SOP-015-Creating-GitHub-Wiki.md). This file is retained for historical links only.
+
 # SOP-015: Creating a GitHub Wiki (Manual + Programmatic)
 
 **Version:** 1.0

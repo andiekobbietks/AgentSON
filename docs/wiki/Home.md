@@ -1,0 +1,67 @@
+# AgentSON Wiki
+
+**Agent + JSON** — Open interchange for AI-agent sessions across harnesses.
+
+> AgentSON aims to make AI-agent session records portable and inspectable across independent harnesses.
+
+---
+
+## Why This Exists
+
+This project started with a FreeStyle Libre 2 continuous glucose monitor.
+
+Managing a chronic condition means your most personal data — blood glucose readings every 5 minutes, 24/7 — lives inside a vendor's app. Abbott's FreeStyle Libre app stores your data. It doesn't export to JSON. It doesn't integrate with your AI tools. It doesn't connect to your doctor's system without jumping through NHS FHIR hoops.
+
+The same lock-in problem exists everywhere:
+
+| Domain | Vendor | Data trapped |
+|--------|--------|--------------|
+| Health | Abbott (FreeStyle Libre 2) | Glucose readings, trends, reports |
+| AI coding | OpenAI, Anthropic, Google | Session transcripts, reasoning traces |
+| Development | Cursor, Copilot, Claude Code | Code context, edit history |
+
+Data portability and AI transparency obligations depend on the applicable law, role and circumstances. AgentSON is designed to make supported session data exportable and inspectable; adapter coverage and implementation evidence determine what it can actually provide. The format alone does not establish legal compliance.
+
+> **Your health data. Your code sessions. Your data. One format.**
+
+---
+
+## Product vision
+
+A session produced by one AI coding harness should be capturable, representable, validatable, exchangeable and inspectable in another without silently losing meaning or provenance. Where the receiving harness supports compatible state and permissions, AgentSON should also support controlled reconstruction and resumption.
+
+Portability, reconstruction and resumption are separate guarantees. See [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md) and [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md).
+
+## Wiki Pages
+
+| Page | Description |
+|------|-------------|
+| [Getting Started](Getting-Started) | Install, export your first session, understand the format |
+| [Schema](Schema) | Canonical v1.2 JSON session envelope, event vocabulary and validation |
+| [Readers](Readers) | Tool-specific readers — what works, what's planned |
+| [ADRs](ADRs) | Architecture Decision Records — why decisions were made |
+| [SOPs](SOPs) | Standard Operating Procedures — health data, AI sessions, infra |
+| [Coding Standards](Coding-Standards) | Non-negotiable rules for code |
+| [Mental Models](Mental-Models) | How we think about problems before writing code |
+| [Contributing](Contributing) | How to add a reader, write tests, submit PRs |
+
+---
+
+## Source-of-truth documents
+
+- [Product Requirements](https://github.com/andiekobbietks/AgentSON/blob/master/PRD.md)
+- [Session Interoperability Architecture](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/session-interoperability.md)
+- [Canonical Schema v1.2](https://github.com/andiekobbietks/AgentSON/blob/master/spec/v1.2.json)
+- [Event Ontology](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ontology.md)
+- [ADR-024](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md)
+
+## Quick Links
+
+- **PyPI:** [pypi.org/project/agentson](https://pypi.org/project/agentson/)
+- **GitHub:** [github.com/andiekobbietks/AgentSON](https://github.com/andiekobbietks/AgentSON)
+- **Live Docs:** [andiekobbietks.github.io/AgentSON](https://andiekobbietks.github.io/AgentSON/)
+- **License:** Apache 2.0
+
+---
+
+*"Open interchange for agent sessions, with provenance and limitations made explicit."*

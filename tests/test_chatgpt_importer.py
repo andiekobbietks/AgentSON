@@ -143,3 +143,46 @@ if __name__ == "__main__":
     test_import_defaults_model_when_no_metadata_present()
     test_import_raises_on_empty_conversations()
     print("\nAll chatgpt importer tests passed!")
+
+
+def test_import_output_validates_against_v1_2_schema():
+    """The importer must emit the canonical envelope, not a legacy v1 document."""
+    from jsonschema import Draft202012Validator
+
+    schema_path = Path(__file__).parent.parent / "spec" / "v1.2.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    path = _write_fixture(_minimal_export())
+    try:
+        result = import_chatgpt(path)
+        errors = list(Draft202012Validator(schema).iter_errors(result))
+        assert not errors, "; ".join(error.message for error in errors)
+        assert result["$schema"] == "https://agentson.dev/schema/v1.2.json"
+        assert result["tool"]["name"] == "chatgpt"
+    finally:
+        os.unlink(path)
+
+
+def test_import_omits_missing_timestamps_instead_of_emitting_null():
+    """Missing source timestamps are absent facts, not JSON null timestamps."""
+    from jsonschema import Draft202012Validator
+
+    data = _minimal_export()
+    data.pop("create_time", None)
+    data.pop("update_time", None)
+    for node in data["mapping"].values():
+        message = node.get("message")
+        if message:
+            message.pop("create_time", None)
+
+    schema_path = Path(__file__).parent.parent / "spec" / "v1.2.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    path = _write_fixture(data)
+    try:
+        result = import_chatgpt(path)
+        assert "started_at" not in result
+        assert "ended_at" not in result
+        assert all("timestamp" not in entry for entry in result["entries"])
+        errors = list(Draft202012Validator(schema).iter_errors(result))
+        assert not errors, "; ".join(error.message for error in errors)
+    finally:
+        os.unlink(path)

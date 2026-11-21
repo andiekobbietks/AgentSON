@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/SOPs.md`](../docs/wiki/SOPs.md). This file is retained for historical links only.
+
 # Standard Operating Procedures (SOPs)
 
 15 SOPs covering health data, AI sessions, infrastructure, and wiki deployment.

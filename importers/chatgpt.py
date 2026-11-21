@@ -81,7 +81,7 @@ def _convert_conversation(
     
     # Build AgentSON document
     agentson = {
-        "$schema": "https://agentson.dev/schema/v1.json",
+        "$schema": "https://agentson.dev/schema/v1.2.json",
         "id": session_id,
         "tool": {
             "name": "chatgpt",
@@ -112,6 +112,11 @@ def _convert_conversation(
         }
     }
     
+    if started_at is None:
+        agentson.pop("started_at", None)
+    if ended_at is None:
+        agentson.pop("ended_at", None)
+
     if output_path:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(agentson, f, indent=2, ensure_ascii=False, default=str)
@@ -209,17 +214,14 @@ def _message_to_entry(message: dict) -> Optional[dict]:
     timestamp = message.get("create_time")
     
     if role == "user":
-        return {
-            "type": "user-query",
-            "text": text,
-            "timestamp": int(timestamp * 1000) if timestamp else None
-        }
+        entry = {"type": "user-query", "text": text}
+        if timestamp is not None:
+            entry["timestamp"] = int(timestamp * 1000)
+        return entry
     elif role == "assistant":
-        entry = {
-            "type": "answer",
-            "text": text,
-            "timestamp": int(timestamp * 1000) if timestamp else None
-        }
+        entry = {"type": "answer", "text": text}
+        if timestamp is not None:
+            entry["timestamp"] = int(timestamp * 1000)
         if model_slug:
             entry["model"] = model_slug
         return entry

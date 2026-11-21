@@ -217,7 +217,7 @@ class OpencodeReader:
 
         # Build AgentSON document
         agentson = {
-            "$schema": "https://agentson.dev/schema/v1.json",
+            "$schema": "https://agentson.dev/schema/v1.2.json",
             "id": session["id"],
             "tool": {
                 "name": "opencode",

@@ -1,3 +1,5 @@
+> **Legacy copy — do not edit.** The maintained version is [`docs/wiki/Schema.md`](../docs/wiki/Schema.md). This file is retained for historical links only.
+
 # Schema Reference
 
 AgentSON uses JSON Schema for validation. Two versions exist:
