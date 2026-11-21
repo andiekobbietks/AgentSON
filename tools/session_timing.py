@@ -9,7 +9,7 @@ import json
 import os
 import glob
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 
@@ -28,6 +28,7 @@ class ActivityBurst:
 
     @property
     def parts_per_second(self) -> float:
+        """Average parts per second inside the burst."""
         return self.part_count / (self.duration_ms / 1000) if self.duration_ms > 0 else 0
 
 
@@ -40,6 +41,7 @@ class IdlePeriod:
 
     @property
     def duration_ms(self) -> int:
+        """Length of the idle gap in milliseconds."""
         return self.end_ms - self.start_ms
 
 
@@ -88,11 +90,13 @@ class SessionTimingAnalyzer:
     """Analyzes session timing from SQLite + .agentson files."""
 
     def __init__(self, db_path: Optional[str] = None):
+        """Create a timing analyzer for the given SQLite session database."""
         if db_path is None:
             db_path = os.path.expanduser('~/.local/share/opencode/opencode.db')
         self.db_path = db_path
 
     def _connect(self):
+        """Open a read/write SQLite connection with row factories."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn
@@ -101,7 +105,7 @@ class SessionTimingAnalyzer:
         """Detect sessions with activity in the last N milliseconds."""
         conn = self._connect()
         cursor = conn.cursor()
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
         cutoff = now_ms - within_ms
 
         cursor.execute('''
@@ -260,7 +264,7 @@ class SessionTimingAnalyzer:
             session_class = 'epic'
 
         # Active check (activity in last 5 min)
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
         is_active = (now_ms - (session['time_updated'] or 0)) < 300000
 
         # Hydration potential
@@ -269,8 +273,8 @@ class SessionTimingAnalyzer:
 
         return SessionTimingProfile(
             session_id=session_id,
-            started_at=datetime.utcfromtimestamp(session['time_created'] / 1000).isoformat() + 'Z' if session['time_created'] else None,
-            ended_at=datetime.utcfromtimestamp(session['time_updated'] / 1000).isoformat() + 'Z' if session['time_updated'] else None,
+            started_at=datetime.fromtimestamp(session['time_created'] / 1000, timezone.utc).isoformat().replace("+00:00", "Z") if session['time_created'] else None,
+            ended_at=datetime.fromtimestamp(session['time_updated'] / 1000, timezone.utc).isoformat().replace("+00:00", "Z") if session['time_updated'] else None,
             wall_clock_ms=total_ms,
             total_parts=len(parts),
             total_messages=msg_count,
@@ -524,7 +528,7 @@ def main():
             print('  Part %d: %s -> %s' % (
                 h['index'],
                 'None',
-                datetime.utcfromtimestamp(h['hydrated'] / 1000).strftime('%H:%M:%S.%f')[:-3]
+                datetime.fromtimestamp(h['hydrated'] / 1000, timezone.utc).strftime('%H:%M:%S.%f')[:-3]
             ))
 
     # 5. Duration prediction

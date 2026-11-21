@@ -22,7 +22,7 @@ import json
 import os
 import re
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, List, Any
 
 _SAFE_SEGMENT = re.compile(r"[^A-Za-z0-9_.-]+")
@@ -250,7 +250,7 @@ class CopilotChatReader:
             "entries": agentson_entries,
             "metadata": {
                 "message_count": metadata.get("message_count", 0),
-                "exported_at": datetime.utcnow().isoformat() + "Z",
+                "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             },
         }
 

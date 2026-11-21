@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -151,7 +151,7 @@ def read_session(tasks_dir: str, task_id: str) -> Dict:
     total_in = sum(m.get("tokensIn", 0) for m in metadata.get("model_usage", []))
     total_out = sum(m.get("tokensOut", 0) for m in metadata.get("model_usage", []))
     doc["metadata"] = {
-        "exported_at": datetime.utcnow().isoformat() + "Z",
+        "exported_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source": "cline",
         "total_tokens_in": total_in,
         "total_tokens_out": total_out,
@@ -260,7 +260,7 @@ def _safe_json(val) -> str:
 def _ms_to_iso(ms: int) -> str:
     """Convert millisecond timestamp to ISO 8601."""
     try:
-        return datetime.utcfromtimestamp(ms / 1000).isoformat() + "Z"
+        return datetime.fromtimestamp(ms / 1000, timezone.utc).isoformat().replace("+00:00", "Z")
     except (ValueError, OSError, OverflowError):
         return ""
 
@@ -278,10 +278,13 @@ class ClineReader:
     """Reads Cline VS Code extension sessions into AgentSON format."""
 
     def __init__(self, tasks_dir: str | Path):
+        """Open a Cline reader on the VS Code extension tasks directory."""
         self.tasks_dir = Path(tasks_dir)
 
     def read(self, task_id: str) -> Dict:
+        """Read a Cline task by its ULID directory name."""
         return read_session(str(self.tasks_dir), task_id)
 
     def list_sessions(self, limit: int = 50) -> List[Dict]:
+        """List Cline tasks with metadata from history_item.json files."""
         return list_sessions(str(self.tasks_dir), limit)
