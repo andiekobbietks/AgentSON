@@ -1,0 +1,33 @@
+{
+  "schema_version": "agentson.severity.v1",
+  "severity": {
+    "level": "SEV-4",
+    "label": "Low",
+    "category": "performance"
+  },
+  "priority": "P3",
+  "confidence": {
+    "level": "high",
+    "score": 0.88,
+    "source": "tool telemetry"
+  },
+  "status": "accepted",
+  "impact": {
+    "scope": "single_agent",
+    "dimensions": ["availability"],
+    "description": "One inference call took longer than 95th percentile."
+  },
+  "evidence": {
+    "event_ids": ["evt_030"],
+    "session_ids": ["sess_abc123"],
+    "start_offset": 500,
+    "end_offset": 520,
+    "excerpt": "duration_ms: 8420"
+  },
+  "method": "ai_assisted",
+  "assessed_at": "2026-11-04T17:15:00Z",
+  "assessed_by": "agentson_platform.anomaly",
+  "rule_id": "latency-p95",
+  "rationale": "Latency spike is isolated and within acceptable variance.",
+  "overrides": null
+}
