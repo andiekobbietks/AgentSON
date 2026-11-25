@@ -38,6 +38,7 @@ If a fine-grained token is genuinely required for an automated task, restrict it
 
 ~~~bash
 gh auth status
+gh auth setup-git
 git checkout master
 git pull --ff-only origin master
 git status --short
