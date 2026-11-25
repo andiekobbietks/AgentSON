@@ -12,7 +12,7 @@
 
 AgentSON is an open format and toolset for representing the operational history of AI-agent sessions: user inputs, agent outputs, tool actions, observations, state changes, hand-offs and provenance.
 
-The long-term goal is to let a session produced by one AI coding harness be **captured, represented, validated, exchanged, inspected and potentially resumed in another**, without silently losing meaning or provenance.
+The long-term goal is to let a session produced by one AI coding harness be **captured, represented, validated, exchanged, inspected and potentially continued in another**, without silently losing meaning or provenance.
 
 That is a direction, not a claim that arbitrary sessions can already be resumed across runtimes. AgentSON must preserve source-native evidence, identify unsupported or unmapped fields, and make conversion loss explicit.
 

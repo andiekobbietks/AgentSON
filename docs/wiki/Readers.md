@@ -72,7 +72,7 @@ Do not infer capabilities 3–9 from capability 1.
 1. Inspect the source format and document its version/limitations.
 2. Implement a source-specific reader behind a stable adapter boundary.
 3. Preserve source identifiers, timestamps and ordering where available.
-4. Map into the canonical v1.2 JSONL stream and event vocabulary.
+4. Map into the canonical v1.2 event vocabulary and JSONL stream.
 5. Record preserved, normalised, extension, unavailable, redacted and unsupported information.
 6. Add sanitised fixtures derived from real exports where permission allows; label synthetic fixtures honestly.
 7. Test malformed, incomplete, unknown and version-skewed source records.
