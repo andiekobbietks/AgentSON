@@ -1,9 +1,11 @@
 # AgentSON Production-Readiness Assessment
 
-**Assessment date:** 05 November 2026  
+**Assessment date:** 05 November 2026 (baseline snapshot)  
 **Baseline:** `master` at `ceef4e83baab2a9eb1a59e6f15fc8c62dbeec70a`  
-**Purpose:** Establish an evidence-led gap analysis against an independently operable, production-grade open-source format and catalogue platform.  
-**Status:** Initial repository inspection; not a certification, penetration test or independent security audit.
+**Purpose:** Historical gap analysis against an independently operable, production-grade open-source format and catalogue platform.  
+**Status:** This is a dated baseline, not a current assessment of the PR #62 integration branch or current default branch. It is not a certification, penetration test or independent security audit.
+
+> **25 November 2026 addendum:** PR #62 proposes substantial changes after this baseline, including canonical JSONL export/validation, reader conformance fixtures, security disclosure and contribution files, CI/package verification, and continuation tooling. These changes remain on an unmerged branch at the time of this addendum. Do not read the 5 November findings below as a description of the current PR #62 branch, and do not treat proposed branch changes as capabilities already present on `master`. The recorded Python matrix run is documented in `STATUS.md`; it must be rerun on the final PR head. The project still has no demonstrated production multi-tenant service, independent security audit, complete source coverage or C3/C4 cross-harness evidence.
 
 ## Executive assessment
 

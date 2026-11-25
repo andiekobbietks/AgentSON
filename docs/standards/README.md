@@ -1,4 +1,4 @@
-# AndieKobbieTech — Operating Manual
+# AgentSON — Engineering Standards and Operating Manual
 
 **Version:** 1.0
 **Date:** 05 July 2026
@@ -66,12 +66,12 @@ Why I made specific decisions. Each ADR captures context, decision, and conseque
 | [ADR-007](adrs/adr-007-coderabbit.md) | Why CodeRabbit for reviews (and why not required) |
 | [ADR-008](adrs/adr-008-trace-data-interchange.md) | AgentSON as the open interchange layer for AI workflow traces |
 | [ADR-009](adrs/adr-009-osi-open-interchange.md) | AgentSON as Open Interchange Format for OSI Open Source AI definition |
-| [ADR-010](adrs/adr-010-gdpr-data-liberation.md) | AgentSON as GDPR/EU AI Act data liberation tool (the Unsloth analogy) |
+| [ADR-010](adrs/adr-010-gdpr-data-liberation.md) | Data portability as a design use case; legal applicability is context-dependent |
 | [ADR-011](adrs/adr-011-naming-and-file-extension.md) | Project name "AgentSON" kept, ".ason" file extension rejected |
 | [ADR-012](adrs/adr-012-academic-literature-relationship.md) | AgentSON's relationship to academic trace-provenance literature |
 | [ADR-013](adrs/adr-013-cli-scope-violation-finetune-push-pull.md) | `finetune`, `push`, and `pull` violate the core/downstream scope rule |
 | [ADR-014](adrs/adr-014-observation-entry-type-missing-from-spec.md) | `"observation"` is missing from the entry `type` enum |
-| [ADR-015](../../spec/ADR-015-canonical-schema.md) | Canonical Schema Decision — JSONL is canonical |
+| [ADR-015](../../spec/ADR-015-canonical-schema.md) | Canonical v1.2 JSONL interchange wire format |
 | [ADR-016](../../spec/ADR-016-ontology-enum-reconciliation.md) | Ontology / Enum Reconciliation |
 | [ADR-017](../../spec/ADR-017-core-vs-streaming.md) | Core vs Streaming Primitive Separation |
 | [ADR-022](../../spec/ADR-022-reconciling-readers-with-ontology.md) | Reconciling the Readers with the Ontology |

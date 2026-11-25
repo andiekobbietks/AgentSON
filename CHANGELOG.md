@@ -4,6 +4,12 @@ All notable changes to AgentSON will be documented here. AgentSON uses [Semantic
 
 ## [Unreleased]
 
+### Documentation
+- Reconcile the README, product requirements, repository instructions and status record with the maintainer's v1.2 JSONL canonical-format decision.
+- Clarify that the JSON session envelope is a supported materialised/document representation, not the canonical JSONL wire format.
+- Tighten capability, redaction, interoperability and regulatory wording so documentation distinguishes tested behaviour from design intent and legal compliance.
+- Align the RICE and strategic roadmaps with the current evidence-qualified documents.
+
 ### Changed
 
 - Make canonical v1.2 JSONL the actual `agentson export` output for all currently wired readers while retaining the established `.agentson` filename extension.

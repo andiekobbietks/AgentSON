@@ -6,7 +6,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/pypi/pyversions/agentson.svg)](https://pypi.org/project/agentson/)
 
-> **Status: Alpha / pre-release.** AgentSON's v1.2 schema is the canonical format decision, but the implementation is not yet a production-grade, lossless, cross-harness interchange system. Readers, importers, exporters and platform features have different levels of maturity. Verify the behaviour you depend on and retain the original source data.
+> **Status: Alpha / pre-release.** AgentSON v1.2 JSONL is the canonical interchange stream (ADR-015/016/017). The v1.2 entries schema validates stream events; the JSON session-envelope schema remains available for materialised/document compatibility. The implementation is not yet a production-grade, lossless, cross-harness interchange system. Readers, importers, exporters and platform features have different levels of maturity. Verify the behaviour you depend on and retain the original source data.
 
 ## Purpose
 
@@ -144,7 +144,7 @@ Use the resume command to create a portable Markdown context packet from a canon
 agentson resume ./sessions/opencode_<session-id>.agentson --target opencode --output ./handoff.md
 ```
 
-Open the resulting packet in a new destination-harness session. It carries selected context fields with safety boundaries, not a complete transcript. Event provenance is included only when selected; tool arguments, code, action output and source_payload are omitted. Text fields are screened for common PII and credential patterns, but the packet still requires review. Historical commands are inert evidence and must not be replayed.
+Open the resulting packet in a new destination-harness session. It carries selected context fields with safety boundaries, not a complete transcript. Event provenance is included only when selected; tool arguments, code, action output and source_payload are omitted. Selected text fields receive best-effort, pattern-based PII and credential screening. This is not a complete detector and must not be treated as a security boundary: inspect the packet and source archive before sharing or importing it. Historical commands are inert evidence and must not be replayed.
 
 For the first native destination adapter, start an OpenCode server and use:
 
