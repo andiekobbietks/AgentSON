@@ -1,207 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Standards & Operating Manual — AgentSON</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0a08;
-            --surface: #141410;
-            --border: #2a2a1e;
-            --text: #e8e0c8;
-            --text-muted: #9a9070;
-            --accent: #ffb000;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        header { padding: 40px 0; border-bottom: 1px solid var(--border); }
-        h1 { font-family: 'Space Mono', monospace; font-size: 32px; }
-        h1 span { color: var(--accent); }
-        .back { color: var(--accent); text-decoration: none; }
-        .back:hover { text-decoration: underline; }
-        .section { margin-top: 40px; }
-        .section h2 {
-            font-family: 'Space Mono', monospace;
-            font-size: 20px;
-            color: var(--accent);
-            margin-bottom: 16px;
-        }
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .card h3 { font-size: 16px; margin-bottom: 4px; }
-        .card p { color: var(--text-muted); font-size: 13px; margin: 0; }
-        .card a {
-            color: var(--accent);
-            text-decoration: none;
-            padding: 6px 14px;
-            border: 1px solid var(--accent);
-            border-radius: 6px;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-        .card a:hover { background: var(--accent); color: #0a0a08; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Standards and Operating Manual — AgentSON</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0a0a08;--surface:#141410;--border:#2a2a1e;--text:#e8e0c8;--muted:#9a9070;--accent:#ffb000}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,sans-serif}
+    main{max-width:900px;margin:auto;padding:36px 22px 70px}h1{font-size:2.4rem}h2{color:var(--accent);margin-top:32px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px}
+    a{color:var(--accent)}p{color:var(--muted)}
+  </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <a href="../" class="back">&larr; Back to AgentSON</a>
-            <h1 style="margin-top: 20px;">Standards & Operating Manual</h1>
-            <p style="color: var(--text-muted); margin-top: 8px;">How we think, work, and build</p>
-        </header>
-
-        <div class="section">
-            <h2>Mental Models</h2>
-            <div class="card">
-                <div>
-                    <h3>Mental Models</h3>
-                    <p>How we approach problems — simplicity first, own your data, constraint-driven</p>
-                </div>
-                <a href="render.html?file=mental-models.md">Read</a>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Coding Standards</h2>
-            <div class="card">
-                <div>
-                    <h3>Coding Standards</h3>
-                    <p>No PII, no telemetry, vendor neutral, minimal deps, test against real data</p>
-                </div>
-                <a href="render.html?file=coding-standards.md">Read</a>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Workflow Rules</h2>
-            <div class="card">
-                <div>
-                    <h3>Workflow Rules</h3>
-                    <p>Git workflow, PR process, deployment, incident response</p>
-                </div>
-                <a href="render.html?file=workflow.md">Read</a>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Architecture Decision Records</h2>
-            <div class="card">
-                <div>
-                    <h3>ADR-001: Why AgentSON Exists</h3>
-                    <p>The format decision — JSON, vendor-neutral, single-file</p>
-                </div>
-                <a href="render.html?file=adrs/adr-001-agentSON-format.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-002: JSON Over SQLite</h3>
-                    <p>Why plain JSON files instead of databases</p>
-                </div>
-                <a href="render.html?file=adrs/adr-002-json-over-sqlite.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-003: Vendor Neutrality</h3>
-                    <p>Why no single company controls the standard</p>
-                </div>
-                <a href="render.html?file=adrs/adr-003-vendor-neutral.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-004: Amber Design Tokens</h3>
-                    <p>Why we chose amber phosphor over cyan/blue</p>
-                </div>
-                <a href="render.html?file=adrs/adr-004-amber-design.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-005: Nightscout</h3>
-                    <p>Why self-hosted CGM over proprietary systems</p>
-                </div>
-                <a href="render.html?file=adrs/adr-005-nightscout.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-006: GitHub Pages</h3>
-                    <p>Why free hosting over Vercel/Netlify</p>
-                </div>
-                <a href="render.html?file=adrs/adr-006-github-pages.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-007: CodeRabbit</h3>
-                    <p>Why AI review is optional, not required</p>
-                </div>
-                <a href="render.html?file=adrs/adr-007-coderabbit.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-008: Trace Data Interchange</h3>
-                    <p>AgentSON solves vendor lock-in for session traces</p>
-                </div>
-                <a href="render.html?file=adrs/adr-008-trace-data-interchange.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-009: OSI Open Interchange</h3>
-                    <p>AgentSON fills the OSI gap — open format for training data</p>
-                </div>
-                <a href="render.html?file=adrs/adr-009-osi-open-interchange.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-010: GDPR Data Liberation</h3>
-                    <p>The Unsloth analogy — democratizing data ownership via legal rights</p>
-                </div>
-                <a href="render.html?file=adrs/adr-010-gdpr-data-liberation.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-011: Naming and File Extension</h3>
-                    <p>Why "AgentSON" stays, why ".ason" was rejected in favor of ".agentson"</p>
-                </div>
-                <a href="render.html?file=adrs/adr-011-naming-and-file-extension.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-012: Academic Literature Relationship</h3>
-                    <p>Why adjacent trace-provenance research doesn't duplicate this project</p>
-                </div>
-                <a href="render.html?file=adrs/adr-012-academic-literature-relationship.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-013: CLI Scope Violation (Proposed)</h3>
-                    <p>finetune/push/pull found violating the core/downstream scope rule — awaiting decision</p>
-                </div>
-                <a href="render.html?file=adrs/adr-013-cli-scope-violation-finetune-push-pull.md">Read</a>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>ADR-014: Missing "observation" Entry Type (Proposed)</h3>
-                    <p>Real readers emit a type the spec doesn't define — awaiting decision</p>
-                </div>
-                <a href="render.html?file=adrs/adr-014-observation-entry-type-missing-from-spec.md">Read</a>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+<body><main>
+  <p><a href="../index.html">← Back to AgentSON</a></p>
+  <h1>Standards and Operating Manual</h1>
+  <p>Engineering principles, architecture decisions and repository operating guidance.</p>
+  <h2>Engineering practice</h2>
+  <div class="grid">
+    <section class="card"><h3><a href="mental-models.md">Mental models</a></h3><p>Problem framing, simplicity, ownership and evidence.</p></section>
+    <section class="card"><h3><a href="coding-standards.md">Coding standards</a></h3><p>Privacy, architecture, tests, source evidence and quality gates.</p></section>
+    <section class="card"><h3><a href="workflow.md">Workflow rules</a></h3><p>Branch, pull-request, review and release practices.</p></section>
+    <section class="card"><h3><a href="README.md">Operating manual</a></h3><p>Index of the maintained engineering standards.</p></section>
+  </div>
+  <h2>Architecture decisions</h2>
+  <div class="grid">
+    <section class="card"><h3><a href="adr-index.html">ADR index</a></h3><p>Operating and specification decisions, with their current status.</p></section>
+    <section class="card"><h3><a href="adrs/adr-010-gdpr-data-liberation.md">ADR-010: Data portability</a></h3><p>Technical design motivation; not a legal opinion or compliance claim.</p></section>
+    <section class="card"><h3><a href="adrs/adr-011-naming-and-file-extension.md">ADR-011: Project name and extension</a></h3><p>AgentSON naming and .agentson extension decision; no trademark clearance claim.</p></section>
+  </div>
+  <h2>Format decisions</h2>
+  <div class="grid">
+    <section class="card"><h3><a href="../../spec/ADR-015-canonical-schema.md">Specification ADR-015</a></h3><p>Canonical v1.2 JSONL interchange format.</p></section>
+    <section class="card"><h3><a href="../../spec/ADR-016-ontology-enum-reconciliation.md">Specification ADR-016</a></h3><p>Event ontology and enum alignment.</p></section>
+    <section class="card"><h3><a href="../../spec/ADR-017-core-vs-streaming.md">Specification ADR-017</a></h3><p>Core format and streaming separation.</p></section>
+    <section class="card"><h3><a href="../../spec/ADR-025-cross-harness-context-continuation.md">Specification ADR-025</a></h3><p>Context continuation safety and fidelity limits.</p></section>
+  </div>
+</main></body></html>

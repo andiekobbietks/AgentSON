@@ -1,414 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentSON — The Universal Format for AI Agent Session Data</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../shared/design-tokens.css">
-    <style>
-        .container { max-width: var(--container); margin: 0 auto; padding: var(--space-xl); }
-
-        header {
-            text-align: center;
-            padding: 80px 20px 60px;
-        }
-
-        h1 {
-            font-family: var(--font-code);
-            font-size: 56px;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-        h1 span { color: var(--amber); }
-
-        .tagline {
-            font-size: 22px;
-            color: var(--text);
-            margin-bottom: 10px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .subtagline {
-            font-size: 15px;
-            color: var(--text-muted);
-            margin-bottom: 40px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .badges {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 14px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-family: var(--font-code);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .badge-accent {
-            background: var(--accent);
-            color: #0a0a08;
-            border-color: var(--accent);
-            font-weight: 600;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 28px;
-            background: var(--accent);
-            color: #0a0a08;
-            text-decoration: none;
-            border-radius: 6px;
-            font-family: var(--font-code);
-            font-weight: 600;
-            margin: 8px;
-            font-size: 14px;
-        }
-
-        .btn:hover { opacity: 0.9; }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
-
-        section { padding: 60px 20px; border-top: 1px solid var(--border); }
-
-        h2 {
-            font-family: var(--font-code);
-            font-size: 28px;
-            margin-bottom: 16px;
-            color: var(--accent);
-        }
-
-        .section-subtitle {
-            color: var(--text-muted);
-            font-size: 15px;
-            margin-bottom: 30px;
-            max-width: 600px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
-        }
-
-        .card h3 {
-            color: var(--text);
-            font-size: 16px;
-            margin-bottom: 6px;
-            font-family: var(--font-code);
-        }
-        .card p { color: var(--text-muted); font-size: 13px; }
-
-        .status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-family: var(--font-code);
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-
-        .status-done { background: var(--success); color: #0a0a08; }
-        .status-planned { background: var(--text-muted); color: #0a0a08; }
-
-        pre {
-            background: var(--bg);
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 20px 0;
-            border: 1px solid var(--border);
-            font-size: 13px;
-        }
-
-        code {
-            font-family: var(--font-code);
-            font-size: 13px;
-        }
-
-        .legal-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-top: 24px;
-        }
-
-        .legal-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-        }
-
-        .legal-card h3 {
-            font-family: var(--font-code);
-            font-size: 16px;
-            color: var(--accent);
-            margin-bottom: 10px;
-        }
-
-        .legal-card p {
-            color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .legal-card .cite {
-            font-family: var(--font-code);
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 10px;
-            opacity: 0.7;
-        }
-
-        .flow {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            font-family: var(--font-code);
-            font-size: 13px;
-            line-height: 1.8;
-            margin-top: 24px;
-            color: var(--text-muted);
-        }
-
-        .flow em { color: var(--accent); font-style: normal; }
-
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            font-size: 13px;
-            border-top: 1px solid var(--border);
-        }
-
-        footer a { color: var(--accent); text-decoration: none; }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 36px; }
-            .tagline { font-size: 18px; }
-            .legal-row { grid-template-columns: 1fr; }
-            .grid { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentSON Documentation</title>
+  <meta name="description" content="Documentation for AgentSON, an open, provenance-aware interchange format and toolset for AI-agent session traces.">
+  <style>
+    :root{color-scheme:dark;--bg:#0b0b09;--panel:#151510;--line:#343326;--text:#eee9d8;--muted:#b5ad95;--accent:#ffb000}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}
+    main{max-width:980px;margin:auto;padding:32px 22px 70px}header{padding:54px 0 30px;border-bottom:1px solid var(--line)}
+    h1,h2,h3{line-height:1.2}h1{font-size:clamp(2.4rem,7vw,4.2rem);margin:0;color:var(--accent)}
+    h2{font-size:1.55rem;margin-top:38px}p{max-width:78ch}.muted{color:var(--muted)}
+    .notice{border:1px solid var(--line);background:var(--panel);padding:16px 18px;border-radius:10px;margin:24px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+    a{color:var(--accent)}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    pre{background:#050504;border:1px solid var(--line);padding:14px;border-radius:8px;overflow:auto}
+    footer{margin-top:45px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+  </style>
 </head>
 <body>
-    <header>
-        <h1><span>Agent</span>SON</h1>
-        <p class="tagline">The universal format for AI agent session data.</p>
-        <p class="subtagline">Your data, portable, auditable, yours.</p>
-        <div class="badges">
-            <span class="badge badge-accent">v0.1.0</span>
-            <span class="badge">Apache 2.0</span>
-            <span class="badge">No Telemetry</span>
-            <span class="badge">Vendor Neutral</span>
-        </div>
-        <div>
-            <a href="https://github.com/andiekobbietks/AgentSON" class="btn">GitHub</a>
-            <a href="viewer/" class="btn btn-outline">Launch Viewer</a>
-            <a href="standards/" class="btn btn-outline">Standards</a>
-        </div>
-    </header>
+<main>
+  <header>
+    <h1>AgentSON</h1>
+    <p class="muted">Portable, provenance-aware interchange for AI-agent session traces.</p>
+    <p><a href="https://github.com/andiekobbietks/AgentSON">GitHub repository</a> · <a href="../README.md">README</a> · <a href="standards/index.html">Engineering standards</a> · <a href="sops/index.html">Operating procedures</a></p>
+  </header>
 
-    <section>
-        <h2>Why AgentSON</h2>
-        <p class="section-subtitle">Every AI coding tool stores your sessions in its own database. There's no export. No standard. No way out. AgentSON fixes that.</p>
+  <div class="notice"><strong>Alpha / pre-release.</strong> Reader coverage, source fidelity and destination support vary. A valid archive does not prove complete capture, semantic equivalence, safe replay, runtime reconstruction or regulatory compliance.</div>
 
-        <div class="legal-row">
-            <div class="legal-card">
-                <h3>You own your data</h3>
-                <p>GDPR Article 20 gives you the right to export your personal data in a machine-readable format. Your AI coding sessions are your data. AgentSON makes that export real.</p>
-                <div class="cite">GDPR Art. 20 · EU Data Act Ch. VI · CCPA</div>
-            </div>
-            <div class="legal-card">
-                <h3>Format, not framework</h3>
-                <p>AgentSON is a JSON schema, not a protocol. No server. No SDK. No lock-in. Just a format that every tool can read and write. Build readers, not integrations.</p>
-                <div class="cite">ADR-008 · vendor neutrality</div>
-            </div>
-        </div>
+  <h2>What AgentSON does</h2>
+  <p>AgentSON provides a local-first format and toolset for capturing, representing, validating, searching and inspecting AI-agent session histories. It separates the interchange contract from source readers, importers, destination consumers, transports and optional platform services.</p>
 
-        <div class="legal-row">
-            <div class="legal-card">
-                <h3>Trajectory semantics</h3>
-                <p>v1.1 adds task, outcome, observations, tool calls, and correlations — everything you need to fine-tune models on real agent sessions.</p>
-                <div class="cite">spec/v1.1.json</div>
-            </div>
-            <div class="legal-card">
-                <h3>Fine-tuning ready</h3>
-                <p>Export directly to Unsloth (ShareGPT) and Olive (chat-messages) formats. Filter by rating. Feed your own session data back into your models.</p>
-                <div class="cite">exporters/finetune.py</div>
-            </div>
-        </div>
-    </section>
+  <h2>Canonical v1.2 format</h2>
+  <p>The canonical interchange wire format is <strong>JSONL</strong>: one JSON event per line, with <code>stream-meta</code> first. The established <code>.agentson</code> extension is retained. Individual events are validated against <a href="../spec/v1.2-entries.json">spec/v1.2-entries.json</a>. The JSON session envelope in <a href="../spec/v1.2.json">spec/v1.2.json</a> remains a supported materialised/document representation; it is not the JSONL stream schema.</p>
+  <p>See <a href="../spec/ontology.md">the event ontology</a>, <a href="../spec/ADR-015-canonical-schema.md">ADR-015</a> and the <a href="../docs/architecture/session-interoperability.md">interoperability architecture</a>.</p>
 
-    <section>
-        <h2>Supported Tools</h2>
-        <p class="section-subtitle">6 readers, 3 importers, 33 tools identified.</p>
-        <div class="grid">
-            <div class="card">
-                <h3>opencode</h3>
-                <p>SQLite export, full session parsing</p>
-                <span class="status status-done">Working</span>
-            </div>
-            <div class="card">
-                <h3>Claude Code</h3>
-                <p>JSONL from ~/.claude/projects/, tool mapping, subagent support</p>
-                <span class="status status-done">Working</span>
-            </div>
-            <div class="card">
-                <h3>Chrome DevTools AI</h3>
-                <p>HTML file parsing, content classification, tool inference</p>
-                <span class="status status-done">Working</span>
-            </div>
-            <div class="card">
-                <h3>ChatGPT</h3>
-                <p>Conversation import from OpenAI export format</p>
-                <span class="status status-done">Working</span>
-            </div>
-            <div class="card">
-                <h3>MiniMax</h3>
-                <p>20-table SQLite database parser</p>
-                <span class="status status-done">Working</span>
-            </div>
-            <div class="card">
-                <h3>Antigravity IDE</h3>
-                <p>7-table schema, protobuf blob extraction</p>
-                <span class="status status-done">Working</span>
-            </div>
-            <div class="card">
-                <h3>Cursor</h3>
-                <p>RICE: 2700 — biggest market, biggest lock-in</p>
-                <span class="status status-planned">Planned</span>
-            </div>
-            <div class="card">
-                <h3>Cline</h3>
-                <p>RICE: 1350 — open source, BYOK, users care about data</p>
-                <span class="status status-planned">Planned</span>
-            </div>
-            <div class="card">
-                <h3>Aider</h3>
-                <p>RICE: 1350 — MIT, terminal-first</p>
-                <span class="status status-planned">Planned</span>
-            </div>
-        </div>
-    </section>
+  <h2>Quick start</h2>
+  <pre><code>python -m pip install agentson
+agentson --help
+agentson list --tool opencode
+agentson export --tool opencode --session SESSION_ID --output ./sessions/
+agentson validate ./sessions/</code></pre>
+  <p>Use the installed CLI help for the exact commands and options in your package version.</p>
 
-    <section>
-        <h2>Quick Start</h2>
-        <pre><code># Install
-pip install agentson
+  <h2>Capabilities and limits</h2>
+  <div class="grid">
+    <section class="card"><h3>Capture and preserve</h3><p>Source-specific readers map available records into a shared event vocabulary and retain source evidence where available.</p></section>
+    <section class="card"><h3>Validate and inspect</h3><p>Local tools validate supported representations and help inspect event history, provenance and known gaps.</p></section>
+    <section class="card"><h3>Continue context</h3><p>The resume workflow can create a reviewed Markdown context packet. The experimental OpenCode consumer has a limited archive-capsule handoff path.</p></section>
+  </div>
+  <p>AgentSON does not guarantee full source coverage, private reasoning capture, lossless conversion, arbitrary cross-harness resumption or automatic execution replay. Portability, reconstruction and resumption require different evidence.</p>
 
-# List sessions from Claude Code
-agentson list --tool claude-code
+  <h2>Privacy and legal boundaries</h2>
+  <p>Session records can contain personal data, credentials, private paths and confidential code. Review and redact before sharing. Pattern-based redaction is best-effort, not a complete detector. GDPR data-portability rights and EU AI Act duties depend on the circumstances; AgentSON does not determine legal applicability or certify compliance.</p>
 
-# Export a session
-agentson export --tool claude-code --session ses_xxx
+  <h2>Documentation</h2>
+  <div class="grid">
+    <section class="card"><h3>Project</h3><p><a href="../PRD.md">Product requirements</a><br><a href="../STATUS.md">Repository status</a><br><a href="../CHANGELOG.md">Changelog</a></p></section>
+    <section class="card"><h3>Format and architecture</h3><p><a href="../spec/v1.2-entries.json">v1.2 event schema</a><br><a href="../spec/v1.2.json">Session-envelope compatibility schema</a><br><a href="../docs/architecture/session-interoperability.md">Interoperability architecture</a><br><a href="../docs/architecture/conformance-test-plan.md">Conformance test plan</a></p></section>
+    <section class="card"><h3>Adapters and operations</h3><p><a href="../docs/standards/reader-conformance-v1.2.md">Reader conformance</a><br><a href="../docs/standards/opencode-storage-compatibility.md">OpenCode compatibility</a><br><a href="../docs/wiki/Home.md">Wiki source</a><br><a href="../SECURITY.md">Security policy</a></p></section>
+    <section class="card"><h3>Planning</h3><p><a href="../ROADMAP.md">Reader roadmap and RICE</a><br><a href="../STRATEGIC_ROADMAP.md">Strategic roadmap</a><br><a href="../docs/production-readiness-assessment.md">Production-readiness assessment</a></p></section>
+  </div>
 
-# Export to fine-tuning format (Unsloth/ShareGPT)
-agentson finetune session.AgentSON --format unsloth --output training.jsonl
-
-# Search across all sessions
-agentson search "nightscout setup"
-
-# View in browser (drag & drop)
-open docs/viewer/</code></pre>
-    </section>
-
-    <section>
-        <h2>The Pipeline</h2>
-        <div class="flow">
-            <em>your sessions</em> → <em>readers</em> → <em>.AgentSON</em> → <em>exporters</em> → <em>fine-tuning data</em><br><br>
-            opencode sessions ─┐<br>
-            Claude Code logs ──┤<br>
-            ChatGPT exports ───┤──→ <em>AgentSON format</em> ──→ <em>Unsloth/Olive/ShareGPT</em> ──→ <em>train on YOUR data</em><br>
-            Chrome DevTools ───┤<br>
-            MiniMax data ──────┤<br>
-            Antigravity IDE ───┘
-        </div>
-    </section>
-
-    <section>
-        <h2>What's In the Repo</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>spec/</h3>
-                <p>JSON Schema v1 and v1.1</p>
-            </div>
-            <div class="card">
-                <h3>readers/</h3>
-                <p>6 tool-specific parsers</p>
-            </div>
-            <div class="card">
-                <h3>importers/</h3>
-                <p>ChatGPT format converter</p>
-            </div>
-            <div class="card">
-                <h3>exporters/</h3>
-                <p>Unsloth + Olive fine-tuning</p>
-            </div>
-            <div class="card">
-                <h3>cli/</h3>
-                <p>agentson command-line tool</p>
-            </div>
-            <div class="card">
-                <h3>docs/</h3>
-                <p>Viewer, SOPs, operating manual</p>
-            </div>
-            <div class="card">
-                <h3>examples/</h3>
-                <p>4 sample .AgentSON files</p>
-            </div>
-            <div class="card">
-                <h3>standards/</h3>
-                <p>10 ADRs, coding standards, workflow</p>
-            </div>
-        </div>
-    </section>
-
-    <section style="text-align: center;">
-        <h2>Get Started</h2>
-        <div>
-            <a href="https://github.com/andiekobbietks/AgentSON" class="btn">View on GitHub</a>
-            <a href="viewer/" class="btn btn-outline">Launch Viewer</a>
-            <a href="standards/" class="btn btn-outline">Operating Manual</a>
-            <a href="sops/" class="btn btn-outline">SOPs</a>
-        </div>
-    </section>
-
-    <footer>
-        <p>AgentSON — Agent + JSON</p>
-        <p>Your data. Portable. Auditable. Yours.</p>
-        <p>© 2026 Andrea Enning (AndieKobbieTech)</p>
-    </footer>
+  <footer>AgentSON · Apache License 2.0 · Alpha project. Documentation describes the repository state and does not constitute legal, security or compliance certification.</footer>
+</main>
 </body>
 </html>
