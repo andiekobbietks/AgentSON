@@ -1033,7 +1033,7 @@ TOPICS:
     excel_parser.add_argument("--redact", action="store_true", help="Redact PII before export")
     
     # validate command
-    validate_parser = subparsers.add_parser("validate", help="Validate .agentson file(s) against v1.2 schema")
+    validate_parser = subparsers.add_parser("validate", help="Validate canonical v1.2 JSONL streams and supported session documents")
     validate_parser.add_argument("input", help="Input .agentson file or directory")
 
     # redact command
@@ -1050,11 +1050,11 @@ TOPICS:
     publish_parser.add_argument("--push", action="store_true", help="Push to remote registry after building")
 
     # reconstruct command
-    recon_parser = subparsers.add_parser("reconstruct", help="Reconstruct session from partial sources with provenance & compliance")
+    recon_parser = subparsers.add_parser("reconstruct", help="Reconstruct a session from partial sources with provenance and explicit gaps (experimental; not a compliance certification)")
     recon_parser.add_argument("--input", help="Input .agentson file")
     recon_parser.add_argument("--source", dest="sources", action="append", default=[], help="Source file or directory (repeatable)")
     recon_parser.add_argument("--mode", choices=["forensic", "narrative", "live"], default="forensic", help="Reconstruction mode")
-    recon_parser.add_argument("--jurisdiction", choices=["eu", "uk", "dual"], default="dual", help="Compliance jurisdiction")
+    recon_parser.add_argument("--jurisdiction", choices=["eu", "uk", "dual"], default="dual", help="Optional reporting jurisdiction label; does not determine legal applicability")
     recon_parser.add_argument("--output", help="Output file")
     recon_parser.add_argument("--format", choices=["json", "jsonl", "summary"], default="json", help="Output format")
     recon_parser.add_argument("--model", help="SLM model for narrative gap-filling")
@@ -1109,7 +1109,7 @@ TOPICS:
     tools_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
 
     # grc-export command (premium — GRC evidence package)
-    grc_parser = subparsers.add_parser("grc-export", help="Export GRC evidence package (AgentSON Platform)")
+    grc_parser = subparsers.add_parser("grc-export", help="Export an experimental local GRC evidence package (not a certification)")
     grc_parser.add_argument("--digest", help="Path to report.json or digest JSON")
     grc_parser.add_argument("--output", help="Output evidence JSON (default: grc_evidence_<timestamp>.json)")
     grc_parser.add_argument("--format", choices=["json"], default="json")
@@ -1117,7 +1117,7 @@ TOPICS:
     grc_parser.add_argument("--secure", action="store_true", help="Sign the evidence package with a local ECDSA P-256 key (premium)")
 
     # platform command (Data Rights Intelligence Platform)
-    platform_parser = subparsers.add_parser("platform", help="Data Rights Intelligence Platform — scan, analyze, report")
+    platform_parser = subparsers.add_parser("platform", help="Optional AgentSON Platform tools (experimental) — scan, analyse, report")
     platform_sub = platform_parser.add_subparsers(dest="platform_command", help="Platform sub-command")
     scan_p = platform_sub.add_parser("scan", help="Detect tools, crawl sessions, analyze, write report")
     scan_p.add_argument("--output", help="Base output directory")

@@ -143,7 +143,7 @@ def show_onboarding():
     ))
     c.print()
     c.print("  [dim]AgentSON canonicalises agent traces from every major protocol[/]")
-    c.print("  [dim]into one portable JSONL format. Export to any tool.[/]")
+    c.print("  [dim]into the canonical v1.2 JSONL format for supported sources. Native destination support is adapter-specific; not every tool can import an archive.[/]")
     c.print("  [dim]Distribute via Docker Hub or LXD Hub.[/]")
     c.print()
 
@@ -165,7 +165,7 @@ def show_tour():
     steps = [
         ("[bold #5b9ef6]What is AgentSON?[/]",
          "A [i]provenance format[/] — like JSON Lines, but with 12 semantic\n"
-         "primitives that capture everything an agent does:\n"
+         "primitives that represent activity exposed by the source and captured by an adapter:\n"
          "  [blue]coordination[/] · [green]execution[/] · [amber]input[/]"),
         ("[bold #a0d060]Protocol Adapters[/]",
          "MCP · A2A · AGNTCY · ChatGPT\n"
@@ -405,8 +405,8 @@ TOPICS = {
         "Validate canonical v1.2 JSONL streams and supported legacy session documents.\n\n"
         "Usage:\n"
         "  agentson validate <file_or_directory>\n\n"
-        "Validates every .agentson file against spec/v1.2.json's discriminated\n"
-        "legacy/document envelopes against spec/v1.2.json. Returns pass/fail per file\n"
+        "Validates JSONL framing and each event against spec/v1.2-entries.json;\n"
+        "validates legacy/document envelopes against spec/v1.2.json. Returns pass/fail\n"
         "with detailed error messages.\n\n"
         "[dim]See the validation and JSONL export test modules for current coverage.[/]",
         title="[bold]Validate Command[/]",
@@ -612,7 +612,7 @@ def show_encyclopedia():
     # Header
     c.print(Panel(
         "[bold #ffb000]AgentSON Encyclopedia[/]\n"
-        "[dim]AgentSON Platform — Enterprise Compliance & Audit — explained[/]\n\n"
+        "[dim]AgentSON Platform — optional ingestion and reporting services — explained[/]\n\n"
         "[dim]Select a topic below or run:[/]\n"
         "[bold]  agentson help <topic>[/]",
         box=box.DOUBLE,
@@ -642,15 +642,21 @@ def show_encyclopedia():
     toc.add_row("", "")
     toc.add_row("[bold #a0d060]Readers (Export Sources)[/]", "")
     toc.add_row("  opencode", "OpenCode SQLite reader")
-    toc.add_row("  claude-code", "Claude Code SQLite reader")
+    toc.add_row("  minimax", "MiniMax local session reader")
+    toc.add_row("  antigravity", "Antigravity IDE session reader")
+    toc.add_row("  claude-code", "Claude Code JSONL transcript reader")
     toc.add_row("  chrome-devtools", "Chrome DevTools Protocol reader")
     toc.add_row("  libre", "FreeStyle Libre 2 CSV reader")
+    toc.add_row("  vibeedge", "VibeEdge session reader")
+    toc.add_row("  cursor", "Cursor session reader")
+    toc.add_row("  cline", "Cline task reader")
+    toc.add_row("  aider", "Aider session reader")
     toc.add_row("", "")
     toc.add_row("[bold #ffb000]CLI Commands[/]", "")
     toc.add_row("  validate", "Validate JSONL streams and session documents")
     toc.add_row("  redact", "Redact PII before sharing")
     toc.add_row("  publish", "Publish to Docker Hub / LXD Hub")
-    toc.add_row("  runbook", "Replay session as runbook (planned)")
+    toc.add_row("  runbook", "Generate a proposed runbook (planned; no automatic execution)")
     toc.add_row("  telemetry", "Telemetry mount docs — see /internal/security mkdocs (dev only; not shipped)")
     toc.add_row("", "")
     toc.add_row("[dim]Conceptual References[/]", "")
