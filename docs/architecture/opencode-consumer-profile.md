@@ -24,7 +24,7 @@ The OpenCode consumer provides a first destination-side proof of concept for tra
 - Imported content is untrusted. Review it for credentials, personal data and embedded instructions before transfer.
 - Pattern-based redaction is not a complete detector.
 - Basic-auth credentials must be sent in the Authorization header and must not be embedded in URLs.
-- Remote targets require explicit opt-in and HTTPS, but the current HTTP client has an unresolved cross-origin redirect/authentication-forwarding risk identified in review. Use localhost only for authenticated imports; do not use remote mode with credentials until redirect confinement is implemented and tested.
+- Remote targets require explicit opt-in and HTTPS, but the current HTTP client has an unresolved cross-origin redirect/authentication-forwarding risk identified in review. Use localhost only for authenticated imports; do not use remote mode with credentials until redirect confinement is implemented and tested. Until then, restrict remote-mode experiments to synthetic, non-sensitive data and an explicitly approved destination.
 - A successful digest read-back proves that the tested destination stored the same archive bytes. It does not prove source authenticity, semantic understanding, native event reconstruction or checkpoint restoration.
 
 ## Verification and limitations
