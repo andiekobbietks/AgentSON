@@ -935,7 +935,7 @@ def _display_banner() -> None:
     ver = '0.1.0'
     # Clean: wordmark + baked PLATFORM + version + tagline, no pyfiglet retry
     from cli.help_system import WORDMARK, WORDMARK_PLATFORM
-    for ln in list(WORDMARK) + list(WORDMARK_PLATFORM) + ["-" + ver + "-", "", "  AgentSON Platform  —  Enterprise Compliance & Audit"]:
+    for ln in list(WORDMARK) + list(WORDMARK_PLATFORM) + ["-" + ver + "-", "", "  AgentSON Platform  —  Optional Services & Reporting (Experimental)"]:
         print(ln)
 
 
@@ -1043,14 +1043,14 @@ TOPICS:
     redact_parser.add_argument("--all", action="store_true", help="Process all .agentson files in directory")
 
     # publish command
-    publish_parser = subparsers.add_parser("publish", help="Publish AgentSON session to Docker Hub or LXD Hub")
+    publish_parser = subparsers.add_parser("publish", help="Experimental: publish an archive to a configured Docker or LXD registry")
     publish_parser.add_argument("input", help="Input .agentson file")
     publish_parser.add_argument("--registry", choices=["docker", "lxd"], default="docker", help="Target registry")
     publish_parser.add_argument("--tag", help="Image tag or alias (auto-generated if omitted)")
     publish_parser.add_argument("--push", action="store_true", help="Push to remote registry after building")
 
     # reconstruct command
-    recon_parser = subparsers.add_parser("reconstruct", help="Reconstruct a session from partial sources with provenance and explicit gaps (experimental; not a compliance certification)")
+    recon_parser = subparsers.add_parser("reconstruct", help="NOT IMPLEMENTED — reserved for future partial-source reconstruction")
     recon_parser.add_argument("--input", help="Input .agentson file")
     recon_parser.add_argument("--source", dest="sources", action="append", default=[], help="Source file or directory (repeatable)")
     recon_parser.add_argument("--mode", choices=["forensic", "narrative", "live"], default="forensic", help="Reconstruction mode")
@@ -1108,7 +1108,7 @@ TOPICS:
     tools_p = browser_sub.add_parser("list-tools", help="NOT IMPLEMENTED — list MCP server tools")
     tools_p.add_argument("--attach", help="Attach to existing Chrome at this URL")
 
-    # grc-export command (premium — GRC evidence package)
+    # experimental local GRC evidence export (not a certification)
     grc_parser = subparsers.add_parser("grc-export", help="Export an experimental local GRC evidence package (not a certification)")
     grc_parser.add_argument("--digest", help="Path to report.json or digest JSON")
     grc_parser.add_argument("--output", help="Output evidence JSON (default: grc_evidence_<timestamp>.json)")
@@ -1116,10 +1116,10 @@ TOPICS:
     grc_parser.add_argument("--post", help="POST URL for platform ingestion (optional)")
     grc_parser.add_argument("--secure", action="store_true", help="Sign the evidence package with a local ECDSA P-256 key (premium)")
 
-    # platform command (Data Rights Intelligence Platform)
+    # optional AgentSON Platform command
     platform_parser = subparsers.add_parser("platform", help="Optional AgentSON Platform tools (experimental) — scan, analyse, report")
     platform_sub = platform_parser.add_subparsers(dest="platform_command", help="Platform sub-command")
-    scan_p = platform_sub.add_parser("scan", help="Detect tools, crawl sessions, analyze, write report")
+    scan_p = platform_sub.add_parser("scan", help="Experimental: scan selected local source locations and write a report")
     scan_p.add_argument("--output", help="Base output directory")
     scan_p.add_argument("--tool", action="append", dest="tools", help="Only scan this tool (repeatable)")
     scan_p.add_argument("--slm", action="store_true", help="Try to use a local SLM for classification")
@@ -1131,7 +1131,7 @@ TOPICS:
     serve_p.add_argument("--watch", action="store_true", help="Dev mode: restart on .py file change (stdlib supervisor, like npm run dev)")
     license_p = platform_sub.add_parser("license", help="Generate a local dev licence key (premium test only)")
     license_p.add_argument("--dev", action="store_true", help="Write a dev licence covering all premium features")
-    structure_p = platform_sub.add_parser("structure", help="Premium data pipeline — build graph / lake / CSV from .agentson stream")
+    structure_p = platform_sub.add_parser("structure", help="Experimental: build graph, CSV and training-data exports from an AgentSON stream")
     structure_p.add_argument("--input", default=".", help="Directory of .agentson files")
     structure_p.add_argument("--output", default="structure", help="Output directory")
     doctor_p = platform_sub.add_parser("doctor", help="Network troubleshooting diagnostics (enterprise ops)")

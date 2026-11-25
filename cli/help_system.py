@@ -446,12 +446,12 @@ TOPICS = {
 
     "runbook": lambda c: Panel(
         "[bold #ffb000]agentson runbook (planned)[/]\n\n"
-        "Replay an AgentSON session as a runbook — execute every action\n"
-        "step-by-step, pipe outputs, record the replay as new provenance.\n\n"
+        "Generate a proposed runbook from selected session events. This feature is planned; it does not execute actions.\n"
+        "The current CLI does not replay historical actions or execute generated steps.\n\n"
         "Usage:\n"
         "  agentson runbook <file> [--from <id>] [--to <id>]\n\n"
-        "Turns any session into an executable, auditable workflow.\n"
-        "Provenance of provenance.",
+        "A future workflow-design aid; no commands are replayed or executed.\n"
+        "",
         title="[bold]Runbook Command[/]",
         box=box.HEAVY,
         border_style="bold #ffb000",
@@ -473,12 +473,12 @@ TOPICS = {
     ),
 
     "platform": lambda c: Panel(
-        "[bold #ffb000]agentson platform <subcommand>[/]\n\n"
-        "[bold]scan[/]     detect tools, crawl sessions, classify, write report\n"
+        "[bold #ffb000]agentson platform <subcommand>[/] (experimental)\n\n"
+        "[bold]scan[/]     scan selected local source locations, classify available records and write a report\n"
         "[bold]detect[/]   list installed AI tools and their data locations\n"
         "[bold]serve[/]    local preview server (add --watch for npm-dev reload)\n"
         "[bold]license[/]  --dev writes a local dev licence (testing only)\n"
-        "[bold]structure[/] premium data pipeline — graph / CSV / training export\n"
+        "[bold]structure[/] graph / CSV / training-data export\n"
         "[bold]doctor[/]   network troubleshooting probes (see [i]doctor[/])\n\n"
         "Usage:\n"
         "  agentson platform serve --port 8090 --watch\n\n"
@@ -490,32 +490,32 @@ TOPICS = {
 
     "grc-export": lambda c: Panel(
         "[bold #ffb000]agentson grc-export --secure --post <url>[/]\n\n"
-        "Premium. Builds a vendor-neutral GRC evidence package from a scan\n"
+        "Experimental local evidence export. Builds a vendor-neutral package from a scan\n"
         "digest, optionally signs it, and can POST it to an ingestion\n"
-        "endpoint. Signing is ECDSA P-256 with a local key; the public key\n"
-        "travels with the package so the receiver verifies without the\n"
-        "private key.\n\n"
+        "endpoint. A signature supports integrity verification; the package is not a\n"
+        "compliance certification or legal determination. Signing uses a local\n"
+        "ECDSA P-256 key; the public key is included for verification.\n\n"
         "Usage:\n"
         "  agentson grc-export --digest report.json --secure --output e.json\n"
         "  agentson grc-export --digest report.json --secure \\\n"
         "      --post http://localhost:8090/api/evidence\n\n"
         "[dim]Code: cli/grc_export.py, cli/signing.py[/]",
-        title="[bold]GRC Export (premium)[/]",
+        title="[bold]GRC Evidence Export (experimental)[/]",
         box=box.HEAVY,
         border_style="bold #ffb000",
     ),
 
     "structure": lambda c: Panel(
-        "[bold #ffb000]agentson platform structure[/] (premium)\n\n"
-        "The data pipeline. Reads .agentson JSONL streams and emits:\n"
+        "[bold #ffb000]agentson platform structure[/] (experimental)\n\n"
+        "Experimental transform. Reads .agentson JSONL streams and emits:\n"
         "  graph.json         entities + relations (agent, session, tool)\n"
         "  entities.csv       tabular for Excel / GRC import\n"
         "  relations.csv      relation table\n"
-        "  training_module.jsonl  entry stream for fine-tuning\n\n"
+        "  training_module.jsonl  optional training-data export (does not train a model)\n\n"
         "Only relations present in the stream are emitted — nothing inferred.\n\n"
         "Usage:\n"
         "  agentson platform structure --input . --output ./structure/",
-        title="[bold]Structure Pipeline (premium)[/]",
+        title="[bold]Structure Pipeline (experimental)[/]",
         box=box.HEAVY,
         border_style="bold #ffb000",
     ),
