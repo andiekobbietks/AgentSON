@@ -30,7 +30,7 @@ The executable baseline, conformance levels, producer/consumer test requirements
 
 ## Receiving-harness consumers
 
-Consumers accept canonical AgentSON archives and transfer them into a target harness. They are separate from source readers and importers.
+Consumers accept canonical v1.2 JSONL streams and transfer them into a target harness. They are separate from source readers and importers.
 
 | Target harness | Module | Current profile | Evidence and limitations |
 |---|---|---|---|
@@ -56,9 +56,9 @@ A file existing in the repository is not sufficient evidence for the label "work
 Track these separately:
 
 1. Capture/read source data.
-2. Export a canonical v1.2 archive.
-3. Import a canonical v1.2 archive.
-4. Validate envelope and entries.
+2. Export a canonical v1.2 JSONL stream.
+3. Import a canonical v1.2 JSONL stream.
+4. Validate JSONL framing and individual events.
 5. Preserve source ordering and correlation.
 6. Preserve provenance and report semantic loss.
 7. Inspect/render without executing imported content.
@@ -72,7 +72,7 @@ Do not infer capabilities 3–9 from capability 1.
 1. Inspect the source format and document its version/limitations.
 2. Implement a source-specific reader behind a stable adapter boundary.
 3. Preserve source identifiers, timestamps and ordering where available.
-4. Map into the canonical v1.2 envelope and event vocabulary.
+4. Map into the canonical v1.2 JSONL stream and event vocabulary.
 5. Record preserved, normalised, extension, unavailable, redacted and unsupported information.
 6. Add sanitised fixtures derived from real exports where permission allows; label synthetic fixtures honestly.
 7. Test malformed, incomplete, unknown and version-skewed source records.

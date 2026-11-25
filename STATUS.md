@@ -8,7 +8,7 @@
 
 The repository's SOP-016 work-in-progress limit is **3 open pull requests**. The live GitHub search on 25 November 2026 returned **11 open PRs**, so the queue is over the limit. Do not create another branch or PR for this work. Continue in an existing relevant PR and reduce the queue before starting unrelated work.
 
-- **PR #62** is the integration branch for canonical v1.2 JSONL export, reader provenance/conformance, continuation, security hardening, CI/package checks and the aligned documentation set. Its head at the time of this update is fc80aac91ed76c9b1d0874ae4478e1a453aadec6.
+- **PR #62** is the integration branch for canonical v1.2 JSONL export, reader provenance/conformance, continuation, security hardening, CI/package checks and the aligned documentation set. The reviewed implementation head was fc80aac91ed76c9b1d0874ae4478e1a453aadec6; the documentation-alignment commit is 92f0f5639b58dc0ae0e120cc119a0457af041e76. CI has not yet been rerun on the documentation commit.
 - **PR #60** contains the wiki mirror and Severity v1 work, but its current ADR-024 says the JSON-object envelope is canonical. That conflicts with the maintainer's explicit format decision recorded in the PR #60 conversation: v1.2 JSONL remains the canonical interchange wire format; the JSON-object envelope remains a supported materialised/document representation. ADR-024's conflicting decision is not accepted and must be revised before PR #60 can merge.
 - PR #60 also contains an OpenCode consumer implementation that has been ported into PR #62. Avoid merging duplicate consumer implementations.
 - Both #60 and #62 require a fresh mergeability check against current master; their branches have diverged from the base and are not assumed merge-ready.
@@ -34,7 +34,7 @@ Do not describe JSONL as merely an optional transport or describe the session en
 - The OpenCode adapter queues a synthetic inbox item with resume=false. This prevents immediate agent-loop execution; the archived content may enter model context on a later turn.
 - C3 reconstruction and C4 checkpoint resumption remain unclaimed.
 - A passing schema test does not prove complete capture, authenticity, safe execution or lossless conversion.
-- The documentation-only changes in this commit have not been run through CI at the time this status was written.
+- The documentation-alignment commit has not yet been run through CI at the time this status was written.
 
 ## Documentation source of truth
 

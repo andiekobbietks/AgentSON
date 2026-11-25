@@ -2,7 +2,7 @@
 
 **Status:** Proposed product and engineering roadmap  
 **Last updated:** 25 November 2026  
-**Current canonical schema:** v1.2  
+**Current canonical interchange:** v1.2 JSONL (event schema v1.2)  
 **Implementation status:** The capabilities below are proposals unless explicitly marked as existing in the repository.
 
 > This document expands AgentSON's strategic and engineering direction. It complements [ROADMAP.md](ROADMAP.md), which retains the existing RICE-scored reader-priority matrix. It does not replace the project overview in [README.md](README.md).
@@ -11,7 +11,7 @@
 
 AgentSON is an open, vendor-neutral format and tooling layer for preserving, correlating and exchanging operational execution evidence.
 
-The current project focuses on AI-agent sessions: capturing activity from supported runtimes and preserving it in portable `.AgentSON` records. The next architectural step is to make the event model useful across a wider operational environment, where work is performed by:
+The current project focuses on AI-agent sessions: capturing activity from supported runtimes and preserving it in portable `.agentson` records. The next architectural step is to make the event model useful across a wider operational environment, where work is performed by:
 
 - AI agents and multi-agent workflows;
 - human engineers and service operators;
@@ -80,7 +80,7 @@ The outage is a design motivation and validation scenario, not evidence of custo
 
 ### 4.1 Preserve the current format; extend deliberately
 
-The v1.2 schema is the current canonical schema. Do not silently redefine existing entry types or make existing files invalid.
+The v1.2 JSONL stream is the canonical interchange wire format. The JSON session envelope remains a supported materialised/document representation. Do not silently redefine existing event types or make existing streams invalid.
 
 First produce a schema-gap analysis and compatibility proposal. Prefer additive, optional fields where they preserve v1.2 semantics. If the required actor, resource, causality or evidence model cannot be added safely, introduce a separately versioned schema with migration guidance rather than forcing a breaking change into v1.2.
 

@@ -39,7 +39,7 @@ The separate Severity v1 specification is a data contract expressed with JSON Sc
 
 ## Format and schema
 
-**v1.2 is the canonical schema decision** (see [ADR-015](spec/ADR-015-canonical-schema.md), [ADR-016](spec/ADR-016-ontology-enum-reconciliation.md) and [ADR-017](spec/ADR-017-core-vs-streaming.md)).
+**v1.2 JSONL is the canonical interchange wire-format decision** (see [ADR-015](spec/ADR-015-canonical-schema.md), [ADR-016](spec/ADR-016-ontology-enum-reconciliation.md) and [ADR-017](spec/ADR-017-core-vs-streaming.md)).
 
 - Canonical interchange is a **JSONL stream**: one JSON event per line.
 - The first event in a stream is `stream-meta`.
@@ -192,7 +192,7 @@ A reliable interchange pipeline has distinct stages:
 4. **Validate:** check the stream against the versioned schema and semantic constraints.
 5. **Exchange:** transfer the validated representation through a separately specified transport.
 6. **Inspect:** review events, provenance, omissions and conversion warnings.
-7. **Resume (future capability):** reconstruct execution only where the target runtime can safely and meaningfully interpret the captured state.
+7. **Context continuation (limited):** create a reviewed context packet or use a tested destination adapter. Full runtime reconstruction and checkpoint resumption remain separate capabilities.
 
 A valid JSON document proves structural conformance to the schema; it does not prove semantic equivalence, complete capture, safe replay, or successful resumption. Those require source-specific fixtures, round-trip tests, loss reports and cross-runtime integration tests.
 

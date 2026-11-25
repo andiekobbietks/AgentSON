@@ -1,111 +1,49 @@
-# Architecture Decision Records (ADRs)
+# Architecture Decision Records
 
-ADRs capture significant architectural decisions with context and rationale. Repository-level ADRs are authoritative; this page is an index/mirror.
+ADRs capture decisions and their rationale. The checked-in repository documents are authoritative; this page is a navigational index.
 
-**Two namespaces exist:** Operating ADRs live in `docs/standards/adrs/`; Specification ADRs live in `spec/`. Both series reuse identifiers 015 and 016. Always include the namespace and path when referring to either one.
+Two namespaces exist: operating ADRs live under docs/standards/adrs/ and specification ADRs live under spec/. Some identifiers overlap, so always include the namespace and path.
 
----
+## Decision index
 
-## ADR Index
+| ADR | Subject | Status |
+|---|---|---|
+| Operating ADR-001 to ADR-014 | Project, workflow, integration and historical decisions | See docs/standards/adrs/ |
+| Operating ADR-010 | Data portability as a design use case | Accepted with scoped wording; not a legal opinion or compliance claim |
+| Operating ADR-011 | AgentSON project name and .agentson extension | Accepted naming decision; not trademark clearance |
+| Specification ADR-015 | Canonical v1.2 JSONL interchange format | Accepted |
+| Specification ADR-016 | Ontology and enum reconciliation | Accepted |
+| Specification ADR-017 | Core format and streaming separation | Accepted |
+| Specification ADR-024 | JSON session-envelope-only canonical proposal | Not accepted; conflicts with the maintainer's JSONL decision |
+| Specification ADR-025 | Cross-harness context continuation | Proposed implementation baseline |
 
-| # | Title | Date | Status |
-|---|-------|------|--------|
-| 001 | [AgentSON Format](ADR-001) | 2026-07-05 | Accepted |
-| 002 | [JSON over SQLite](ADR-002) | 2026-07-05 | Accepted |
-| 003 | [Vendor Neutral](ADR-003) | 2026-07-05 | Accepted |
-| 004 | [Amber Design Tokens](ADR-004) | 2026-07-05 | Accepted |
-| 005 | [Nightscout Integration](ADR-005) | 2026-07-05 | Accepted |
-| 006 | [GitHub Pages](ADR-006) | 2026-07-05 | Accepted |
-| 007 | [CodeRabbit](ADR-007) | 2026-07-05 | Accepted |
-| 008 | [Trace Data Interchange](ADR-008) | 2026-07-05 | Accepted |
-| 009 | [OSI Open Interchange](ADR-009) | 2026-07-05 | Accepted |
-| 010 | [GDPR Data Liberation](ADR-010) | 2026-07-05 | Accepted |
-| 011 | [Rename to AgentSON](ADR-011) | 2026-07-05 | Accepted |
-| 012 | [Academic Literature Relationship](ADR-012) | 2026-07-05 | Accepted |
-| 013 | [CLI Scope Violation (finetune/push/pull)](ADR-013) | 2026-07-06 | Accepted |
-| 014 | [Observation Entry Type Missing](ADR-014) | 2026-07-06 | Accepted |
-| Operating ADR-015 | [Rename to AgentSON](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/adrs/adr-015-rename-agenson-to-agentson.md) | 2026-07-05 | Accepted |
-| Operating ADR-016 | [Intrinsic Before Extrinsic](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/adrs/adr-016-intrinsic-before-extrinsic.md) | 2026-07-06 | Accepted |
-| Specification ADR-015 | [Canonical Schema](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md) | 2026-07-07 | Accepted — canonical JSONL |
-| Specification ADR-016 | [Ontology↔Enum Reconciliation](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-016-ontology-enum-reconciliation.md) | 2026-07-07 | Accepted |
-| Specification ADR-017 | [Core vs Streaming Separation](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-017-core-vs-streaming.md) | 2026-07-07 | Accepted |
-| Specification ADR-024 | Canonical JSON envelope proposal | 2026-11-05 | Not accepted; conflicts with maintainer's JSONL-canonical decision |
+## Key specification decisions
 
----
+### Canonical format
 
-## ADR-001: AgentSON Format
+The canonical v1.2 interchange wire format is JSONL: one event per line, with stream-meta first. Individual events are validated against spec/v1.2-entries.json. The JSON session envelope in spec/v1.2.json remains a supported materialised/document representation, not the canonical wire format.
 
-**Context:** Every AI coding agent stores session data in proprietary SQLite databases with unique schemas. No standard format exists for exporting or sharing session traces.
+See:
+- [ADR-015: Canonical Schema](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-015-canonical-schema.md)
+- [ADR-016: Ontology and Enum Reconciliation](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-016-ontology-enum-reconciliation.md)
+- [ADR-017: Core vs Streaming](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-017-core-vs-streaming.md)
+- [ADR-024: Rejected JSON-envelope-only proposal](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-024-canonical-session-archive-and-interoperability.md)
 
-**Decision:** Create `.AgentSON` — a single-file JSON format for capturing AI agent session traces with full metadata, tool calls, and reasoning chains.
+### Data portability and legal boundaries
 
-**Consequences:**
-- (+) One file = one complete session, portable and shareable
-- (+) JSON is human-readable and universally supported
-- (-) JSON has no binary encoding (larger than SQLite)
+AgentSON is designed to make supported session records more portable and inspectable. Whether a particular person has a right to obtain particular data, and which organisation must provide it, depends on the applicable law, legal basis, controller/processor roles and facts. The project does not determine those questions or certify GDPR or EU AI Act compliance.
 
----
+See [Operating ADR-010](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/adrs/adr-010-gdpr-data-liberation.md).
 
-## ADR-002: JSON over SQLite
+### Project naming
 
-**Context:** Session data is stored in SQLite databases locally. Should AgentSON be a SQLite export or a JSON file?
+The project uses the AgentSON name and .agentson file extension. Historical naming research is not a legal clearance search and must not be presented as proof of trademark availability.
 
-**Decision:** Use JSON files, not SQLite dumps. Each `.AgentSON` file is self-contained.
+See [Operating ADR-011](https://github.com/andiekobbietks/AgentSON/blob/master/docs/standards/adrs/adr-011-naming-and-file-extension.md).
 
-**Consequences:**
-- (+) Single file can be emailed, shared, archived
-- (+) No database dependency to read
-- (-) No indexing (search requires full scan)
+## Related documents
 
----
-
-## ADR-003: Vendor Neutral
-
-**Context:** AgentSON could depend on specific vendor APIs (OpenAI, Anthropic) for enhanced features.
-
-**Decision:** Never depend on one company's API or format. Every external service is optional. Core features work offline.
-
-**Consequences:**
-- (+) If any vendor shuts down, AgentSON still works
-- (+) Users own their data completely
-- (-) Can't use vendor-specific features (e.g., OpenAI embeddings)
-
----
-
-## ADR-004: Amber Design Tokens
-
-**Context:** The original `.ailog` page used cyan/blue tokens (`#58a6ff`). Rebranding to AgentSON required new visual identity.
-
-**Decision:** Use amber phosphor tokens: `#ffb000` accent, warm dark background, Space Mono + IBM Plex Sans fonts.
-
-**Consequences:**
-- (+) Distinct visual identity from `.ailog`
-- (+) Warm, readable dark theme
-- (-) Existing `.ailog` users may prefer old colors
-
----
-
-## ADR-010: GDPR Data Liberation
-
-**Context:** GDPR Article 20 gives users the right to export data in machine-readable format. Most AI tools don't provide this.
-
-**Decision:** Explore data portability as a design use case where applicable. AgentSON provides a technical export format; it does not determine legal eligibility, compel vendor access or guarantee fulfilment of GDPR rights.
-
-**Consequences:**
-- (+) Strong legal and ethical justification
-- (+) Structured records may support some audit and transparency workflows when appropriately implemented; no compliance is implied.
-- (-) May face resistance from vendors who profit from data lock-in
-
----
-
-## ADR-011: Rename to AgentSON
-
-**Context:** The project was originally `.ailog`. The name conflicted with existing projects (`hemashushu/ason`, `@ason-format/ason`).
-
-**Decision:** Rename to AgentSON (Agent + JSON). Use `.agentson` as file extension.
-
-**Consequences:**
-- (+) Clear, descriptive name
-- (+) Distinctive project naming intent; this is not a legal clearance opinion
-- (+) The project uses the AgentSON name and .agentson extension; no trademark clearance is asserted by this repository.
-- (-) Breaking change from `.ailog` format
+- [Session Interoperability Architecture](../architecture/session-interoperability.md)
+- [Cross-Harness Conformance Test Plan](../architecture/conformance-test-plan.md)
+- [Repository instructions](../../AGENTS.md)
+- [Repository status](../../STATUS.md)
