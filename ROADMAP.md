@@ -19,9 +19,25 @@ RICE = (Reach × Impact × Confidence) / Effort.
 
 ### Impact anchors
 
-- **1 — Limited:** partial or low-fidelity capture; narrow user value; substantial source limitations.
-- **2 — Material:** useful session coverage and portability for a meaningful workflow, with manageable gaps.
-- **3 — High:** broad, high-fidelity capture of important session events, strong portability value and a clearly useful user workflow.
+Assess the same three dimensions for every reader: (a) fidelity of captured events, (b) coverage of important user workflows, and (c) portability value beyond the source tool.
+
+- **1 — Limited:** one narrow workflow, partial or low-fidelity capture, or a practical workaround already exists.
+- **2 — Material:** reliable coverage of common events in a meaningful workflow, with manageable gaps and useful portability.
+- **3 — Very high:** high-fidelity coverage of critical workflows, materially unlocks cross-tool use or migration, and has no reasonable equivalent workaround.
+
+Use the overall level that best fits the evidence; do not award a 3 merely because the source product is popular.
+
+### Confidence calibration
+
+Use these anchors as guidance rather than pretending confidence is a statistically measured probability:
+
+- **1.0:** direct, current primary evidence for reach and a working prototype or measured implementation effort.
+- **0.9:** strong primary evidence and limited technical unknowns.
+- **0.7:** credible evidence, but some audience or implementation assumptions remain.
+- **0.5:** proxy metrics or material uncertainty in reach, fidelity or effort.
+- **0.3:** speculative estimate with little direct evidence.
+
+Values between anchors are permitted only when the rationale is recorded.
 
 ### Scoring and governance rules
 
@@ -56,7 +72,7 @@ Reach is in thousands of estimated monthly users. RICE scores use that same unit
 | 9 | **Amazon Q** | Extensions | 400 | 2 | 0.7 | 1.5 | **373.33** | Planned |
 | 10 | **Continue** | Extensions | 200 | 2 | 0.8 | 1.0 | **320** | Planned |
 | 11 | **JetBrains AI** | Extensions | 300 | 2 | 0.7 | 1.5 | **280** | Planned |
-| 12 | **Goose** | Open Source | 200 | 2 | 0.7 | 1.0 | **280** | Planned |
+| 11 | **Goose** | Open Source | 200 | 2 | 0.7 | 1.0 | **280** | Planned |
 | 13 | **Zed** | Open Source | 300 | 2 | 0.6 | 1.5 | **240** | Planned |
 | 14 | **OpenHands** | Open Source | 150 | 2 | 0.7 | 1.0 | **210** | Planned |
 | 15 | **Replit** | Builders | 500 | 1 | 0.6 | 2.0 | **150** | Planned |
@@ -65,13 +81,13 @@ Reach is in thousands of estimated monthly users. RICE scores use that same unit
 | 18 | **Kilo Code** | Orchestrators | 80 | 2 | 0.6 | 1.0 | **96** | Planned |
 | 19 | **Bolt.new** | Builders | 200 | 1 | 0.5 | 1.5 | **66.67** | Planned |
 | 20 | **Sourcegraph Cody** | Extensions | 100 | 1 | 0.6 | 1.0 | **60** | Planned |
-| 21 | **Devin** | Autonomous | 100 | 2 | 0.6 | 2.0 | **60** | Planned |
+| 20 | **Devin** | Autonomous | 100 | 2 | 0.6 | 2.0 | **60** | Planned |
 | 22 | **Lovable** | Builders | 150 | 1 | 0.5 | 1.5 | **50** | Planned |
 | 23 | **Qwen Code** | China | 300 | 1 | 0.3 | 2.0 | **45** | Deferred |
 | 24 | **Augment Code** | Extensions | 80 | 1 | 0.5 | 1.0 | **40** | Planned |
 | 25 | **amux** | Orchestrators | 50 | 2 | 0.5 | 1.5 | **33.33** | Planned |
 | 26 | **Claude Squad** | Orchestrators | 30 | 2 | 0.5 | 1.0 | **30** | Planned |
-| 27 | **GLM Coding** | China | 200 | 1 | 0.3 | 2.0 | **30** | Deferred |
+| 26 | **GLM Coding** | China | 200 | 1 | 0.3 | 2.0 | **30** | Deferred |
 | 28 | **Qodo** | Extensions | 50 | 1 | 0.5 | 1.0 | **25** | Planned |
 | 29 | **Kimi** | China | 150 | 1 | 0.3 | 2.0 | **22.5** | Deferred |
 | 30 | **dmux** | Orchestrators | 20 | 2 | 0.5 | 1.0 | **20** | Planned |
@@ -80,7 +96,7 @@ Reach is in thousands of estimated monthly users. RICE scores use that same unit
 ### Interpretation
 
 - The inherited inputs place GitHub Copilot first, followed by Cursor and Codex CLI. This differs from the old tier labels, which were not globally ordered by score.
-- Cline and Aider tie at 1,350 under the inherited assumptions; the tie should be resolved using strategic fit, evidence quality, prototype findings or dependencies, not arbitrary decimal adjustments.
+- Cline and Aider tie at 1,350; JetBrains AI and Goose tie at 280; Sourcegraph Cody and Devin tie at 60; Claude Squad and GLM Coding tie at 30. Equal scores share a rank. Resolve ties using strategic fit, evidence quality, prototype findings or dependencies, not arbitrary decimal adjustments.
 - The table does **not** establish that Copilot has the greatest incremental reach in reality. Its 5,000 (000s) input is unverified and must be sourced before committing engineering capacity.
 - The combined "Windsurf/Devin Desktop" row is not an ideal unit of work. Split it into separately scoped reader projects before using its score for a delivery commitment.
 - Deferred status is a strategic decision, not a claim that a low RICE score alone proves a reader should be deferred.
