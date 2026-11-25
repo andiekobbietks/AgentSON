@@ -107,12 +107,12 @@ pie title Reader Coverage (v0.1.0)
 ```mermaid
 xychart-beta
     title "RICE Score by Tool"
-    x-axis ["Cursor", "Copilot", "Claude", "Codex", "Gemini", "opencode", "Cline", "Aider", "Kiro", "Windsurf"]
+    x-axis ["Copilot", "Cursor", "Codex", "Gemini", "Cline", "Aider", "Kiro", "Windsurf", "Amazon Q", "Continue"]
     y-axis "RICE Score" 0 --> 5000
-    bar [2700, 4000, 2400, 1920, 1400, 9999, 1350, 1350, 1120, 480]
+    bar [4000, 2700, 1920, 1400, 1350, 1350, 1120, 480, 373, 320]
 ```
 
-> opencode (RICE: ∞) already works — zero effort, full reach.
+> This chart excludes shipped readers. The displayed scores are provisional inherited estimates; see [ROADMAP.md](ROADMAP.md) for the scoring rules and evidence gaps.
 
 ### Tier 1: Core Market
 
@@ -447,6 +447,7 @@ agentson/
 │   ├── sops/                # 14 SOPs
 │   ├── standards/           # Operating manual + ADRs
 │   └── index.html           # Landing page
+├── STRATEGIC_ROADMAP.md               # Strategic roadmap: operational evidence, incident reconstruction, interoperability
 ├── ROADMAP.md               # RICE-scored reader priorities
 ├── CHANGELOG.md             # Version history
 ├── PRD.md                   # Product requirements
@@ -457,7 +458,9 @@ agentson/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
+See [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) for the expanded strategic and engineering roadmap, including the proposed extension from AI-agent session portability into human-operated IT operations, OpenTelemetry interoperability, incident reconstruction, cross-provider evidence and recovery assurance. The November 2026 Microsoft 365 incident is documented there as a motivating case study, not as proof that Microsoft lacks observability tooling or that these proposed capabilities are already implemented.
+
+See [ROADMAP.md](ROADMAP.md) for the existing RICE-scored reader priorities across the AI coding-tool landscape.
 
 **Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
 
