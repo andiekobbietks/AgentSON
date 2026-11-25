@@ -170,7 +170,7 @@ This is verified context continuation into a new session, **not** restoration of
 ├── tests/                # Automated tests and fixtures
 ├── examples/             # Example session data
 ├── pwa/                  # Standalone browser/PWA viewer
-├── docs/                 # Project documentation and web viewer
+├── docs/                 # Project documentation and legacy JSON-envelope viewer (not a JSONL viewer)
 ├── agentson_platform/    # Separate, optional platform functionality
 ├── .github/workflows/    # CI workflows
 ├── pyproject.toml         # Python package metadata and dependencies
