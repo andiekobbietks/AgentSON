@@ -8,19 +8,31 @@
     :root{color-scheme:dark;--bg:#0a0a08;--surface:#141410;--border:#2a2a1e;--text:#e8e0c8;--muted:#9a9070;--accent:#ffb000}
     *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,sans-serif}
     main{max-width:960px;margin:auto;padding:36px 22px 70px}h1{font-size:2.4rem}p{color:var(--muted)}
-    table{width:100%;border-collapse:collapse;margin:20px 0}th,td{border-bottom:1px solid var(--border);padding:12px;text-align:left;vertical-align:top}
+    table{width:100%;border-collapse:collapse;margin:20px 0}th,td{border-bottom:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}
     th{color:var(--accent)}a{color:var(--accent)}.note{background:var(--surface);border:1px solid var(--border);padding:16px;border-radius:8px}
   </style>
 </head>
 <body><main>
   <p><a href="index.html">← Standards and Operating Manual</a></p>
   <h1>Architecture Decision Records</h1>
-  <p>This index links to the maintained Markdown decisions. The Markdown files are authoritative; this page is navigation only.</p>
-  <div class="note"><strong>Format decision:</strong> v1.2 JSONL is the canonical interchange wire format. The JSON session envelope is a supported materialised/document representation. The envelope-only proposal in Specification ADR-024 was not accepted.</div>
+  <p>This index links to the maintained Markdown decisions. The Markdown files are authoritative; this page is navigation only. Check each record for its current status, rationale and consequences.</p>
+  <div class="note"><strong>Canonical format:</strong> v1.2 JSONL is the canonical interchange wire format. The JSON session envelope is a supported materialised/document representation. The envelope-only proposal in Specification ADR-024 was not accepted.</div>
   <h2>Operating ADRs</h2>
-  <table><thead><tr><th>ADR</th><th>Decision</th><th>Status</th></tr></thead><tbody>
-    <tr><td><a href="adrs/adr-010-gdpr-data-liberation.md">Operating ADR-010</a></td><td>Data portability as a technical design use case; legal applicability is contextual.</td><td>Accepted, scoped</td></tr>
-    <tr><td><a href="adrs/adr-011-naming-and-file-extension.md">Operating ADR-011</a></td><td>AgentSON project name and .agentson file extension.</td><td>Accepted; no trademark clearance asserted</td></tr>
+  <table><thead><tr><th>ADR</th><th>Decision area</th></tr></thead><tbody>
+    <tr><td><a href="adrs/adr-001-agentSON-format.md">Operating ADR-001</a></td><td>AgentSON format and product definition</td></tr>
+    <tr><td><a href="adrs/adr-002-json-over-sqlite.md">Operating ADR-002</a></td><td>JSON and storage model</td></tr>
+    <tr><td><a href="adrs/adr-003-vendor-neutral.md">Operating ADR-003</a></td><td>Vendor neutrality</td></tr>
+    <tr><td><a href="adrs/adr-004-amber-design.md">Operating ADR-004</a></td><td>Visual design system</td></tr>
+    <tr><td><a href="adrs/adr-005-nightscout.md">Operating ADR-005</a></td><td>Nightscout integration context</td></tr>
+    <tr><td><a href="adrs/adr-006-github-pages.md">Operating ADR-006</a></td><td>Documentation hosting</td></tr>
+    <tr><td><a href="adrs/adr-007-coderabbit.md">Operating ADR-007</a></td><td>Automated code review</td></tr>
+    <tr><td><a href="adrs/adr-008-trace-data-interchange.md">Operating ADR-008</a></td><td>Trace data interchange</td></tr>
+    <tr><td><a href="adrs/adr-009-osi-open-interchange.md">Operating ADR-009</a></td><td>Open interchange and standards positioning</td></tr>
+    <tr><td><a href="adrs/adr-010-gdpr-data-liberation.md">Operating ADR-010</a></td><td>Data portability as a technical design use case; no legal compliance claim</td></tr>
+    <tr><td><a href="adrs/adr-011-naming-and-file-extension.md">Operating ADR-011</a></td><td>AgentSON name and .agentson extension; no trademark clearance claim</td></tr>
+    <tr><td><a href="adrs/adr-012-academic-literature-relationship.md">Operating ADR-012</a></td><td>Relationship to academic literature</td></tr>
+    <tr><td><a href="adrs/adr-013-cli-scope-violation-finetune-push-pull.md">Operating ADR-013</a></td><td>CLI scope and downstream integrations</td></tr>
+    <tr><td><a href="adrs/adr-014-observation-entry-type-missing-from-spec.md">Operating ADR-014</a></td><td>Observation event type in the specification</td></tr>
   </tbody></table>
   <h2>Specification ADRs</h2>
   <table><thead><tr><th>ADR</th><th>Decision</th><th>Status</th></tr></thead><tbody>
