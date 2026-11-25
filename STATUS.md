@@ -29,7 +29,7 @@ Do not describe JSONL as merely an optional transport or describe the session en
 
 ## Verification evidence and limits
 
-- PR #62's recorded Python matrix run 42094953985 reported **288 passed, 1 skipped** across Python 3.9–3.12, with wheel/source-distribution builds, schema packaging checks and installed-wheel smoke tests. The status record identifies the tested commit separately from later branch-head changes; rerun CI on the final head before merge.
+- PR #62's recorded Python matrix run [42094953985](https://github.com/andiekobbietks/AgentSON/actions/runs/42094953985) tested commit 1a03a19 and reported **288 passed, 1 skipped** across Python 3.9–3.12, with wheel/source-distribution builds, schema packaging checks and installed-wheel smoke tests. It did not test the later reviewed head fc80aac or the subsequent documentation commits. Rerun CI on the final PR head before merge.
 - The pinned OpenCode integration path uses OpenCode CLI 2.2.5 and a synthetic ChatGPT-shaped source fixture. It verifies the tested import/read-back path and archive digest. It does **not** establish a real-source C2 semantic interoperability result.
 - The OpenCode adapter queues a synthetic inbox item with resume=false. This prevents immediate agent-loop execution; the archived content may enter model context on a later turn.
 - C3 reconstruction and C4 checkpoint resumption remain unclaimed.
