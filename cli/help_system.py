@@ -174,8 +174,9 @@ def show_tour():
          "is recorded in a [i]_loss[/] array."),
         ("[bold #ffb000]Export & Read[/]",
          "OpenCode · MiniMax · Antigravity IDE · Chrome DevTools\n"
-         "Claude Code · FreeStyle Libre 2\n"
-         "Export from any supported tool with: [bold]agentson export[/]"),
+         "Claude Code · Gemini · VibeEdge · Cursor · Cline · Aider · FreeStyle Libre 2 CSV\n"
+         "Reader coverage and fidelity vary by source/version. See the conformance matrix.\n"
+         "Export from supported sources with: [bold]agentson export[/]"),
         ("[bold #e05040]Validation & Redaction[/]",
          "Validate canonical v1.2 JSONL streams and supported session documents:\n"
          "  [bold]agentson validate[/]\n"
