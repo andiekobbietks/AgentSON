@@ -131,7 +131,7 @@ agentson render ./sessions/opencode_<session-id>.agentson --format md
 agentson resume ./sessions/opencode_<session-id>.agentson --target claude-code --output ./handoff.md
 ```
 
-The CLI exposes source selectors for OpenCode, MiniMax, Antigravity, Chrome DevTools, Libre CSV, Claude Code, VibeEdge, Gemini, Cursor, Cline and Aider. Availability and completeness are adapter-specific; a selector being present in the CLI is not, by itself, evidence of production readiness or full-fidelity support. Check the relevant reader and tests before relying on a particular source.
+The CLI exposes source selectors for OpenCode, MiniMax, Antigravity, Chrome DevTools, Libre CSV, Claude Code, VibeEdge, Gemini, Cursor, Cline and Aider. Availability and completeness are adapter-specific; a selector being present in the CLI is not, by itself, evidence of production readiness or full-fidelity support. Synthetic fixtures are parser regression tests, not proof of source-version compatibility. C1 source-capture evidence requires a sanitised, permissioned real export for the relevant source version. Check the reader conformance matrix before relying on a particular source.
 
 Use `agentson --help` and `agentson help <topic>` for the commands and options available in the installed version. Some commands are experimental or explicitly not implemented; the CLI help text is authoritative for the installed build.
 

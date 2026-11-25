@@ -88,7 +88,7 @@ Cross-harness evidence levels are distinct:
 | Level | Claim | Minimum evidence |
 |---|---|---|
 | C0 | Archive validity | Schema and structural conformance |
-| C1 | Source capture | Production adapter tested against a versioned source fixture |
+| C1 | Source capture | Production adapter tested against a sanitised, permissioned, version-identified real source export |
 | C2 | Cross-harness portability | Live producer-to-consumer import with semantic comparison |
 | C3 | Reconstruction | Destination reconstructs recorded context and reports unavailable state |
 | C4 | Resumption | Destination resumes from a validated checkpoint under explicit authorisation |
@@ -141,7 +141,7 @@ Session records may contain personal data, credentials, source code, health info
 A release candidate should not be called stable until:
 1. The canonical stream and compatibility contracts are versioned and unambiguous.
 2. The supported Python/package matrix, test suite, wheel and source distribution pass reproducible CI.
-3. Each advertised reader has a source-versioned fixture and documented fidelity limitations.
+3. Each reader claiming C1 has a sanitised, permissioned, source-versioned real export fixture and documented fidelity limitations. Synthetic fixtures are supplementary and do not establish C1.
 4. Validation rejects malformed streams and invalid events with actionable errors.
 5. Redaction and archive handling have regression tests for sensitive nested content and failure-safe file writes.
 6. Destination adapters have live tests, explicit trust boundaries and cleanup/recovery behaviour.

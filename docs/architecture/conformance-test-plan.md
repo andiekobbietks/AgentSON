@@ -12,7 +12,7 @@ This plan defines what must be tested before AgentSON can claim that a source ad
 | Level | Claim | Required proof |
 |---|---|---|
 | C0 | Archive validity | Correct JSONL framing, first stream-meta event, event-schema validation and negative cases |
-| C1 | Source capture | Production reader tested against a versioned source fixture with provenance and known-loss assertions |
+| C1 | Source capture | Production reader tested against a sanitised, permissioned, version-identified real source export with provenance and known-loss assertions |
 | C2 | Cross-harness portability | Live producer and independent destination consumer, plus semantic comparison of source and imported records |
 | C3 | Reconstruction | Destination rebuilds a useful representation of recorded work and reports unavailable state |
 | C4 | Resumption | Destination resumes from a validated checkpoint with explicit capability negotiation, authorisation and isolation |
@@ -33,7 +33,7 @@ C0 and C1 do not imply C2. C2 does not imply C3 or C4.
 ## 4. Producer requirements
 
 Every producer adapter must provide:
-1. A sanitised, version-identified source fixture, or an explicitly synthetic fixture.
+1. For C1, a sanitised, permissioned, version-identified real source export. Synthetic fixtures are supplementary parser regression data and cannot establish C1. If a real export is unavailable, mark that source/version below C1 and state the missing evidence.
 2. The production reader entry point, not duplicated test-only mapping code.
 3. Canonical v1.2 JSONL output.
 4. Validation of stream framing and every event.
