@@ -447,6 +447,7 @@ agentson/
 │   ├── sops/                # 14 SOPs
 │   ├── standards/           # Operating manual + ADRs
 │   └── index.html           # Landing page
+├── roadmap.md               # Strategic roadmap: operational evidence, incident reconstruction, interoperability
 ├── ROADMAP.md               # RICE-scored reader priorities
 ├── CHANGELOG.md             # Version history
 ├── PRD.md                   # Product requirements
@@ -457,7 +458,9 @@ agentson/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full RICE-scored roadmap across all 33 tools.
+See [roadmap.md](roadmap.md) for the expanded strategic and engineering roadmap, including the proposed extension from AI-agent session portability into human-operated IT operations, OpenTelemetry interoperability, incident reconstruction, cross-provider evidence and recovery assurance. The November 2026 Microsoft 365 incident is documented there as a motivating case study, not as proof that Microsoft lacks observability tooling or that these proposed capabilities are already implemented.
+
+See [ROADMAP.md](ROADMAP.md) for the existing RICE-scored reader priorities across the AI coding-tool landscape.
 
 **Next readers:** OpenClaw, Cursor, Cline, Aider, Gemini CLI, Copilot
 
