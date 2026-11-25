@@ -1,64 +1,34 @@
-# ADR-008: AgentSON as the Open Interchange Layer for AI Workflow Traces
+# ADR-008: AgentSON as an Open Interchange Layer for AI Workflow Traces
 
-**Status:** Accepted
-**Date:** 05 July 2026
+**Status:** Accepted as product positioning; claims narrowed 25 November 2026  
+**Date:** 05 July 2026  
 **Author:** Andrea Enning
-
----
 
 ## Context
 
-Cursor was acquired for $60B. The IDE market was worth $2.5B. The reporting is clear about what drives the price: $4B in annualized revenue at a ~15x multiple, 70% of the Fortune 1000 as paying customers, the fastest B2B software company to reach that ARR scale, a proprietary Composer model, and strategic fit with SpaceX/xAI's compute and chip supply chain.
+AI coding and agent tools can produce session records, tool interactions and related metadata in different proprietary or product-specific formats. Export availability and the fields exposed vary by vendor, product version, account type and interface.
 
-Workflow-trace data is a legitimate, documented part of why AI-coding companies are valued highly. Eric Paulsen's comment that trace data is "quite valuable for training reinforcement learning models" is a genuine and reasonable claim about one input among many. But it is not the same as "that's the whole valuation." The $60B reflects revenue, customers, model, infrastructure, team, and strategic positioning — not just the dataset.
-
-Every AI coding tool is accumulating session traces: OpenAI (Codex), Anthropic (Claude Code), Google (Gemini Code Assist), MiniMax, Antigravity IDE, Chrome DevTools AI. Each stores it in their own proprietary format. None of them export it. None of it is portable.
-
-The data exists. The format doesn't — until now.
+The original ADR included time-sensitive acquisition and market figures, broad claims that no tools export session data, and statements that AgentSON captures every part of a session. Those claims were not suitable as durable architecture evidence and are not maintained here.
 
 ## Decision
 
-AgentSON is the open interchange layer for AI agent workflow traces. Every `.AgentSON` file captures the full trace of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes.
+Position AgentSON as an open interchange layer for the session records that supported source adapters can obtain and represent.
 
-AgentSON does not compete with Cursor's valuation. It solves the adjacent, real problem of vendor lock-in for individual users' own session data.
+AgentSON does not claim to capture every prompt, thought, action, result, hidden runtime field or provider-side state. It does not replace source-native monitoring, telemetry, agent runtimes or security tools. It aims to preserve source provenance and make conversion limits explicit.
+
+The canonical v1.2 interchange wire format is JSONL. Exporters for downstream analysis or training formats are optional transformations and must not be confused with the canonical archive.
 
 ## Consequences
 
-### What This Means
+1. The format contract, not a hosted viewer or service, is the interoperability boundary.
+2. Each reader is a source-specific mapping with documented provenance, version support and known losses.
+3. Each downstream exporter must identify its target format and any transformations.
+4. Portability is a technical capability, not a guarantee that a user can legally obtain every source record or that every vendor exposes an export API.
+5. Do not make unsupported market-size, competitor, vendor-export, full-capture or training-readiness claims in product documentation.
 
-1. **The format is the product.** Not the viewer, not the CLI, not the cloud service. The JSON schema is what makes traces portable.
+## References
 
-2. **Every reader is a data pipeline.** The opencode reader, the MiniMax reader, the Chrome DevTools reader — each one is a pipeline that converts proprietary trace data into an open format.
-
-3. **Every exporter is a training pipeline.** The `finetune.py` exporter converts AgentSON traces into Unsloth/Olive training format. The data that tools keep captive, AgentSON makes trainable.
-
-4. **Portability breaks lock-in.** If you capture your sessions in AgentSON, you can switch tools without losing context. If you train on AgentSON data, you're not dependent on one vendor's dataset.
-
-### The Market Reality
-
-| Who | Has trace data | Exports it | Lets you train on it |
-|---|---|---|---|
-| Cursor | Yes (70% Fortune 1000) | No | No |
-| OpenAI | Yes | Partial (API only) | No |
-| Anthropic | Yes | No | No |
-| Chrome DevTools | Yes | MD export (unstructured) | No |
-| **AgentSON** | **You own it** | **Yes (JSON)** | **Yes (finetune.py)** |
-
-### Why Open Wins
-
-- **Network effects:** Every new reader makes the format more valuable. Every new exporter makes the format more useful.
-- **Community:** Open formats attract contributors. Proprietary formats attract lawyers.
-- **Trust:** Users trust an open format they can inspect. They don't trust a black box.
-- **Longevity:** Open formats survive company shutdowns. Proprietary formats die with the company.
-
-### Risk
-
-The risk is that a major player (OpenAI, Google, Microsoft) creates their own "open" format that becomes the de facto standard through distribution. AgentSON's defense is that it's already working, already tested, already has readers for multiple tools, and isn't controlled by any single company.
-
-## The Thesis
-
-AI coding assistants keep session data captive. Every tool stores traces in proprietary databases with no export API. Users lose their context when they switch tools. Researchers can't train on cross-tool data.
-
-AgentSON provides a portable, user-owned alternative to proprietary session-trace lock-in. Not because AgentSON competes with or replaces the value Cursor's acquisition reflects — but because the problem of data portability is real, unsolved, and worth building for its own sake.
-
-The value isn't "giving away a $60B thing for free." The value is solving a real problem that nobody else has solved: making your AI session data yours.
+- README.md
+- PRD.md
+- Specification ADR-015: Canonical Schema
+- docs/standards/reader-conformance-v1.2.md

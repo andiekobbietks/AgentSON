@@ -15,7 +15,7 @@ The OpenCode consumer provides a first destination-side proof of concept for tra
 3. Create a new OpenCode session through its documented v2 API.
 4. Queue the selected context packet and complete archive as a synthetic inbox item with delivery set to queue and resume set to false.
 5. Read the inbox item back and compare the recovered archive and SHA-256 digest.
-6. Attempt cleanup on failure where the API permits it.
+6. If capsule storage fails, the current implementation attempts to delete the newly created session. **Read-back verification failure after session creation is not yet guaranteed to trigger cleanup** and may leave the complete archive capsule on the server. Use only a disposable local server for this path until the cleanup gap is fixed and regression-tested.
 
 ## Safety boundary
 
@@ -31,7 +31,7 @@ The OpenCode consumer provides a first destination-side proof of concept for tra
 
 The PR #62 branch records a pinned OpenCode CLI 2.2.5 live integration test. Its ChatGPT-shaped source fixture is synthetic. This test demonstrates the adapter pipeline and archive-capsule read-back for that version; it is not a real-source C2 semantic conformance result.
 
-Native OpenCode message/tool reconstruction, workspace state restoration and C4 resumption remain unclaimed. API changes may invalidate the profile; retest against each supported release.
+Native OpenCode message/tool reconstruction, workspace state restoration and C4 resumption remain unclaimed. API changes may invalidate the profile; retest against each supported release. The unresolved read-back cleanup gap is a release blocker for sensitive or production use.
 
 ## Related documents
 

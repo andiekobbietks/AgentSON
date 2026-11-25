@@ -53,6 +53,7 @@ Do not describe JSONL as merely an optional transport or describe the session en
 5. Do not describe regex/pattern redaction as complete PII or secret detection.
 6. Keep the RICE table provisional until reach, impact, confidence and effort estimates have source evidence.
 7. The OpenCode consumer's remote mode has an unresolved cross-origin redirect/authentication-forwarding risk. Use localhost for authenticated imports; do not use remote mode with credentials until the code and tests enforce redirect confinement.
+8. The OpenCode consumer does not yet guarantee deletion of a newly created session when archive read-back verification fails. Treat this as a sensitive-data retention risk and do not use the consumer for sensitive or production archives until cleanup is implemented and regression-tested.
 
 ## Operating rules
 

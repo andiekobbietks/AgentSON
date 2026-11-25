@@ -25,7 +25,7 @@ The source tree also contains importers for A2A, AGNTCY, ChatGPT and MCP under `
 
 ## Cross-harness conformance
 
-The executable baseline, conformance levels, producer/consumer test requirements and known gaps are maintained in the [Cross-Harness Conformance Test Plan](../architecture/conformance-test-plan.md). Do not infer interoperability from the presence of two reader modules or two independent reader test files.
+The executable baseline, conformance levels, producer/consumer test requirements and known gaps are maintained in the [Cross-Harness Conformance Test Plan](https://github.com/andiekobbietks/AgentSON/blob/master/docs/architecture/conformance-test-plan.md). Do not infer interoperability from the presence of two reader modules or two independent reader test files.
 
 
 ## Receiving-harness consumers
@@ -36,7 +36,7 @@ Consumers accept canonical v1.2 JSONL streams and transfer them into a target ha
 |---|---|---|---|
 | OpenCode v2 | `consumers/opencode.py` | Experimental archive capsule using a queued synthetic inbox item (`delivery: queue`, `resume: false`) | 32 focused tests and a live ChatGPT-export → AgentSON → OpenCode CLI 2.2.5 pipeline test pass using an explicitly synthetic ChatGPT-shaped source fixture. Archive is stored as one opaque queued item, not native event reconstruction; it can enter model context when later delivered. A real-export semantic C2 claim remains outstanding; C3/C4 are unclaimed. |
 
-The consumer's safety and fidelity boundaries are documented in [ADR-025](../../spec/ADR-025-cross-harness-context-continuation.md). Use the conformance plan for the distinction between archive storage fidelity, semantic C2 interoperability, reconstruction and resumption.
+The consumer's safety and fidelity boundaries are documented in [ADR-025](https://github.com/andiekobbietks/AgentSON/blob/master/spec/ADR-025-cross-harness-context-continuation.md). Use the conformance plan for the distinction between archive storage fidelity, semantic C2 interoperability, reconstruction and resumption.
 
 ## Capability labels
 
@@ -79,4 +79,4 @@ Do not infer capabilities 3–9 from capability 1.
 8. Update this inventory with actual test evidence and limitations.
 9. Submit changes through the repository's branch/PR workflow.
 
-Raw real sessions must not be committed by default. See [Coding Standards](Coding-Standards).
+Every reader must have at least one sanitised fixture derived from a real export, with provenance and source version recorded. Synthetic fixtures may supplement real-export fixtures but do not establish C1. Raw real sessions must not be committed by default. See [Coding Standards](Coding-Standards).

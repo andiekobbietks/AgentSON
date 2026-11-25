@@ -52,6 +52,7 @@ Neither the packet nor the archive can claim restoration of hidden prompts, cred
 - Assert that the packet contains an explicit untrusted-data boundary and no auto-execution instruction.
 - Test that the packet screening and archive payload are handled as separate data objects.
 - Test CLI invocation through the public entry point.
+- Verify that any failure after session creation, including inbox read-back failure and digest mismatch, deletes the newly created session; if cleanup fails, preserve the original error and report the orphaned session identifier.
 - For each destination adapter, use a disposable test workspace and verify the resulting session through the destination's own read API.
 - OpenCode adapter tests must verify session creation, archive admission with resume=false, basic-auth handling, JSONL-to-envelope projection, digest read-back confirmation, endpoint policy and best-effort cleanup.
 - The live OpenCode integration test must use a disposable server and session. Synthetic source fixtures must be labelled synthetic.
@@ -59,7 +60,7 @@ Neither the packet nor the archive can claim restoration of hidden prompts, cred
 
 ## Consequences
 
-The current OpenCode implementation provides experimental context transfer into a new session. It stores both a screened packet and the complete, unredacted archive in one queued synthetic item. Users must redact sensitive archives before transfer and inspect the destination session before later resuming work. The other targets remain packet-only until native consumers are implemented.
+The current OpenCode implementation provides experimental context transfer into a new session. It stores both a screened packet and the complete, unredacted archive in one queued synthetic item. Users must redact sensitive archives before transfer and inspect the destination session before later resuming work. Capsule-storage failure attempts cleanup, but read-back verification failure is not yet guaranteed to delete the created session; this is a known code gap and a blocker for sensitive or production use. The other targets remain packet-only until native consumers are implemented.
 
 This is not full transcript-role reconstruction, workspace checkpointing or exact runtime resumption. C3 reconstruction and C4 resumption remain unclaimed.
 

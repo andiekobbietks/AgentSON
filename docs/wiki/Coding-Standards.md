@@ -6,7 +6,7 @@ This page summarises the repository's engineering rules. The canonical detailed 
 
 - **No PII or secrets in the repository.** Do not commit personal paths, identifiers, access tokens, credentials or confidential session content.
 - **No unsolicited telemetry.** No hidden analytics, tracking or background uploads. User-requested source/API integrations are allowed only when documented, scoped and transparent about data leaving the device.
-- **Privacy-safe fixtures.** Real exports are valuable for fidelity but raw sessions must not be committed by default. Use sanitised, provenance-labelled fixtures with documented transformations. Synthetic fixtures are allowed for edge cases but must be labelled synthetic.
+- **Privacy-safe fixtures.** Every reader must have at least one sanitised fixture derived from a real source export, with source/version provenance and documented transformations. Do not commit raw private sessions by default. If a permissioned real-export fixture is not available, label the reader as below C1 source-capture evidence; synthetic fixtures may supplement but must never be presented as real-source validation.
 - **Imported data is untrusted.** Parsing and inspection must never execute commands, scripts, URLs or tool calls from an archive.
 
 ## Architecture

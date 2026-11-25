@@ -143,36 +143,6 @@ Fine-tune MedGemma on personal glucose data for personalized insights.
 
 ---
 
-## Infrastructure SOPs (Wiki)
+## Wiki publishing procedure
 
-### SOP-015: Creating GitHub Wiki (Manual + Programmatic)
-
-Create and populate a GitHub wiki — manually via browser or programmatically via clone-and-push.
-
-**Prerequisites:**
-- GitHub account with wiki write access
-- Git installed
-- Git Credential Manager, GitHub CLI authentication or SSH configured
-
-**Method 1: Manual (Browser)**
-1. Go to `github.com/USER/REPO/wiki`
-2. Click "Create the first page"
-3. Edit, save, repeat
-
-**Method 2: Clone and Push (Recommended)**
-```bash
-git clone https://github.com/USER/REPO.wiki.git
-# Copy reviewed Markdown files into the cloned repo
-git add . && git commit -m "docs(wiki): update pages"
-# Push using configured Git Credential Manager or SSH authentication
-```
-
-**Method 3: Programmatic with OpenCode**
-1. Prompt OpenCode to generate markdown pages
-2. Review locally
-3. Push manually (Method 2)
-
-**Common errors:**
-- Authentication failure → confirm wiki access and configure Git Credential Manager, GitHub CLI or SSH
-- Never embed a PAT or password in a remote URL
-- "Repository not found" → Wiki URL needs `.wiki.git` suffix
+The maintained source is [W-015: Publishing the AgentSON GitHub Wiki](SOP-015-Creating-GitHub-Wiki). It explains the distinction between docs/wiki in the main repository and the separate GitHub Wiki remote. The required sequence is: edit docs/wiki in a reviewed main-repository branch, merge the approved source, clone the separate .wiki.git repository, change into that clone, copy the approved Markdown pages, inspect the diff, commit and push to the wiki repository's configured default branch. Do not push directly to the main AgentSON master branch.
