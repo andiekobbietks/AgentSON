@@ -1,323 +1,104 @@
-# SOP-015: AI-Agent Repository Operating Procedure for AgentSON
+# SOP-015: AI-Agent Repository Operating Procedure
 
-**Version:** 1.2  
-**Date:** 06 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Current repository procedure  
+**Version:** 2.0  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP documents the exact repository workflow used by Claude (via its
-bash/git tooling) to work on the AgentSON repo across a session, so that:
+Define the safe, repeatable workflow for human and agent-assisted changes to the AgentSON repository.
 
-1. **You** can do the same steps manually from your own terminal.
-2. **Any other agent with a shell/git-capable harness** (Claude Code, an
-   autonomous coding agent, a fresh Claude session with the same tools)
-   can pick up mid-task without re-deriving the workflow from scratch.
+## Non-negotiable rules
 
-This is the "how we actually work" doc — the mechanics, not the design
-decisions (those live in `docs/standards/adrs/`).
+1. The protected default branch is changed through reviewed pull requests, never by direct push.
+2. Follow SOP-016's hard limit of three open pull requests unless the maintainer explicitly approves a named exception.
+3. Re-check repository state, branch head, PR mergeability, review threads and required checks immediately before an action that depends on them.
+4. Treat automated review as advisory. A green status is not approval and does not prove all findings are resolved.
+5. Never claim a feature is complete without tests and evidence appropriate to its capability level.
+6. Do not commit credentials, private session exports, raw health data or unredacted user data.
 
----
+## Authentication
 
-## Prerequisites
+Preferred options:
 
-| Item | Requirement |
-|------|-------------|
-| **Git** | Any recent version |
-| **GitHub access** | A fine-grained Personal Access Token (PAT), scoped to `andiekobbietks/AgentSON` only — see Step 1 |
-| **Python** | 3.11+, with `pip install pyrefly pytest --break-system-packages` (or in a venv) |
-| **Repo state** | A local clone; if starting fresh, `git clone https://github.com/andiekobbietks/AgentSON.git` |
+- GitHub CLI: authenticate with the browser-based flow using gh auth login, then verify with gh auth status.
+- Git Credential Manager on supported systems.
+- SSH keys with an appropriately scoped GitHub account.
 
----
+Do not:
 
-## Core rule: `master` is protected
+- Store a personal access token in plaintext ~/.git-credentials.
+- Put a token in a Git remote URL, source file, script, issue, PR comment or chat.
+- Use a broad classic token or full-account OAuth token for routine repository work.
+- Paste a token into a command that will be saved in shell history.
 
-`master` has a branch protection rule: **all changes must go through a
-pull request.** A direct `git push origin master` will be rejected with
-`GH013: Repository rule violations found`. This is enforced, not a
-suggestion — every step below assumes branch → PR → (Andie reviews and
-merges) → pull latest.
+If a fine-grained token is genuinely required for an automated task, restrict it to this repository and the minimum permissions needed, use an approved secret store or short-lived environment injection, set an expiry, and revoke it when the task ends. Never enable the plaintext credential.helper store for this workflow.
 
----
+## Standard change workflow
 
-## Step 1: Get a scoped token (per session / per agent)
-
-Do **not** use a broad classic PAT or a full-account OAuth device-flow
-token for repo work — scope tightly, every time:
-
-1. Go to **https://github.com/settings/personal-access-tokens/new**
-2. **Repository access** → "Only select repositories" → `andiekobbietks/AgentSON`
-3. **Permissions** needed for the full workflow used in this SOP:
-   - Contents: Read and write
-   - Pull requests: Read and write
-   - Issues: Read and write
-   - Workflows: Read and write
-   - Actions: Read and write
-   - Pages: Read and write
-   - Commit statuses: Read and write
-4. Set an expiration (90 days is reasonable for ongoing work)
-5. Generate, copy the `github_pat_...` string
-6. **Revoke it when the task/session is done**, or let it expire — don't
-   leave long-lived tokens active without a reason
-
-Configure git to use it for this session:
-
-```bash
-TOKEN="github_pat_..."   # paste the real token, never commit this
-echo "https://x-access-token:${TOKEN}@github.com" > ~/.git-credentials
-git config --global credential.helper store
-git config --global user.name "andiekobbietks"
-git config --global user.email "andiekobbietks@users.noreply.github.com"
-```
-
-Setting `user.name`/`user.email` this way means commits show as authored
-by Andie, not as a bot — matches the existing commit history.
-
----
-
-## Step 2: Standard change workflow
-
-For **every** change, no exceptions:
-
-```bash
-# 1. Start from a clean, up-to-date master
+~~~bash
+gh auth status
 git checkout master
-git pull origin master
+git pull --ff-only origin master
+git status --short
+git checkout -b docs/short-description
+~~~
 
-# 2. Branch — name it for what it does, prefixed by type
-git checkout -b fix/short-description
-# or: feat/..., docs/..., chore/...
+Make the smallest coherent change. Before committing:
 
-# 3. Make the change
+~~~bash
+git diff --check
+python -m pytest -q
+~~~
 
-# 4. Test it — see Step 4 before committing
+Run focused tests first, then the relevant complete test suite and package checks. Use the repository's current instructions for the exact matrix. Do not claim tests passed unless they ran against the exact commit being reported.
 
-# 5. Commit with a real message (what + why, not just "fix bug")
-git add <files>
-git commit -m "fix(scope): short summary
+Commit and push the branch:
 
-Longer explanation of what was wrong, why, and how this fixes it.
-Reference the specific bug/behavior, not just 'improves X'."
+~~~bash
+git add <reviewed-paths>
+git commit -m "docs(scope): describe the change"
+git push -u origin docs/short-description
+gh pr create --fill
+~~~
 
-# 6. Push the branch
-git push -u origin fix/short-description
-```
+Use the actual branch prefix and commit type appropriate to the work.
 
----
+## Bug response and review
 
-## Step 3: When you find a bug (before writing the fix)
+1. Reproduce the reported failure against the current branch.
+2. Check whether it exists on the current default branch.
+3. Read the current file and review thread; do not trust stale line numbers.
+4. Fix the smallest confirmed cause.
+5. Add a regression test or a clear reason why a test cannot be added.
+6. Re-run the reproduction and relevant suite.
+7. Reply to the review finding with the fix and evidence. Resolve a thread only when the underlying issue is actually fixed.
 
-Finding a bug and fixing a bug are not the same step. Do both, in order,
-every time — this is the same procedure documented in
-`docs/standards/coding-standards.md`'s "Bug Response Procedure" section,
-made concrete here:
+## Merge gate
 
-1. **Reproduce it.** Run the failing case. Don't fix something you've
-   only read about — a bug you haven't triggered yourself isn't
-   confirmed yet.
-2. **Check if it's pre-existing.** `git stash` (or check out `master`
-   directly), rerun the reproduction, `git stash pop`. This tells you
-   whether you're fixing a regression you just caused or something
-   that was already broken.
-3. **Decide scope before touching code.** A mechanical one-line fix?
-   Fix it. A design question (spec change, missing core command, a
-   litmus-test violation)? Flag it and stop — that decision isn't
-   yours to make unilaterally.
-4. **Fix it, then re-run the exact same reproduction from step 1.**
-   Confirm the specific failing case now passes — not just that the
-   code "looks right."
-5. **Write or extend a real test.** Use real reference data if you
-   have it. If you only have synthetic data, say so explicitly.
-6. Continue into Step 4 below (testing) and the rest of this workflow
-   as normal — this step happens *before* you commit, not instead of
-   the standard testing/PR process.
+Before merge, verify all of the following against the current PR head:
 
----
+- The base and head are current and mergeable.
+- Required CI checks passed on that exact head.
+- Required human approvals are present.
+- No unresolved blocking security, correctness or data-loss finding remains.
+- The diff contains only intended files.
+- The PR queue remains within SOP-016's limit or has an explicit exception.
+- The maintainer has approved the merge.
 
-## Step 4: Test before calling anything done
+Use the GitHub UI or GitHub CLI only after these conditions are satisfied. Never force-push, bypass branch protection, or use an API merge request to evade required checks or approvals.
 
-Per `docs/standards/coding-standards.md`, this isn't optional:
+## Security and data handling
 
-```bash
-# Run whatever test file(s) are relevant
-python3 tests/test_<relevant>.py
-# or, if pytest-based:
-python3 -m pytest tests/test_<relevant>.py -v
+- Use synthetic fixtures by default. A C1 reader claim requires a sanitised, permissioned, version-identified real source export.
+- Pattern-based redaction is best-effort; inspect output before sharing.
+- Keep session archives, logs, health data and credentials out of public fixtures.
+- If a credential is exposed, revoke it with the issuing provider. Removing it from Git history does not revoke it.
+- Report security incidents through the repository's documented process.
 
-# If you touched Python files, always:
-pyrefly check <python files you changed>
-```
+## Related procedures
 
-`pyrefly` only validates Python — it has nothing to say about
-markdown, HTML, or other non-Python files. For those, the equivalent
-check is different per case: does the HTML actually parse
-(`html.parser`), does JSON validate against its schema, does a
-generated page render with the expected content present. The principle
-is the same regardless of file type — actually verify it, don't assume
-it — but the specific tool changes.
-
-**"Tested" means it actually ran and passed** — not "I wrote code that
-should work." If there's no existing test for what you changed, write
-one before claiming it's done. If you can only test against synthetic
-data, say so explicitly rather than implying it's been verified against
-something real.
-
----
-
-## Step 5: Open the PR
-
-Using the GitHub API directly (works from any shell with `curl`, no `gh`
-CLI dependency):
-
-```bash
-TOKEN="github_pat_..."
-curl -s -X POST -H "Authorization: Bearer ${TOKEN}" \
-  -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/andiekobbietks/AgentSON/pulls" \
-  -d '{
-    "title": "fix(scope): short summary",
-    "head": "fix/short-description",
-    "base": "master",
-    "body": "## Summary\n\nWhat changed and why.\n\n## Testing\n\nWhat was actually run, what passed, what real vs synthetic data was used."
-  }'
-```
-
-The response includes `html_url` — that's the link to share. **Do not
-merge it yourself unless explicitly told to.** Default is: open the PR,
-report the link, wait for Andie's review.
-
-If told to merge:
-
-```bash
-curl -s -X PUT -H "Authorization: Bearer ${TOKEN}" \
-  -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/andiekobbietks/AgentSON/pulls/<NUMBER>/merge" \
-  -d '{"merge_method":"squash"}'
-```
-
----
-
-## Step 6: CHANGELOG discipline
-
-Every PR that fixes a bug or adds a capability gets a CHANGELOG.md entry
-under `## [Unreleased]`, in the same file as the code change (same PR,
-not a follow-up). Format:
-
-```markdown
-## [Unreleased]
-
-### Fixed
-- **Short bug name**: what was actually wrong, root cause, how it's
-  verified fixed now (which test, real vs synthetic).
-
-### Known issues (flagged, not yet fixed)
-- Anything found but deliberately not fixed in this PR — say why it's
-  being left, not just that it exists.
-```
-
-Never fold multiple unrelated fixes into one vague bullet. Never claim
-something is fixed without saying how it was verified.
-
----
-
-## Step 7: Cutting a release (after merge)
-
-Decide **patch vs. minor** first:
-
-- **Patch** (`0.1.1`, `0.1.2`, ...): bug fixes only. Nothing in
-  `spec/v1.json` changed, no new CLI commands, no new capability —
-  just things that were supposed to work now actually working.
-- **Minor** (`0.2.0`): spec changes, new CLI commands, new reader/importer
-  capability, anything that changes what a user can *do*.
-
-Once merged:
-
-```bash
-git checkout master
-git pull origin master
-
-# Rename the Unreleased CHANGELOG section to the dated release
-# (do this as its own tiny PR, same branch → PR → merge flow as above —
-# master is protected, this has no exception)
-
-# After that PR is merged and pulled:
-git tag -a v0.1.X -m "v0.1.X - one-line summary"
-git push origin v0.1.X
-
-# Publish the GitHub Release using the CHANGELOG section as the body
-TOKEN="github_pat_..."
-curl -s -X POST -H "Authorization: Bearer ${TOKEN}" \
-  -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/andiekobbietks/AgentSON/releases" \
-  -d '{
-    "tag_name": "v0.1.X",
-    "target_commitish": "master",
-    "name": "v0.1.X — one-line summary",
-    "body": "<the CHANGELOG section content, verbatim>",
-    "draft": false,
-    "prerelease": false
-  }'
-```
-
----
-
-## Step 8: Scope discipline — the litmus tests
-
-Before adding anything to the `agentson` core package, run it through:
-
-> **"Is this defining AgentSON, or using AgentSON?"**
-> Defining → core. Using → a downstream package (`agentson-train`,
-> `agentson-archive`, etc.) that depends on core, not the reverse.
-
-For changes to `spec/v1.json` specifically:
-
-> Does this improve **fidelity, portability, replayability, or
-> analyzability** of a captured episode? If not, it doesn't belong in
-> the schema, however useful it might be elsewhere.
-
-If a change fails either test, it doesn't go in `agentson` core — flag
-it and suggest where it *does* belong instead of silently including it.
-
----
-
-## Step 9: Housekeeping — token cleanup
-
-At the end of a session or task:
-
-```bash
-rm -f ~/.git-credentials
-git config --global --unset credential.helper
-```
-
-Deleting `~/.git-credentials` alone is not enough — Step 1 set
-`credential.helper store` **globally**, so leaving it configured means
-any future token written to that file (by this session or another
-tool) gets picked up automatically. Unset the helper too, not just the
-file.
-
-And revoke the token on GitHub's side at
-**https://github.com/settings/tokens?type=beta** if it's no longer
-needed — local file/config cleanup doesn't revoke it remotely.
-
----
-
-## Quick reference: what NOT to do
-
-- ❌ Push directly to `master` (it will be rejected)
-- ❌ Merge your own PR without being told to
-- ❌ Claim something is "tested" when only pyrefly/syntax was checked, not actual behavior
-- ❌ Use a broad/classic PAT or a full-account OAuth token for routine work
-- ❌ Add downstream-purpose code (training, archiving, analytics) to core `agentson`
-- ❌ Bundle unrelated fixes into one commit/PR without saying so clearly
-- ❌ Leave a long-lived token active after the task is done
-
----
-
-## Related documents
-
-- `docs/standards/coding-standards.md` — the engineering principles this SOP operationalizes (there is no separate top-level CONVENTIONS.md file; this is the real file that plays that role)
-- `docs/standards/adrs/` — architecture decisions (the *why*, not the *how*)
-- `CHANGELOG.md` — historical record this SOP requires you to maintain
-- `PRD.md` — product scope and status
+- SOP-016: Work-In-Progress Governance
+- docs/standards/coding-standards.md
+- AGENTS.md
+- STATUS.md

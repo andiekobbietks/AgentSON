@@ -1,94 +1,26 @@
-# SOP-010: Setting Up MedGemma / HAI-DEF
+# SOP-010: MedGemma / HAI-DEF Research Environment
 
-**Version:** 1.0  
-**Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Research setup notes; verify current model access and terms before use.  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP describes how to sign up for Google's Health AI Developer Foundations (HAI-DEF) and download MedGemma for glucose pattern analysis.
+Record the original intention to evaluate MedGemma and related Health AI Developer Foundations resources for research and prototyping.
 
----
+## Before downloading a model
 
-## Prerequisites
+1. Read the current official model card, licence and acceptable-use terms.
+2. Confirm whether access is gated, requires approval or imposes additional conditions.
+3. Check hardware, memory, runtime and model-format requirements for the exact model version.
+4. Use synthetic or appropriately de-identified examples for initial testing.
+5. Do not assume model weights, cloud credits or inference access are free or unrestricted.
 
-| Item | Requirement |
-|------|-------------|
-| **Account** | Google account |
-| **Software** | Python 3.12.3, Hugging Face account |
-| **Hardware** | PC with 8GB+ RAM (for 4B model) |
+## Research-only boundary
 
----
+- Model output is not a diagnosis, treatment recommendation or substitute for professional care.
+- Do not use the model to make medication, dosing or urgent-care decisions.
+- Do not upload identifiable health data to a hosted model or service without an approved legal, privacy, security and organisational basis.
+- Local execution alone does not establish GDPR, HIPAA or other regulatory compliance.
+- Any research involving people or their health data requires the appropriate governance and approvals.
 
-## Procedure
-
-### Step 1: Sign Up for HAI-DEF
-
-1. Go to https://developers.google.com/health-ai-developer-foundations
-2. Click "Get Started"
-3. Sign in with Google account
-4. Accept Terms of Use
-5. Done — no approval needed
-
-### Step 2: Create Hugging Face Account
-
-1. Go to https://huggingface.co
-2. Sign up (free)
-3. Verify email
-
-### Step 3: Download MedGemma
-
-```powershell
-# Install Hugging Face CLI
-pip install huggingface_hub
-
-# Login
-huggingface-cli login
-
-# Download MedGemma 4B (multimodal - can analyze images)
-huggingface-cli download google/medgemma-4b --local-dir ./medgemma-4b
-
-# OR download MedGemma 27B (text only - better for clinical reasoning)
-huggingface-cli download google/medgemma-27b --local-dir ./medgemma-27b
-```
-
-### Step 4: Install Dependencies
-
-```powershell
-pip install torch transformers accelerate
-```
-
-### Step 5: Test MedGemma
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-model = AutoModelForCausalLM.from_pretrained("google/medgemma-4b")
-tokenizer = AutoTokenizer.from_pretrained("google/medgemma-4b")
-
-# Test with glucose question
-prompt = "A patient has glucose readings of 15.2, 14.8, 16.1 mmol/L over 3 hours. What does this indicate?"
-inputs = tokenizer(prompt, return_tensors="pt")
-outputs = model.generate(**inputs, max_new_tokens=200)
-print(tokenizer.decode(outputs[0]))
-```
-
----
-
-## What You Get
-
-| Resource | Cost | Access |
-|----------|------|--------|
-| MedGemma 4B | Free | Hugging Face |
-| MedGemma 27B | Free | Hugging Face |
-| MedASR | Free | Hugging Face |
-| Vertex AI free tier | Free | Google Cloud |
-
----
-
-## Next Steps
-
-After setting up MedGemma, proceed to:
-- **SOP-011**: Fine-tuning MedGemma on Glucose Data
+This SOP does not claim that a particular model version is currently available without approval or that the setup is clinically validated.

@@ -1,134 +1,43 @@
-# SOP-007: Setting Up Nightscout Server
+# SOP-007: Nightscout Local Prototype
 
-**Version:** 1.0  
-**Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Historical, optional domain-specific prototype; not production deployment guidance.  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP describes how to set up a Nightscout server as a data backbone for continuous glucose monitoring, enabling WhatsApp alerts, TV dashboards, and NHS FHIR integration.
+Record the original local Nightscout integration path used in the early health-data prototype. Nightscout is not required by AgentSON Core and does not provide NHS FHIR connectivity by itself.
 
----
+## Important limitations
 
-## Prerequisites
+- This procedure is for a local development environment only.
+- Do not expose a Nightscout server or MongoDB instance directly to the public internet.
+- Do not use default credentials or reuse an API secret.
+- Do not commit .env files, API secrets, database connection strings or patient data.
+- Any remote deployment requires a separate security, privacy, access-control, backup and retention design.
+- This setup is not a clinical system and is not an NHS-approved integration.
 
-| Item | Requirement |
-|------|-------------|
-| **Hardware** | PC or cloud account (Azure free tier) |
-| **Software** | Node.js, MongoDB (or MongoDB Atlas free tier) |
-| **Data** | Juggluco app on mother's phone |
+## Local prototype outline
 
----
+1. Review the current Nightscout installation documentation and compatibility requirements.
+2. Use a dedicated local development environment and a supported MongoDB version.
+3. Store configuration in an untracked .env file and ensure the file is excluded by .gitignore.
+4. Bind the service to localhost for local testing; do not expose the development port to a shared network.
+5. Use synthetic or appropriately de-identified test data.
+6. Stop the service when testing is complete and remove test data securely.
 
-## Architecture
+Example local environment variables (placeholders only):
 
-```
-Mother's Phone (Juggluco) → Nightscout Server → WhatsApp Bot
-                                    ↓
-                              TV Dashboard
-                                    ↓
-                           NHS FHIR API
-```
-
----
-
-## Option A: Local Server (No Cloud)
-
-### Step 1: Install Node.js
-
-Download from https://nodejs.org (LTS version)
-
-### Step 2: Clone Nightscout
-
-```powershell
-cd ~/Documents
-git clone https://github.com/nightscout/cgm-remote-monitor.git
-cd cgm-remote-monitor
-```
-
-### Step 3: Install Dependencies
-
-```powershell
-npm install
-```
-
-### Step 4: Configure Environment
-
-Create `.env` file:
-```
+~~~dotenv
 MONGO_CONNECTION=mongodb://localhost:27017/nightscout
-API_SECRET=your-secret-here
-```
+API_SECRET=replace-with-a-unique-random-secret
+~~~
 
-### Step 5: Start Server
+Check the current upstream Nightscout documentation for supported deployment instructions. The historical Azure free-tier instructions in earlier versions of this SOP are withdrawn.
 
-```powershell
-npm start
-```
+## Relationship to AgentSON
 
-Server runs at: `http://localhost:1337`
+Nightscout is an optional data source in a legacy domain workflow. AgentSON readers and exporters must document the source version, data fields, conversion and known gaps. Do not infer that this integration supports NHS FHIR or automatic clinical-system sharing.
 
----
+## Safety
 
-## Option B: Azure Free Tier (Recommended)
-
-### Step 1: Create Azure Account
-
-1. Go to https://azure.microsoft.com/free
-2. Sign up for free account ($200 credit)
-3. Create MongoDB Atlas free cluster
-
-### Step 2: Deploy Nightscout
-
-1. Go to https://nightscout.github.io
-2. Click "Deploy to Azure"
-3. Follow wizard
-
-### Step 3: Configure Juggluco
-
-1. Open Juggluco on mother's phone
-2. Go to Settings → Cloud Upload
-3. Enter Nightscout URL and API secret
-
----
-
-## Connecting Juggluco
-
-### Step 1: Install Juggluco
-
-Download from https://www.juggluco.nl
-
-### Step 2: Pair with Sensor
-
-1. Open Juggluco
-2. Tap "Scan" → point at sensor
-3. Wait for connection
-
-### Step 3: Configure Cloud Upload
-
-1. Settings → Cloud Upload
-2. Select "Nightscout"
-3. Enter server URL
-4. Enter API secret
-5. Enable "Upload on WiFi only" (optional)
-
----
-
-## Verification
-
-```powershell
-# Check server is running
-Invoke-WebRequest http://localhost:1337/api/v1/status.json
-```
-
-Expected: JSON with server status
-
----
-
-## Next Steps
-
-After setting up Nightscout, proceed to:
-- **SOP-008**: WhatsApp Bot Setup
-- **SOP-009**: TV Dashboard Setup
+Glucose thresholds and alerts must be configured with the person and their healthcare team. This prototype is not an emergency alert service and must not be used as the sole means of monitoring or responding to a medical event.

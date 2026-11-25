@@ -19,7 +19,7 @@ This page indexes the legacy wiki procedures. Repository governance procedures S
 | 009 | [TV Dashboard Setup](SOP-009) | Infrastructure |
 | 010 | [Setting Up MedGemma HAI-DEF](SOP-010) | Health/AI |
 | 011 | [Fine-tuning MedGemma on Glucose Data](SOP-011) | Health/AI |
-| 012 | [Setting Up Juggluco on Mother's Phone](SOP-012) | Health |
+| 012 | [Setting Up Juggluco on Android](SOP-012) | Health |
 | 013 | [NHS FHIR Integration](SOP-013) | Health |
 | 014 | [West Africa Voice Alerts](SOP-014) | Health/Localization |
 | W-015 | [Creating GitHub Wiki (Manual + Programmatic)](SOP-015-Creating-GitHub-Wiki) | Infrastructure (legacy wiki procedure) |

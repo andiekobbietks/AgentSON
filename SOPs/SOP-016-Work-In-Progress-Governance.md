@@ -40,10 +40,7 @@ whatever they want on a local machine nobody else touches.**
 Before opening a new branch/PR, check the current open count:
 
 ```bash
-TOKEN="..."
-curl -s -H "Authorization: Bearer ${TOKEN}" \
-  "https://api.github.com/repos/andiekobbietks/AgentSON/pulls?state=open" \
-  | python3 -c "import json,sys; print(len(json.load(sys.stdin)))"
+gh pr list --repo andiekobbietks/AgentSON --state open --json number --jq 'length'
 ```
 
 If the count is at or above 3: **do not open new work.** Either help

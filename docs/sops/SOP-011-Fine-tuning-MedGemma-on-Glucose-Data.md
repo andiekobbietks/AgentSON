@@ -1,159 +1,41 @@
-# SOP-011: Fine-tuning MedGemma on Glucose Data
+# SOP-011: Research Outline for Health-Data Model Evaluation
 
-**Version:** 1.0  
-**Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Experimental research outline; not a validated training or clinical procedure.  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP describes how to fine-tune MedGemma on glucose data to create a custom model for predicting glucose patterns and generating clinical insights.
+Describe a cautious research workflow for evaluating whether structured time-series exports can be used in a model experiment. The previous version incorrectly treated a JSONL .agentson stream as one JSON object and included unsupported clinical recommendations. Those examples are withdrawn.
 
----
+## Data requirements
 
-## Prerequisites
+- Use synthetic data by default.
+- Use real health data only where there is a documented lawful basis, informed permission where required, data minimisation, appropriate governance and secure handling.
+- Do not upload identifiable health data to a cloud notebook or model provider without explicit approval.
+- Do not treat a locally processed dataset as automatically GDPR-, HIPAA- or NHS-compliant.
 
-| Item | Requirement |
-|------|-------------|
-| **Software** | Python 3.12.3, MedGemma (SOP-010) |
-| **Data** | `libre_data.csv` or `.agentson` glucose files |
-| **Hardware** | GPU recommended (or Google Colab free tier) |
+## Export a time series
 
----
+Use the installed CLI help to confirm the command supported by the installed version. The current example is:
 
-## Procedure
+~~~bash
+agentson timeseries ./libre_libre_data.agentson --format csv
+~~~
 
-### Step 1: Prepare Training Data
+The canonical v1.2 archive is JSONL, not a single JSON object. Do not use json.load on the whole .agentson stream. Validate the archive first and inspect the generated CSV against the original source.
 
-Convert glucose data to MedGemma format:
+## Research workflow
 
-```python
-import json
-from datetime import datetime, timezone
+1. Define a research question that does not ask the model to diagnose, prescribe or recommend medication.
+2. Document the provenance, units, sampling frequency, missingness and transformations of the dataset.
+3. Split data by participant and time to avoid leakage between training and evaluation.
+4. Compare a simple statistical baseline before attempting fine-tuning.
+5. Use a model version and training method permitted by the current model licence.
+6. Evaluate calibration, robustness, subgroup performance and failure cases with qualified reviewers.
+7. Publish limitations and do not generalise results beyond the tested data.
 
-training_data = []
+## Non-clinical boundary
 
-# Read AgentSON glucose file (v1.2: readings are `observation` entries)
-with open("libre_libre_data.agentson", "r", encoding="utf-8") as f:
-    data = json.load(f)
+A model trained or evaluated with this workflow is not a medical device and must not be used for diagnosis, treatment, medication adjustment or emergency monitoring. Any clinical use would require a separate clinical-safety, regulatory, privacy and organisational assessment.
 
-# Convert to training format.
-# v1.2 uses `type: "observation"` for sensor readings (not
-# "glucose_reading"). Filter on source + numeric value instead.
-for entry in data.get("entries", []):
-    d = entry.get("data") or {}
-    if entry.get("source") != "sensor":
-        continue
-    if not isinstance(d.get("value"), (int, float)):
-        continue
-
-    # Timestamp is integer ms in v1.2; render as ISO for the prompt.
-    ts_ms = entry.get("timestamp")
-    if isinstance(ts_ms, (int, float)):
-        ts_iso = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).isoformat()
-    else:
-        ts_iso = str(ts_ms)
-
-    labels = entry.get("labels") or {}
-    status = entry.get("status", "unknown")
-    reading_type = d.get("reading_type", "CGM")
-    provenance = entry.get("provenance") or {}
-
-    training_data.append({
-        "input": (
-            f"Glucose reading at {ts_iso}: {d['value']} {d.get('unit', 'mmol/L')} "
-            f"(source: {reading_type}, provenance: {provenance.get('confidence', 'unknown')})"
-        ),
-        "output": (
-            f"Status: {status}. "
-            f"Pattern: {labels.get('pattern', 'unlabelled')}. "
-            f"Hypo risk (2h): {labels.get('hypo_risk_2h', 'unknown')}. "
-            + ("Normal range." if status == "normal" else "Attention required.")
-        ),
-    })
-
-# Save training data
-with open("glucose_training_data.json", "w", encoding="utf-8") as f:
-    json.dump(training_data, f, indent=2)
-```
-
-> **Note:** for time-series foundation models (GlucoFM, Chronos-2, GluFormer, ...),
-> export a flat series instead with:
-> `agentson timeseries libre_libre_data.agentson --format csv`
-
-### Step 2: Fine-tune with LoRA
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import LoraConfig, get_peft_model
-
-# Load base model
-model = AutoModelForCausalLM.from_pretrained("google/medgemma-4b")
-tokenizer = AutoTokenizer.from_pretrained("google/medgemma-4b")
-
-# Configure LoRA
-lora_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
-    target_modules=["q_proj", "v_proj"],
-    lora_dropout=0.1,
-    bias="none",
-    task_type="CAUSAL_LM"
-)
-
-# Apply LoRA
-model = get_peft_model(model, lora_config)
-
-# Train on glucose data
-# (Use Hugging Face Trainer or custom training loop)
-```
-
-### Step 3: Test Fine-tuned Model
-
-```python
-# Test with new glucose data
-prompt = "Patient glucose at 08:00: 4.2 mmol/L, 12:00: 8.5 mmol/L, 16:00: 12.3 mmol/L. Analyze pattern."
-
-# Model should respond with:
-# "Glucose is rising throughout the day. Pattern suggests post-meal spikes.
-#  Consider adjusting meal timing or medication. Monitor for hyperglycemia."
-```
-
-### Step 4: Export Model
-
-```python
-# Save fine-tuned model
-model.save_pretrained("./medgemma-glucose-finetuned")
-tokenizer.save_pretrained("./medgemma-glucose-finetuned")
-```
-
----
-
-## Use Cases
-
-| Use Case | Input | Output |
-|----------|-------|--------|
-| **Pattern detection** | Glucose history | Trend analysis |
-| **Hypo prediction** | Current readings | Risk assessment |
-| **Meal impact** | Pre/post meal readings | Food recommendations |
-| **Medication adjustment** | Glucose + medication log | Dosage suggestions |
-
----
-
-## Important Notes
-
-| Note | Detail |
-|------|--------|
-| **Not for diagnosis** | Model provides insights, not medical advice |
-| **Validation required** | Test thoroughly before clinical use |
-| **HIPAA compliant** | Keep data local, don't upload to cloud |
-| **NHS approval** | May need MHRA approval for clinical use |
-
----
-
-## Next Steps
-
-After fine-tuning, proceed to:
-- **SOP-008**: WhatsApp Bot Setup (integrate model)
-- **SOP-009**: TV Dashboard Setup (display predictions)
+This document does not provide a validated MedGemma fine-tuning script, does not claim clinical performance and does not certify regulatory compliance.
