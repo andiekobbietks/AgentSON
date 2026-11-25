@@ -1,86 +1,33 @@
-# ADR-014: `"observation"` is missing from the entry `type` enum
+# ADR-014: Observation Event Type in the Specification
 
-**Status:** Proposed
-**Date:** 2026-07-06
+**Status:** Resolved by the v1.2 specification; historical proposal  
+**Date:** 06 July 2026  
+**Resolution recorded:** 25 November 2026
 
 ## Context
 
-While hand-building a real `.agentson` file (a dogfooding exercise —
-reconstructing an actual agent session as a validation test, not a
-synthetic demo) and validating it against `spec/v1.json` with the
-`jsonschema` library, validation failed with:
+A reader validation exercise identified that source adapters emitted observation events while the early v1 schema did not include observation in its event-type vocabulary. This exposed a mismatch between reader output and the then-current schema.
 
-```
-'observation' is not one of ['user-query', 'context', 'querying',
-'title', 'thought', 'action', 'answer', 'side-effect']
-```
+## Resolution
 
-Checking why revealed the entry type was used deliberately, not a
-typo: **`readers/claude_code.py`** (on `master`) and
-**`readers/copilot_chat.py`** (PR #20) both emit
-`{"type": "observation", ...}` entries for tool-result/system-feedback
-content — distinct from `action` (the tool invocation itself) and
-`side-effect` (a file diff or external change).
+The observation primitive is part of the current v1.2 ontology and event schema. The original proposal to add observation has therefore been implemented in the v1.2 contract and is no longer an open design question.
 
-This means every real session either of these readers has ever
-produced is schema-invalid against `spec/v1.json` as it currently
-stands. The mismatch was silent until an actual validation run against
-the schema surfaced it — neither reader's own test suite catches this,
-since neither runs its output through `jsonschema` against the real
-spec.
-
-## Decision
-
-**Proposed, not yet actioned.** Applying the project's own spec-only
-litmus test:
-
-> Does this improve fidelity, portability, replayability, or
-> analyzability of a captured episode?
-
-An agent's trace is naturally a thought → action → observation loop
-(the ReAct pattern this project's own tooling already produces).
-Folding "observation" into `action` loses the distinction between *what
-the agent did* and *what it learned as a result* — a real fidelity
-loss. Folding it into `side-effect` is worse: `side-effect` already has
-a specific, narrower meaning (a diff/external change), and observation
-entries aren't always diffs (e.g. "the search returned 3 results").
-
-This suggests `"observation"` should be **added to the enum**, not that
-the readers should be changed to avoid it — the readers reflect a real,
-useful distinction the spec is currently missing, not a bug in the
-readers.
-
-**Two implementation paths, either acceptable:**
-
-1. Add `"observation"` directly to the `entries[].type` enum in
-   `spec/v1.json`, alongside a description matching how it's already
-   used in practice (result/feedback from a tool or system, with
-   optional `source` and `correlation_id` fields — both already used by
-   `readers/claude_code.py` and not currently documented in the schema
-   at all).
-2. If a schema version bump is preferred over a patch to v1, this could
-   land as part of a `v1.1` schema (note: `readers/copilot_chat.py`
-   already references `"$schema": "https://agentson.dev/schema/v1.1.json"`
-   in its output — a version that doesn't yet exist in `spec/`, which is
-   its own small inconsistency worth resolving as part of this decision).
+- The canonical interchange format is v1.2 JSONL.
+- Each line is a typed event; the stream begins with stream-meta.
+- Individual events are validated against spec/v1.2-entries.json.
+- The materialised/document representation is described by spec/v1.2.json.
+- Observation remains distinct from action (an invocation) and side-effect (a persistent change), but adapters must not fabricate an observation when the source did not expose one.
 
 ## Consequences
 
-- **Positive:** Real session files produced by existing readers become
-  actually schema-valid. Closes a silent fidelity gap between what the
-  format claims to capture and what a compliant validator will accept.
-- **Negative:** Any external tooling that already validates strictly
-  against the current enum (unlikely, given pre-launch status) would
-  need to accept the new value.
-- **Neutral:** `source` and `correlation_id` (already used by
-  `readers/claude_code.py`'s observation entries) should be added to
-  the entry schema's documented properties at the same time, since
-  they're currently accepted only because the schema doesn't set
-  `additionalProperties: false` — undocumented, not intentionally
-  supported.
+- New producers should emit the v1.2 vocabulary.
+- Legacy v1/v1.1 inputs may require explicit compatibility handling.
+- Reader fixtures must exercise observation mapping and correlation where the source provides the relevant evidence.
+- This ADR is retained as historical rationale; the accepted current contract is governed by Specification ADR-015, ADR-016 and ADR-017.
 
-## Open question for Andie
+## References
 
-Patch `v1.json`'s enum directly, or formalize this as the first real
-change under a `v1.1` schema version (which `readers/copilot_chat.py`
-already assumes exists)?
+- spec/ontology.md
+- spec/v1.2-entries.json
+- spec/v1.2.json
+- Specification ADR-015: Canonical Schema

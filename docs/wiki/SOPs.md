@@ -60,18 +60,18 @@ Convert FreeStyle Libre 2 CSV export to AgentSON format.
 
 ```bash
 # Import Libre CSV
-agentson import --tool libre --input libre_data.csv --output session.AgentSON
+agentson import --tool libre --input libre_data.csv --output session.agentson
 ```
 
 ---
 
-### SOP-003: Viewing Glucose Data in Browser
+### SOP-003: Viewing Legacy JSON Session Documents in Browser
 
-View glucose data in the web viewer with trend charts.
+The browser viewer reads legacy single-JSON session-envelope documents only. It does not support canonical v1.2 JSONL streams.
 
 1. Open `docs/viewer/index.html`
-2. Drag and drop `.AgentSON` file
-3. View trend chart and statistics
+2. Load a legacy JSON session-envelope document (.json or legacy JSON .agentson)
+3. For canonical v1.2 JSONL archives, use: agentson render FILE --format md
 
 ---
 

@@ -56,7 +56,7 @@ WORDMARK = (
     '              \\_/__/                                             ',
 )
 WORDMARK_SON_START = 40
-WORDMARK_TAGLINE = "AgentSON Platform — Enterprise Compliance & Audit"
+WORDMARK_TAGLINE = "Portable Agent Session Interchange — Alpha"
 
 # PLATFORM in the same larry3d face, generated once with pyfiglet and baked
 # in as a constant so pyfiglet is never a runtime dependency.
@@ -177,7 +177,7 @@ def show_tour():
          "Claude Code · FreeStyle Libre 2\n"
          "Export from any supported tool with: [bold]agentson export[/]"),
         ("[bold #e05040]Validation & Redaction[/]",
-         "Validate against the canonical v1.2 schema:\n"
+         "Validate canonical v1.2 JSONL streams and supported session documents:\n"
          "  [bold]agentson validate[/]\n"
          "Redact PII before sharing:\n"
          "  [bold]agentson redact[/]"),
@@ -402,12 +402,13 @@ TOPICS = {
 
     "validate": lambda c: Panel(
         "[bold #a0d060]agentson validate[/]\n\n"
-        "Validate .agentson files against the canonical v1.2 JSON Schema.\n\n"
+        "Validate canonical v1.2 JSONL streams and supported legacy session documents.\n\n"
         "Usage:\n"
         "  agentson validate <file_or_directory>\n\n"
         "Validates every .agentson file against spec/v1.2.json's discriminated\n"
-        "union schema. Returns pass/fail per file with detailed error messages.\n\n"
-        "[dim]70+ schema tests in tests/test_schema.py[/]",
+        "legacy/document envelopes against spec/v1.2.json. Returns pass/fail per file\n"
+        "with detailed error messages.\n\n"
+        "[dim]See the validation and JSONL export test modules for current coverage.[/]",
         title="[bold]Validate Command[/]",
         box=box.HEAVY,
         border_style="bold #a0d060",
@@ -646,7 +647,7 @@ def show_encyclopedia():
     toc.add_row("  libre", "FreeStyle Libre 2 CSV reader")
     toc.add_row("", "")
     toc.add_row("[bold #ffb000]CLI Commands[/]", "")
-    toc.add_row("  validate", "Validate against v1.2 schema")
+    toc.add_row("  validate", "Validate JSONL streams and session documents")
     toc.add_row("  redact", "Redact PII before sharing")
     toc.add_row("  publish", "Publish to Docker Hub / LXD Hub")
     toc.add_row("  runbook", "Replay session as runbook (planned)")

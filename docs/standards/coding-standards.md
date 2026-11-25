@@ -40,15 +40,15 @@ If OpenAI shuts down tomorrow, AgentSON still works. If GitHub goes down, the CL
 
 ---
 
-## Single File Output
+## Single-File Stream Archive
 
-**One .agentson file = one complete session.**
+**One .agentson file represents one exported stream/archive, not a guarantee of one complete source session.**
 
-No sidecar files, no database entries, no config dependencies. One file has everything: schema, entries, metadata, context.
+The canonical v1.2 representation is JSONL: one event per line, with stream-meta first. The file should be independently parseable and include the metadata and source evidence actually available to the exporter. It cannot contain source fields that were never exposed or captured, and optional external artefacts must be declared explicitly.
 
-**Rule:** If you need a second file to understand the first file, the format is broken.
+**Rule:** Do not require undeclared sidecars or hidden service state to parse an archive. If external artefacts are referenced, identify them and provide integrity metadata where supported. Never describe an archive as complete or lossless without source-specific evidence.
 
-**Why:** A single file can be emailed, shared, archived, version-controlled. Multiple files create sync problems.
+**Why:** A self-contained stream is easier to share, inspect, archive and version-control while still making capture gaps explicit.
 
 ---
 
@@ -102,7 +102,7 @@ Test fixtures should come from real sessions, not hand-crafted examples. Real da
 
 No feature should be presented as complete when it's not. Status badges exist for a reason.
 
-**Rule:** Use `Done`, `Planned`, `Experimental`, or `Broken` on every feature card.
+**Rule:** Use the repository's evidence labels: implemented and tested, implemented but unverified, experimental, designed, planned or unsupported.
 
 **Why:** Users make decisions based on what you tell them. Lying about readiness wastes their time.
 
