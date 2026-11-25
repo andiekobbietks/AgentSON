@@ -1,79 +1,26 @@
-# ADR-009: AgentSON as Open Interchange Format for OSI Open Source AI
+# ADR-009: AgentSON as an Open Interchange Format for AI Workflows
 
-**Status:** Accepted
+**Status:** Accepted as product positioning; claims narrowed 25 November 2026  
 **Date:** 05 July 2026
-**Author:** Andrea Enning
-
----
 
 ## Context
 
-The Open Source Initiative (OSI) has spent over a year debating the Open Source AI Definition (OSAID). The debate centers on what "open source" means for AI systems:
+AI coding and agent tools expose different session records and export paths. Their storage formats, available fields and permissions vary. Users and researchers may want to retain, inspect or compare records across tools, but no common interchange contract is guaranteed.
 
-- **Source code** — model architecture, training scripts
-- **Model weights** — trained parameters
-- **Training data** — the prompts, responses, code, and observations used to train
-- **Inference pipeline** — how the model produces outputs
-
-The OSAID focuses heavily on code and weights. But the training data component has no open standard. Every AI company stores session traces in proprietary formats:
-
-- Cursor: proprietary SQLite
-- OpenAI: internal API-only format
-- Anthropic: closed
-- Google: closed
-
-The format doesn't exist — until now.
+The original ADR used absolute statements about the absence of alternatives and time-sensitive market claims. Those statements are not maintained as architecture evidence.
 
 ## Decision
 
-AgentSON is the Open Interchange Format (OIF) for AI agent session traces. It provides:
+Position AgentSON as an open, vendor-neutral interchange format for supported AI-agent session records.
 
-1. **Open schema** — JSON Schema v1.1 with trajectory semantics
-2. **Cross-tool readers** — opencode, MiniMax, Antigravity, Chrome DevTools, ChatGPT
-3. **Training exporters** — Unsloth (ShareGPT), Olive (chat-messages)
-4. **User ownership** — no telemetry, no vendor lock-in, no cloud dependency
+The canonical v1.2 wire format is JSONL. Readers map source data into the event vocabulary and preserve provenance where available. Destination consumers are separate adapters with their own capability and safety requirements.
 
-## The OSI Gap
-
-| OSI OSAID Component | Status | AgentSON Coverage |
-|---|---|---|
-| Source code (model architecture) | Defined | Not in scope |
-| Model weights | Defined | Not in scope |
-| Training data format | **Undefined** | **AgentSON is this** |
-| Inference pipeline | Partially defined | Not in scope |
-
-The OSI has no standard for "what does open training data look like?" AgentSON answers that question — specifically for AI agent session traces, which are the most valuable and least portable type of training data.
+AgentSON is not a replacement for OpenTelemetry, APM, SIEM, native product observability, agent runtimes or source-native export facilities. It does not guarantee access to records a vendor does not expose, complete session capture, private reasoning capture, lossless conversion or arbitrary runtime resumption.
 
 ## Consequences
 
-### Why This Matters
-
-1. **OSI has a gap, we fill it.** The OSAID defines what "open source AI" means but doesn't specify the data format. AgentSON is the missing piece — the open interchange format for session traces that power AI training.
-
-2. **Fine-tuning is the pipeline.** `agentson finetune --format unsloth` converts AgentSON traces directly into training data. The format isn't just storage — it's the pipeline from session to training.
-
-3. **Pioneering position.** While the OSI debates definitions, we built infrastructure. The first open format for AI agent session traces is already working, tested across 5 tools, with 2 training exporters.
-
-4. **Real problem, real solution.** AI coding tools keep session data captive. Users lose context when switching tools. Researchers can't train on cross-tool data. AgentSON solves this — not by competing with any company's valuation, but by making individual users' data portable.
-
-### The Market Reality
-
-| Who | Has session traces | Exports it | Lets you train on it |
-|---|---|---|---|
-| Cursor | Yes (70% Fortune 1000) | No | No |
-| OpenAI | Yes | Partial (API only) | No |
-| Anthropic | Yes | No | No |
-| Chrome DevTools | Yes | MD export (unstructured) | No |
-| **AgentSON** | **You own it** | **Yes (JSON)** | **Yes (finetune.py)** |
-
-### Risk
-
-The risk is that a major player (OpenAI, Google, Microsoft) creates their own "open" training data format and uses distribution to make it the standard. AgentSON's defense: it's already working, already has readers for multiple tools, and isn't controlled by any single company.
-
-## The Thesis
-
-AI's biggest debate is about openness. The OSI is defining it. Companies are fighting over it. But nobody has built the actual infrastructure for open training data.
-
-AgentSON is that infrastructure. Not a definition — a working format. Not a policy — a tool. The Open Interchange Format for session traces that power AI.
-
-The value isn't competing with any company's valuation. It's solving a real problem that nobody else has solved: making your AI session data yours.
+- Prefer local-first processing and keep hosted services optional for core archive work.
+- Preserve source identity and make mapping loss visible.
+- Do not claim that AgentSON is the only solution, that no vendor exports session data, or that all AI session data can be obtained.
+- Do not make market-size, valuation or competitor claims without current, attributable evidence.
+- Data portability is a technical capability; legal access rights remain context-dependent.

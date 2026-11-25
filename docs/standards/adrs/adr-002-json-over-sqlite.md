@@ -1,38 +1,26 @@
-# ADR-002: Why JSON Files Over SQLite Databases
+# ADR-002: Why a Portable JSONL Stream Is the Interchange Layer
 
-**Status:** Accepted
+**Status:** Accepted; wording clarified 25 November 2026  
 **Date:** 04 July 2026
-**Author:** Andrea Enning
-
----
 
 ## Context
 
-Most AI coding agents store sessions in SQLite databases. SQLite is fast, reliable, and embedded. But it has problems for session portability:
+Agent tools commonly use local databases, JSON files, logs or product-specific APIs to store session activity. Replacing those source stores is not AgentSON's purpose. A portable interchange representation should be readable without requiring the original vendor database or a hosted AgentSON service.
 
-- You can't email a SQLite database easily
-- You can't diff it in git
-- You can't drag-and-drop it into a viewer
-- Different databases have different schemas
+The original title, "JSON files over SQLite", could be read as a recommendation to replace source databases with JSON documents. That is not the architecture decision.
 
 ## Decision
 
-Use plain JSON files (.AgentSON) instead of SQLite.
+Use a versioned JSON-based event stream as the interchange boundary, while allowing source readers to extract from SQLite and other source-native stores.
+
+The canonical v1.2 wire representation is JSONL: one event per line, with stream-meta first, using the .agentson extension. Individual events are validated against spec/v1.2-entries.json. The JSON session envelope in spec/v1.2.json remains a supported materialised/document representation.
+
+AgentSON does not require vendors or users to replace their internal databases.
 
 ## Consequences
 
-### Positive
-- Files are human-readable
-- Files can be emailed, shared, version-controlled
-- A single `json.loads()` call parses the entire session
-- Works in any language, any platform, any tool
-
-### Negative
-- No indexing (search requires loading the whole file)
-- Large sessions produce large files
-- No built-in concurrent access
-
-### Neutral
-- For large-scale search, the CLI can build indexes from files
-- Supabase provides the indexed/cloud layer when needed
-- The file format is the interchange layer; the database is the scale layer
+- Source databases remain source-of-truth stores for their applications.
+- Readers are version-specific adapters and must document access and fidelity limits.
+- Exported streams can be inspected and validated independently of the source database.
+- A portable file does not imply complete capture or lossless conversion.
+- Core archive validation and inspection should remain usable locally; optional network integrations may require connectivity.

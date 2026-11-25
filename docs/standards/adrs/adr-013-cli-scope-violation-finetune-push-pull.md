@@ -1,76 +1,32 @@
-# ADR-013: `finetune`, `push`, and `pull` violate the core/downstream scope rule
+# ADR-013: Scope of Fine-Tuning and Remote Sync Commands
 
-**Status:** Proposed
-**Date:** 2026-07-06
+**Status:** Proposed; no accepted implementation decision  
+**Date:** 06 July 2026  
+**Reviewed:** 25 November 2026
 
 ## Context
 
-The project's own scope rule states:
+AgentSON Core is intended to define and process a portable event format. Fine-tuning exports, remote archive synchronisation and hosted publishing are downstream workflows with different dependencies, security requirements and release cycles.
 
-> Core `agentson` package = spec + CLI only (import/export/validate/
-> search/render). Anything that *uses* the format for a downstream
-> purpose (fine-tuning, archiving, replay tooling, analytics) belongs
-> in a separate package (`agentson-train`, `agentson-archive`, etc.)
-> that depends on core, not the reverse.
->
-> Litmus test: "Is this defining AgentSON, or using AgentSON?"
-> Defining → core. Using → downstream package.
+The original proposal grouped finetune, push and pull together. The current CLI still exposes a finetune command, while push/pull are not present as top-level commands in the current parser. This ADR has not been accepted or actioned.
 
-A code review of `cli/main.py` (prompted by building a manual `.agentson`
-reconstruction of an agent session and checking what the actual CLI
-surface supports) found three registered subcommands that fail this
-test:
+## Proposal
 
-- `finetune` (`cmd_finetune`) — exports an `.agentson` file to
-  Unsloth/Olive fine-tuning format. This is explicitly the
-  `agentson-train` use case named in the scope rule itself.
-- `push` (`cmd_push`) — pushes a session to Supabase.
-- `pull` (`cmd_pull`) — pulls sessions from Supabase, with search/filter
-  options.
+Keep the core interchange contract and local archive operations small. Treat fine-tuning exports, remote synchronisation, registry publishing and platform services as optional downstream capabilities, with explicit dependencies and security boundaries.
 
-`push`/`pull` are archiving/sync functionality — the `agentson-archive`
-use case, also named explicitly in the scope rule.
+Do not remove or relocate current commands solely on the basis of this proposal. Any scope change requires a maintainer decision, compatibility plan, tests and updated documentation.
 
-All three are *using* AgentSON (consuming an already-captured episode
-for a downstream purpose), not *defining* it. None of the three touch
-`spec/v1.json`, and none are things a user needs merely to capture,
-validate, or inspect a session — the stated core verbs.
+## Consequences if accepted
 
-This is not a hypothetical scope question — it is the exact violation
-the litmus test was written to catch, discovered by applying the test
-to the shipped code rather than only to new proposals.
+- Optional downstream features should be isolated from core schema and reader dependencies.
+- Core file validation, local inspection and supported export paths should remain useful without a hosted service.
+- Fine-tuning exports must be described as transformations of available events, not as proof that the archive is complete or suitable for training.
+- Remote sync and registry operations require authentication, transport security, retention and deletion policies.
 
-## Decision
+## Open questions
 
-**Proposed, not yet actioned** (this ADR documents the finding and the
-options; the actual code change is a separate PR after a decision is
-made):
+- Should finetune remain in the main CLI as an optional subcommand or move to an extension?
+- Is a remote push/pull interface required, and if so, which protocol and threat model apply?
+- What compatibility and deprecation policy would protect existing users?
 
-- Remove `finetune`, `push`, and `pull` from `cli/main.py`'s core
-  subcommand registration.
-- Move `cmd_finetune` (and its Unsloth/Olive export logic) into a new
-  `agentson-train` package, depending on `agentson` core for reading
-  `.agentson` files.
-- Move `cmd_push`/`cmd_pull` (and the Supabase client code) into a new
-  `agentson-archive` package, same dependency direction.
-- Core's registered subcommands become exactly the five named in the
-  scope rule: `export`, `import`, `validate` (see ADR-014's companion
-  finding — this doesn't exist yet either), `search`, `render`.
-
-## Consequences
-
-- **Positive:** Core stays narrow and matches its own documented scope.
-  A user who only wants to capture and inspect sessions doesn't need
-  Supabase client dependencies or fine-tuning format logic pulled in.
-- **Negative:** Existing users of `agentson finetune`/`push`/`pull` (if
-  any, given v0.1 pre-launch status) would need to install a second
-  package. Given the project is pre-launch, this is the cheapest point
-  to make this change — the cost only grows with adoption.
-- **Neutral:** No spec change required. This is purely a CLI/package
-  boundary decision.
-
-## Open question for Andie
-
-Should this be actioned before or after v0.1 launch? Pre-launch, this
-is a clean cut with no migration cost to real users. Post-launch, it
-becomes a breaking change requiring a deprecation path.
+No decision is implied until this ADR is explicitly accepted.

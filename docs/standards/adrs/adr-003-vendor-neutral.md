@@ -1,34 +1,23 @@
 # ADR-003: Why Vendor Neutrality Matters
 
-**Status:** Accepted
-**Date:** 04 July 2026
-**Author:** Andrea Enning
-
----
+**Status:** Accepted  
+**Date:** 04 July 2026  
+**Clarified:** 25 November 2026
 
 ## Context
 
-Every AI platform wants you to stay in their ecosystem. OpenAI wants you to use their API. GitHub wants you to use Copilot. Google wants you to use Gemini. Each provides session history in their own format, with their own export tools, with their own limitations.
-
-This creates lock-in. If you build workflows around one vendor's format, switching costs become prohibitive.
+Agent-session data is distributed across products with different storage formats, export interfaces and permission models. Tying the interchange contract to one provider would make compatibility and long-term access dependent on that provider.
 
 ## Decision
 
-AgentSON must be vendor-neutral. Every external service is optional. Every core feature works offline.
+AgentSON's canonical event vocabulary and archive format must remain vendor-neutral. Source-specific details may be retained in namespaced provenance or extension fields, but must not redefine the core contract.
+
+Core archive validation, inspection and transformation should be usable locally without a hosted AgentSON account. Optional readers, destination adapters, registries and platform services may depend on external products or network access; they must remain optional and declare those dependencies.
 
 ## Consequences
 
-### Positive
-- Users can switch tools without losing context
-- The format survives vendor shutdowns
-- No single company controls the standard
-
-### Negative
-- Must maintain readers for every tool
-- Some vendor-specific features won't map cleanly
-- No integration partnerships (yet)
-
-### Neutral
-- The format starts with Chrome DevTools, opencode, MiniMax, Antigravity
-- More readers = more value, but each reader is optional
-- The spec can be extended without breaking old files
+- Source and destination adapters are separate from the core schema.
+- Vendor-specific fields are preserved where safe and identified as source-specific.
+- No claim is made that every source exposes an export API or that every field maps cleanly.
+- Switching tools may still lose unsupported or unavailable semantics; adapters must report those gaps.
+- Vendor neutrality is an architectural goal, not a guarantee that all vendors support import/export.

@@ -1,41 +1,22 @@
-# ADR-007: Why CodeRabbit for Reviews (and Why Not Required)
+# ADR-007: CodeRabbit as an Optional Review Assistant
 
-**Status:** Accepted
-**Date:** 05 July 2026
-**Author:** Andrea Enning
-
----
+**Status:** Accepted  
+**Date:** 05 July 2026  
+**Clarified:** 25 November 2026
 
 ## Context
 
-Solo projects benefit from code review, but there's no team to do it. CodeRabbit provides automated AI code review for free on open-source projects. But it has rate limits on the free tier.
+Automated review can identify potential bugs, security risks, documentation inconsistencies and maintainability issues. It cannot replace tests, maintainer judgement or a complete security review.
 
 ## Decision
 
-Use CodeRabbit for PR reviews, but do NOT make it a required status check.
+Use CodeRabbit as an optional automated review assistant where it is enabled for the repository. Treat its findings as review input that must be checked against the current code and current branch.
+
+CodeRabbit is not a required runtime dependency and must not be the only quality gate. Branch protection, required approvals, status checks, merge policy and repository permissions are controlled by GitHub repository settings and must be verified there; this ADR does not assert a fixed number of protection rules.
 
 ## Consequences
 
-### Positive
-- Free code review on every PR
-- Catches issues before manual review
-- No cost
-
-### Negative
-- Free tier has rate limits that vary by project popularity
-- If rate limited, a required check would block all merges
-- Not as thorough as human review
-
-### Neutral
-- CodeRabbit reviews when it can, never blocks
-- The 4 branch protection rules (PR required, no force push, no deletion, linear history) work independently
-- Can upgrade to paid tier later if needed
-
-## Why Not Required
-
-For a solo project, making CodeRabbit required means:
-- If it's rate limited → PRs stuck forever
-- If it's down → PRs stuck forever
-- If the service shuts down → PRs stuck forever
-
-The owner can always review their own PRs. CodeRabbit is a helpful assistant, not a gatekeeper.
+- A green CodeRabbit status is not equivalent to an approval or proof that all findings are resolved.
+- Review comments can become stale after later commits; re-check the current head and line context.
+- High-risk findings require reproduction and regression tests.
+- Human review and CI remain independent quality controls.

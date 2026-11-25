@@ -1,34 +1,22 @@
-# ADR-005: Why Nightscout Over Proprietary CGM Systems
+# ADR-005: Nightscout as a Historical Domain Integration
 
-**Status:** Accepted
-**Date:** 04 July 2026
-**Author:** Andrea Enning
-
----
+**Status:** Accepted for the original domain-specific integration; not a core-format dependency  
+**Date:** 04 July 2026  
+**Clarified:** 25 November 2026
 
 ## Context
 
-My mother uses a FreeStyle Libre 2 continuous glucose monitor. Abbott's proprietary system stores data in their cloud, requires their app, and charges subscription fees. For a carer on Universal Credit, this is not sustainable.
+The early AgentSON prototype included continuous-glucose-monitoring data workflows. Nightscout provided an open, self-hostable API for exchanging data from compatible systems and was selected for that prototype.
 
 ## Decision
 
-Self-host Nightscout as the glucose data platform.
+Retain Nightscout as an optional, historical domain-specific integration example. It must not be required by AgentSON Core or treated as a clinical service.
+
+The integration does not establish that AgentSON is a medical device, clinical decision-support system or NHS-connected service. Any future NHS FHIR work would require a separately scoped design, security review, organisational approval and testing against the relevant interfaces.
 
 ## Consequences
 
-### Positive
-- Free (runs on a £35 Raspberry Pi)
-- Data stays on our hardware
-- No subscription fees
-- Custom alerts (WhatsApp, SMS, voice)
-- Works with multiple sensors and apps (Juggluco, xDrip+)
-
-### Negative
-- Requires initial setup and maintenance
-- No official support from Abbott
-- Self-hosted = we handle outages
-
-### Neutral
-- Nightscout is the standard in the DIY CGM community
-- Data can be exported to AgentSON for analysis
-- NHS FHIR integration possible through Nightscout API
+- The core interchange format remains domain-neutral.
+- Health data is sensitive personal data and must be minimised, protected and handled under the applicable legal and organisational controls.
+- Do not infer clinical meaning or recommend treatment from imported data.
+- Nightscout and Libre workflows are optional adapters/examples, not evidence of universal health-data interoperability.
