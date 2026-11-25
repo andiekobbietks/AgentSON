@@ -300,7 +300,7 @@ The durable value should come from a trustworthy event model, high-quality adapt
 
 - [`ROADMAP.md`](ROADMAP.md) retains the existing reader-priority matrix and RICE estimates.
 - [`README.md`](README.md) remains the project overview, quick start and current implementation summary.
-- `roadmap.md` is the expanded strategic and engineering roadmap.
+- `STRATEGIC_ROADMAP.md` is the expanded strategic and engineering roadmap.
 - [`CHANGELOG.md`](CHANGELOG.md) remains the source for shipped release changes.
 - Issues and pull requests remain the source of implementation status; roadmap proposals must not be presented as completed capabilities.
 
