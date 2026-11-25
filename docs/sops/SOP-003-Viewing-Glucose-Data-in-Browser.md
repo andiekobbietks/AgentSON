@@ -1,105 +1,48 @@
-# SOP-003: Viewing Glucose Data in Browser
+# SOP-003: Render an AgentSON Archive as a Local HTML Report
 
-**Version:** 1.0  
-**Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Current procedure for v1.2 JSONL archives.  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP describes how to view AgentSON glucose data in a web browser using the AgentSON web viewer.
+Render a canonical AgentSON archive into an HTML report that can be opened in a local browser.
 
----
+## Important viewer distinction
 
-## Prerequisites
-
-| Item | Requirement |
-|------|-------------|
-| **Input** | `.agentson` file (from SOP-002) |
-| **Software** | Any modern web browser (Edge, Chrome, Firefox) |
-| **Location** | `~/agentson/viewers/web/index.html` |
-
----
+The static browser viewer at docs/viewer/index.html is a legacy viewer for single-JSON session-envelope documents. It does not parse canonical v1.2 JSONL streams. Do not drop a canonical .agentson JSONL archive into that viewer.
 
 ## Procedure
 
-### Step 1: Open Web Viewer
+Render the archive using the CLI:
 
-**Option A: Direct File Access**
-```
-double-click ~/agentson/viewers/web/index.html
-```
+~~~powershell
+python -m cli.main render "$HOME\Downloads\libre_libre_data.agentson" --format html --output "$HOME\Downloads\libre_report.html"
+~~~
 
-**Option B: Via Browser**
-1. Open Edge/Chrome
-2. Press `Ctrl+O`
-3. Navigate to `~/agentson/viewers/web/`
-4. Select `index.html`
+Open the generated report locally:
 
-### Step 2: Load AgentSON File
+~~~powershell
+Start-Process "$HOME\Downloads\libre_report.html"
+~~~
 
-1. Drag `.agentson` file from `~/Downloads/` onto the viewer
-2. **OR** click the drop zone and select the file
+Review the report for missing values, timestamp/time-zone assumptions, units and unexpected conversion output before sharing.
 
-### Step 3: View Data
+## Sharing and hosting
 
-The viewer displays:
-- **Session info**: Tool, agent, date range
-- **Glucose readings**: Each reading with timestamp and status
-- **Metrics**: Average glucose, time in range, hypo/hyper percentages
-
----
-
-## Viewing on Mother's iPhone
-
-### Option A: Local LAN (No Internet Required)
-
-1. **On your PC**: Start a local server
-   ```powershell
-   cd ~/agentson/viewers/web
-   python -m http.server 8080
-   ```
-
-2. **Find your PC's IP address**
-   ```powershell
-   ipconfig | findstr "IPv4"
-   ```
-
-3. **On mother's iPhone**:
-   - Connect to same WiFi as PC
-   - Open Safari
-   - Enter: `http://YOUR-PC-IP:8080`
-   - Drag `.agentson` file onto viewer
-
-### Option B: Free Hosting (Works Anywhere)
-
-1. **Deploy to Vercel** (free):
-   ```powershell
-   cd ~/agentson/viewers/web
-   npx vercel
-   ```
-
-2. **Share URL with mother**
-3. **On mother's iPhone**: Open URL, drag `.agentson` file
-
----
-
-## Features
-
-| Feature | Description |
-|---------|-------------|
-| **Dark mode** | Easy on the eyes |
-| **Mobile responsive** | Works on iPhone/Android |
-| **Drag & drop** | No file picker needed |
-| **Color-coded status** | Green=normal, Yellow=high, Red=low |
-
----
+- Prefer keeping health-data reports local.
+- Do not publish a report to a public Vercel, GitHub Pages or other public hosting project.
+- If a report must be shared, use an approved, access-controlled and encrypted channel and share only the minimum necessary data.
+- Do not assume that a private URL alone provides access control.
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| File not loading | Check file extension is `.agentson` or `.json` |
-| Blank screen | Refresh page, try different browser |
-| Can't access from iPhone | Ensure same WiFi network, check firewall |
+| Issue | Action |
+|---|---|
+| JSONL archive fails in the legacy viewer | Expected; use the CLI render command above. |
+| Render command rejects the archive | Run validate first and inspect the reported schema/version error. |
+| Report has missing or unusual values | Compare against the source CSV; do not infer missing clinical values. |
+| Browser cannot open the report | Check that the output file exists and open it from the local file system. |
+
+## Limitations
+
+The report is a technical rendering of supplied data, not a diagnosis, treatment recommendation or clinical record. Check its accuracy with an appropriate healthcare professional.

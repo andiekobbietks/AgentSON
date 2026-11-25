@@ -1,93 +1,54 @@
-# SOP-002: Converting Libre Data to AgentSON
+# SOP-002: Convert FreeStyle Libre CSV Data to an AgentSON Stream
 
-**Version:** 1.0  
-**Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Legacy domain-specific procedure; verify the installed reader version before use.  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP describes how to convert FreeStyle Libre 2 glucose data (CSV format) into AgentSON format for visualization, search, and sharing.
-
----
+Convert a supported FreeStyle Libre CSV export into a local AgentSON archive for inspection and reporting. This is a data-conversion procedure, not clinical interpretation.
 
 ## Prerequisites
 
-| Item | Requirement |
-|------|-------------|
-| **Input** | `libre_data.csv` (from SOP-001) |
-| **Software** | Python 3.12.3, AgentSON CLI |
-| **Location** | `~/agentson` |
-
----
+- A CSV export that the installed Libre reader supports.
+- AgentSON installed in the local Python environment.
+- Permission to process the data and a secure local output directory.
 
 ## Procedure
 
-### Step 1: Navigate to AgentSON Directory
+From the repository checkout or installed environment:
 
-```powershell
-cd ~/agentson
-```
+~~~powershell
+python -m cli.main export --tool libre --input "$HOME\Documents\libre_data.csv" --output "$HOME\Downloads"
+~~~
 
-### Step 2: Export CSV to AgentSON
+Use the exact input path and output directory for your machine. The generated filename is reported by the CLI; do not assume a fixed byte size or timestamp.
 
-```powershell
-python -m cli.main export --tool libre --input "~/Documents/libre_data.csv" --output "~/Downloads"
-```
+Validate the generated archive:
 
-### Step 3: Verify Output
+~~~powershell
+python -m cli.main validate "$HOME\Downloads\libre_libre_data.agentson"
+~~~
 
-```powershell
-Get-Item "~/Downloads/libre_libre_data.agentson"
-```
+If the CLI reports a different output filename, use that path.
 
-Expected output:
-```
-Name                          Length LastWriteTime
-----                          ------ -------------
-libre_libre_data.agentson     12345  05/07/2026 00:53
-```
+## Format note
 
----
+The canonical v1.2 interchange format is JSONL: one typed event per line, with stream-meta first. A .agentson file is not necessarily a single JSON object. The JSON session envelope is a separate materialised/document compatibility representation.
 
-## Output
+Inspect or render the archive using the CLI rather than assuming the old JSON-envelope structure:
 
-| File | Description |
-|------|-------------|
-| `libre_libre_data.agentson` | Glucose data in AgentSON format |
+~~~powershell
+python -m cli.main render "$HOME\Downloads\libre_libre_data.agentson" --format md --output "$HOME\Downloads\libre_report.md"
+~~~
 
----
+## Privacy and safety
 
-## What's in the AgentSON File
+- Treat glucose readings as sensitive health data.
+- Keep the archive and reports in an access-controlled local folder.
+- Do not upload raw exports to public hosting or paste them into unapproved services.
+- Check timestamps, units, missing values and conversion output before relying on it.
+- AgentSON does not provide medical advice or validate clinical interpretation.
 
-```json
-{
-  "id": "libre-libre_data",
-  "tool": {"name": "FreeStyle Libre 2"},
-  "entries": [
-    {
-      "role": "sensor",
-      "type": "glucose_reading",
-      "timestamp": "2026-06-17T12:43:44",
-      "text": "Glucose: 11.11 mmol/L",
-      "data": {"value": 11.11, "unit": "mmol/L"},
-      "status": "high"
-    }
-  ],
-  "metrics": {
-    "avg_glucose": 9.33,
-    "time_in_range": 60.6,
-    "hypo_pct": 0.0,
-    "hyper_pct": 39.4
-  }
-}
-```
+## Next steps
 
----
-
-## Next Steps
-
-After converting the data, proceed to:
-- **SOP-003**: View Glucose Data in Browser
-- **SOP-006**: Share Data with Doctors
+Use SOP-003 to render an HTML report locally, or SOP-006 for guidance on preparing a report for a healthcare appointment.

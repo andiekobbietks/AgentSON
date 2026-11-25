@@ -1,88 +1,68 @@
-# SOP-004: Exporting AI Sessions
+# SOP-004: Export AI-Agent Sessions
 
-**Version:** 1.0  
-**Date:** 05 July 2026  
-**Author:** Andrea Enning (AndieKobbieTech)
-
----
+**Status:** Maintained example procedure; reader coverage varies by source version.  
+**Last reviewed:** 25 November 2026
 
 ## Purpose
 
-This SOP describes how to export AI coding sessions from various tools (opencode, MiniMax, Antigravity IDE) into AgentSON format for search, backup, and cross-tool hydration.
-
----
+Export sessions from supported local AI-agent tools into AgentSON for local search, backup, inspection and context-packet creation. This procedure does not provide universal cross-tool hydration or runtime restoration.
 
 ## Prerequisites
 
-| Item | Requirement |
-|------|-------------|
-| **Software** | Python 3.12.3, AgentSON CLI |
-| **Data** | Existing AI sessions in supported tools |
-| **Location** | `~/agentson` |
+- AgentSON installed in a local Python environment.
+- A supported source application and an accessible local session store/export.
+- Permission to access and process the selected session data.
+- A secure output directory.
 
----
+## Check current reader support
 
-## Supported Tools
+The installed CLI help and the repository's reader conformance matrix are authoritative. Reader selectors and source versions can change:
 
-| Tool | Database Location |
-|------|-------------------|
-| opencode | `~\.local\share\opencode\opencode.db` |
-| MiniMax | `~\.minimax\sqlite.db` |
-| Antigravity IDE | `~\.gemini\antigravity-ide\conversations\*.db` |
+~~~powershell
+python -m cli.main --help
+python -m cli.main export --help
+~~~
 
----
+Examples below use OpenCode and MiniMax. Other reader selectors may be available in the installed version.
 
-## Procedure
+## List sessions
 
-### Step 1: List Available Sessions
-
-```powershell
-cd ~/agentson
-
-# List opencode sessions
+~~~powershell
 python -m cli.main list --tool opencode
-
-# List MiniMax sessions
 python -m cli.main list --tool minimax
+~~~
 
-# List Antigravity sessions
-python -m cli.main list --tool antigravity
-```
+## Export a specific session
 
-### Step 2: Export Specific Session
+~~~powershell
+python -m cli.main export --tool opencode --session SESSION_ID --output "$HOME\Downloads"
+python -m cli.main export --tool minimax --session SESSION_ID --output "$HOME\Downloads"
+~~~
 
-```powershell
-# Export specific opencode session
-python -m cli.main export --tool opencode --session ses_xxx --output "~/Downloads"
+Replace SESSION_ID with an identifier returned by the list command.
 
-# Export specific MiniMax session
-python -m cli.main export --tool minimax --session xxx --output "~/Downloads"
-```
+## Export all sessions
 
-### Step 3: Export All Sessions
+~~~powershell
+python -m cli.main export --tool opencode --all --output "$HOME\Downloads"
+python -m cli.main export --tool minimax --all --output "$HOME\Downloads"
+~~~
 
-```powershell
-# Export all opencode sessions
-python -m cli.main export --tool opencode --all --output "~/Downloads"
+Exporting all sessions may collect sensitive prompts, tool outputs, paths, source code and personal data. Prefer a selected session and review the output.
 
-# Export all MiniMax sessions
-python -m cli.main export --tool minimax --all --output "~/Downloads"
-```
+## Validate and inspect
 
----
+~~~powershell
+python -m cli.main validate "$HOME\Downloads\SESSION_FILE.agentson"
+python -m cli.main render "$HOME\Downloads\SESSION_FILE.agentson" --format md --output "$HOME\Downloads\SESSION_FILE.md"
+~~~
 
-## Output
+Use the actual filename produced by the export command.
 
-| Tool | File Pattern |
-|------|--------------|
-| opencode | `opencode_ses_xxx.agentson` |
-| MiniMax | `minimax_xxx.agentson` |
-| Antigravity | `antigravity_xxx.agentson` |
+## Context continuation
 
----
+A reviewed Markdown context packet can be created with the resume workflow. It is not a runtime checkpoint and does not restore hidden prompts, credentials, permissions, live processes, editor buffers or provider-private state. The experimental OpenCode destination consumer is a limited, separate adapter; it does not provide general cross-harness hydration or automatic tool replay.
 
-## Next Steps
+## Privacy
 
-After exporting, proceed to:
-- **SOP-003**: View sessions in browser
-- **SOP-005**: Search sessions for specific content
+Treat exported archives as sensitive. Pattern-based redaction is best-effort, and the OpenCode consumer may store the complete original archive alongside the screened packet. Inspect and redact before sharing or importing. Use localhost and disposable sessions only for the current experimental OpenCode consumer.

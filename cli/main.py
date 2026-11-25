@@ -1013,8 +1013,8 @@ TOPICS:
     finetune_parser.add_argument("--no-thoughts", dest="include_thoughts", action="store_false", help="Exclude thought entries")
     
     # render command
-    render_parser = subparsers.add_parser("render", help="Render AgentSON file")
-    render_parser.add_argument("input", help="Input AgentSON JSON file")
+    render_parser = subparsers.add_parser("render", help="Render an AgentSON JSONL stream or supported session document")
+    render_parser.add_argument("input", help="Input AgentSON JSONL stream or supported session document")
     render_parser.add_argument("--format", choices=["md", "html"], default="md")
     render_parser.add_argument("--output", help="Output file")
 
