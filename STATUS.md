@@ -52,6 +52,7 @@ Do not describe JSONL as merely an optional transport or describe the session en
 4. Do not describe the OpenCode archive capsule as native event reconstruction or session resumption.
 5. Do not describe regex/pattern redaction as complete PII or secret detection.
 6. Keep the RICE table provisional until reach, impact, confidence and effort estimates have source evidence.
+7. The OpenCode consumer's remote mode has an unresolved cross-origin redirect/authentication-forwarding risk. Use localhost for authenticated imports; do not use remote mode with credentials until the code and tests enforce redirect confinement.
 
 ## Operating rules
 

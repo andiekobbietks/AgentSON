@@ -33,7 +33,7 @@ The CLI resume command always creates a portable Markdown context packet. The fi
 - The complete archive payload is untrusted and unredacted. It can contain credentials, personal data, private paths and confidential source code.
 - Users must create and inspect a redacted archive with the AgentSON redaction workflow before using the OpenCode launch path for sensitive sessions. Review the resulting archive; redaction is best-effort.
 - The OpenCode server stores the complete archive capsule. Although resume=false prevents immediate agent-loop execution, the queued content may enter model context if the user later resumes that session.
-- By default, use a local OpenCode server. The explicit remote option can send the unredacted archive to a remote host; remote use requires HTTPS and must be approved only after assessing the destination's data handling.
+- By default, use a local OpenCode server. The explicit remote option can send the unredacted archive to a remote host and requires HTTPS. A review has identified that the current HTTP client may forward Basic Authorization across a cross-origin redirect. Until redirect confinement is implemented and tested, use localhost only for authenticated imports and do not use remote mode with credentials.
 - Destination-side actions require explicit user approval and the destination adapter's own permission checks.
 - No historical side effect is replayed automatically.
 
