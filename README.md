@@ -1,8 +1,14 @@
-# AgentSON — v1.2.0 (Canonical Schema, 2026-10-23)
-# Release: full session-debug (browser panel inspection), 236 passing tests, 9 readers.
-# Design-level: ClickOps NOT BUILT; full MCP capture (ADR-022) design-only.
-# AKCloud managed service stays separate — banner / tagline AKCloud-only.
-# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
+# AgentSON
+
+**Release:** v1.2.0 (canonical schema, 2026-10-23)
+
+**Release status:** Full session-debug (browser panel inspection), 236 passing tests, 9 readers.
+
+**Implementation status:** ClickOps is not built; full MCP capture (ADR-022) remains design-only.
+
+**Product boundary:** The AKCloud managed service is separate from AgentSON.
+
+> *'Cause This is Exactly What Happens When an Agent + JSON Have a SON!*
 
 ```text
  ______                         __    ____    _____   __  __     
@@ -15,7 +21,6 @@
               /\____/                                            
               \_/__/                                             
 ```
-# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
 
 > ⚠️ **Alpha, pre-release software.** This is not production-ready. Interfaces, the file format, and CLI commands can change without notice between versions. Known open design questions and gaps are tracked publicly at [github.com/andiekobbietks/AgentSON/issues](https://github.com/andiekobbietks/AgentSON/issues) — check there before depending on this for anything you can't afford to break. If you find a security issue, please open an issue or contact the maintainer directly rather than assuming it's already known.
 
