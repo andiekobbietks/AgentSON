@@ -1,13 +1,14 @@
-<!--
-Release: v1.2.0 (canonical schema, 2026-10-23)
-Release status: full session-debug (browser panel inspection), 236 passing tests, 9 readers.
-Implementation boundary: ClickOps is not built; full MCP capture (ADR-022) remains design-only.
-Product boundary: AKCloud managed service is separate from AgentSON.
--->
-
 # AgentSON
 
-> **AgentSON — because this is what happens when an agent and JSON have a SON.**
+**Release:** v1.2.0 (canonical schema, 2026-10-23)
+
+**Release status:** Full session-debug (browser panel inspection), 236 passing tests, 9 readers.
+
+**Implementation status:** ClickOps is not built; full MCP capture (ADR-022) remains design-only.
+
+**Product boundary:** The AKCloud managed service is separate from AgentSON.
+
+> *'Cause This is Exactly What Happens When an Agent + JSON Have a SON!*
 
 ```text
  ______                         __    ____    _____   __  __     
@@ -20,7 +21,6 @@ Product boundary: AKCloud managed service is separate from AgentSON.
               /\____/                                            
               \_/__/                                             
 ```
-# AgentSON: 'Cause This is Exactly What Happens When an Agent + JSON have a SON!
 
 > ⚠️ **Alpha, pre-release software.** This is not production-ready. Interfaces, the file format, and CLI commands can change without notice between versions. Known open design questions and gaps are tracked publicly at [github.com/andiekobbietks/AgentSON/issues](https://github.com/andiekobbietks/AgentSON/issues) — check there before depending on this for anything you can't afford to break. If you find a security issue, please open an issue or contact the maintainer directly rather than assuming it's already known.
 
@@ -35,7 +35,7 @@ Product boundary: AKCloud managed service is separate from AgentSON.
 
 ---
 
-## Motivation
+## Why This Exists
 
 This project started with a FreeStyle Libre 2 continuous glucose monitor.
 
@@ -57,13 +57,11 @@ The FreeStyle Libre reader (`readers/libre.py`) was the first reader built — n
 
 ---
 
-## Problem and Approach
-
-### The Problem
+## The Problem
 
 Every AI coding agent stores session data in its own proprietary database. There is no standard format, no export API, and no way to move context between tools. The data that powers AI training is locked inside vendor silos.
 
-### The Approach
+## The Solution
 
 AgentSON captures the full trajectory of what happened during an AI-assisted session: prompts, thoughts, actions, code, observations, and outcomes — in one portable JSON file.
 
@@ -97,7 +95,7 @@ AgentSON captures the full trajectory of what happened during an AI-assisted ses
 
 ---
 
-## Supported Tools and Reader Coverage
+## Tool Landscape
 
 AgentSON covers the entire AI coding ecosystem — 33 tools across 7 tiers.
 
@@ -191,9 +189,9 @@ xychart-beta
 
 ---
 
-## Use Cases and Value
+## Why AgentSON Matters
 
-### Data Ownership: The Unsloth Analogy
+### The Unsloth Analogy
 
 Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 
@@ -203,7 +201,7 @@ Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 | No export API, vendor lock-in | One CLI command, portable JSON |
 | Big labs only | Everyone |
 
-### Data Portability and Vendor Lock-in
+### But It's Locked In
 
 | Tool | Exports data? | Portable? | Trainable? |
 |------|--------------|-----------|------------|
@@ -212,7 +210,7 @@ Unsloth democratized model fine-tuning. AgentSON democratizes data ownership.
 | Copilot | Partial (API) | No | No |
 | **AgentSON** | **Yes (JSON)** | **Yes** | **Yes** |
 
-### Developer Workflows
+### For Developers
 
 Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, Aider, Cline, Gemini CLI — becomes one searchable, portable, analysable record. Switch runtimes without losing your operational history. Every `.AgentSON` file is a personal engineering journal that follows you.
 
@@ -221,7 +219,7 @@ Your AI work across every runtime — OpenClaw, Claude Code, Cursor, opencode, A
 - **Replay** — Re-run or review any agent session offline
 - **Ownership** — No telemetry, no vendor lock-in, no cloud dependency
 
-### Organisational Workflows
+### For the Organisation
 
 As AI agents become long-lived team members (Claude Tag, persistent agents), organisations will need to answer: what did this agent do over the last six months? Why did it make this decision? Can we migrate it to another platform? Can we audit its behaviour? Can we learn from its successful workflows?
 
@@ -234,7 +232,7 @@ Memory systems (MCP, bespoke databases) don't give you portable answers to those
 
 ---
 
-## Market and Regulatory Positioning
+## Market & Regulatory Positioning
 
 AgentSON is designed as **vendor-neutral agent execution-history interoperability infrastructure**, not as a single-purpose compliance product. The same portable execution record can support several adjacent needs:
 
@@ -251,7 +249,7 @@ AgentSON is designed as **vendor-neutral agent execution-history interoperabilit
 
 These are applications of the same underlying interoperability layer, not separate products or claims that every capability is already implemented.
 
-### EU AI Act: a Relevant Logging Use Case
+### EU AI Act: a strong regulatory use case
 
 Article 12 of the EU AI Act is a particularly relevant use case. It requires high-risk AI systems to technically allow the automatic recording of events (logs) over the system's lifetime. The logs are intended to support the identification of situations that may result in risk, post-market monitoring, and monitoring of system operation by deployers.
 
@@ -259,7 +257,7 @@ AgentSON's structured, portable execution histories could support organisations 
 
 **Article 12 does not mandate AgentSON or a universal interchange format.** Nor does a valid AgentSON export, by itself, establish compliance. Suitability depends on the AI system, the applicable requirements, the events actually captured, and the surrounding implementation and organisational controls. Relevant considerations can include logging completeness, integrity, access control, security, retention and lawful handling of personal data. Other provisions, including Article 19 and Article 26(6), address log retention responsibilities for providers and deployers respectively.
 
-### Product Positioning
+### Product positioning
 
 - **Core product:** capture, correlate, preserve, search, export and exchange heterogeneous agent execution histories in a vendor-neutral representation.
 - **Commercial applications:** developer tooling, observability, evaluation, debugging, migration, training-data preparation, multi-agent operations and research reproducibility.
@@ -269,11 +267,11 @@ Regulation can create demand for reliable execution records without defining the
 
 ---
 
-## Integrations and Agent Workspaces
+## Agent Workspaces, Harnesses & Cloudflare OS
 
 AgentSON is intended to preserve agent execution history across the environments in which agents are built, orchestrated and run. This includes individual coding harnesses, multi-agent frameworks, managed agent runtimes and organisational agent workspaces.
 
-### Cloudflare OS as a Prospective Integration Target
+### Cloudflare OS as a future integration target
 
 [Cloudflare OS](https://github.com/cloudflare/cloudflare-os) is a relevant reference implementation and potential integration target: an open platform for organisational agent workspaces, applications and controlled access to company resources. It is not itself a single agent harness. It sits above and alongside the runtimes, tools and services that agents use.
 
@@ -285,7 +283,7 @@ AgentSON's role would be complementary:
 
 The intended outcome is that an organisation could retain useful AgentSON records when it changes agent workspaces, harnesses, model providers or execution infrastructure. Cloudflare OS is one prospective environment in that wider ecosystem, not a required dependency.
 
-### Integration Direction (Planned, Not Implemented)
+### Integration direction (planned; not implemented)
 
 A future Cloudflare integration should be developed as an adapter, with capability discovery and explicit versioning rather than assumptions about undocumented internals.
 
@@ -308,7 +306,7 @@ A future Cloudflare integration should be developed as an adapter, with capabili
 5. Apply data minimisation and redaction before export. Prompts, tool arguments, resource identifiers and outputs may contain credentials, personal data or confidential organisational information.
 6. AgentSON records can support investigation, evaluation and assurance workflows, but do not by themselves prove policy compliance, security or regulatory conformity.
 
-### Suggested Integration Sequence
+### Suggested integration sequence
 
 1. **Define the mapping:** document how supported Cloudflare Agents / OpenTelemetry events map to the canonical AgentSON v1.2 model, and identify fields that require a schema extension or a later schema version.
 2. **Build a read-only proof of concept:** ingest a small, documented trace or exported event set and produce validated AgentSON output without changing the source workspace.
@@ -320,7 +318,7 @@ The architectural principle is simple: **the platform may execute and observe th
 
 ---
 
-## Getting Started
+## Quick Start
 
 ```bash
 # Install
@@ -347,7 +345,7 @@ agentson validate ./sessions/
 
 ---
 
-## Canonical Schema (v1.2)
+## Schema (v1.2 — canonical)
 
 > v1 and v1.1 are deprecated. v1.2 is the canonical schema
 > (`spec/v1.2.json`); individual entries validate against
@@ -390,7 +388,7 @@ agentson validate ./sessions/
 
 ---
 
-## Exporting Training Data
+## Fine-Tuning Export
 
 ```bash
 # Unsloth/ShareGPT format (for LLaMA, Mistral, etc.)
@@ -414,7 +412,7 @@ Example output:
 
 ---
 
-## Browser-Based Viewer
+## PWA Viewer
 
 Open `pwa/index.html` in a browser, drag-and-drop an `.AgentSON` file. Works offline.
 
@@ -463,7 +461,7 @@ agentson/
 
 ---
 
-## Roadmap and Development Status
+## Roadmap
 
 See [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) for the expanded strategic and engineering roadmap, including the proposed extension from AI-agent session portability into human-operated IT operations, OpenTelemetry interoperability, incident reconstruction, cross-provider evidence and recovery assurance. The November 2026 Microsoft 365 incident is documented there as a motivating case study, not as proof that Microsoft lacks observability tooling or that these proposed capabilities are already implemented.
 
@@ -478,7 +476,7 @@ See [ROADMAP.md](ROADMAP.md) for the existing RICE-scored reader priorities acro
 
 ---
 
-## Project Standards and Architecture Records
+## Standards
 
 - [Operating Manual](https://andiekobbietks.github.io/AgentSON/standards/) — Mental models, coding standards, workflow rules
 - [ADRs](https://andiekobbietks.github.io/AgentSON/standards/) — Architecture Decision Records (11 ADRs)
@@ -486,7 +484,7 @@ See [ROADMAP.md](ROADMAP.md) for the existing RICE-scored reader priorities acro
 
 ---
 
-## Licence
+## License
 
 [Apache 2.0](LICENSE) — Patent grant + attribution required.
 
