@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use AgentSON in research or software, please cite the project and the specific release or commit you used."
+type: software
+title: "AgentSON"
+authors:
+  - family-names: "Enning"
+    given-names: "Andrea"
+    affiliation: "Andrea Kwabena Technologies"
+license: "Apache-2.0"
+repository-code: "https://github.com/andiekobbietks/AgentSON"
+url: "https://github.com/andiekobbietks/AgentSON"
+abstract: "An open, vendor-neutral format and toolkit for capturing, preserving, validating and exchanging structured records of AI-agent execution activity."
+keywords:
+  - AI agents
+  - interoperability
+  - execution records
+  - provenance
+  - JSONL
