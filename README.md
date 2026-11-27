@@ -491,3 +491,12 @@ See [ROADMAP.md](ROADMAP.md) for the existing RICE-scored reader priorities acro
 ---
 
 *"The operational life of an AI agent, preserved independently of the runtime that hosted it."*
+
+## Project governance and contribution
+
+- [Project Charter](PROJECT_CHARTER.md) — purpose, scope, status vocabulary and continuation principles
+- [Contributing](CONTRIBUTING.md) — contribution workflow, schema changes and pull request expectations
+- [Security Policy](SECURITY.md) — responsible vulnerability reporting
+- [Code of Conduct](CODE_OF_CONDUCT.md) — community participation expectations
+- [Support](SUPPORT.md) — where to ask questions and report problems
+- [Citation metadata](CITATION.cff) — how to cite AgentSON in research and software
