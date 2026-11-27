@@ -46,4 +46,4 @@ Use synthetic or deliberately sanitised fixtures. Never commit secrets or live c
 
 ## Licensing
 
-By intentionally submitting a contribution for inclusion, you agree that it is provided under the repository's Apache License 2.0, unless a separate written agreement with the project owner states otherwise. Please do not submit material you do not have the right to contribute.
+Contributions are published under the repository's Apache License 2.0, as described in [LICENSE](LICENSE). Please ensure you have the right to submit the material and identify any third-party components or licensing restrictions.
